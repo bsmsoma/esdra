@@ -1,10 +1,20 @@
 import { spawn } from "child_process";
-import { writeFile, mkdir } from "fs/promises";
+import { writeFile, mkdir, readFile } from "fs/promises";
 import admin from "firebase-admin";
+
+// Load .env.local into process.env (Vite handles this for the app, but not for Node scripts)
+try {
+  const raw = await readFile(new URL("../.env.local", import.meta.url), "utf8");
+  for (const line of raw.split("\n")) {
+    const match = line.match(/^([^#\s][^=]*)=(.*)$/);
+    if (match && !(match[1] in process.env)) process.env[match[1].trim()] = match[2].trim();
+  }
+} catch { /* .env.local opcional em CI — usar variáveis de ambiente do sistema */ }
 
 const PROJECT_ID = "esdra-ba71d";
 const STORE_ID = "esdra-aromas";
-const API_KEY = "AIzaSyCUpPvxT1FQnflstw0HgNW9gHWJ50LZR2U";
+const API_KEY = process.env.VITE_FIREBASE_API_KEY;
+if (!API_KEY) throw new Error("VITE_FIREBASE_API_KEY não definida. Verifique o arquivo .env.local.");
 
 export const TEST_USER_EMAIL = "test-checkout@esdra.test";
 export const TEST_USER_PASSWORD = "TestPass123!";
