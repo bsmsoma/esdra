@@ -1,0 +1,353 @@
+@use "../App.scss" as *;
+@use "../styles/variables" as vars;
+
+// Siderbar header
+.sidebarheader {
+    font-size: 1.4rem;
+    font-weight: 500;
+    margin-bottom: 0.8rem;
+    color: $text-primary;
+    letter-spacing: 0.5px;
+    font-family: $tertiaryFont;
+    position: relative;
+
+    &:after {
+        content: "";
+        position: absolute;
+        bottom: -8px;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: $gradient-overlay;
+    }
+}
+
+// Close icon
+.sidebarcloseicon {
+    position: absolute;
+    top: 25px;
+    right: 20px;
+    background: none;
+    border: none;
+    transition: all 0.3s ease;
+    outline: none;
+
+    &.closed {
+        position: fixed;
+        right: -40px;
+        top: min(80px, calc(100vh - 500px));
+        transition: all 0.3s ease;
+        z-index: 1;
+    }
+
+    &:hover {
+        transform: scale(1.1);
+        cursor: pointer;
+    }
+}
+
+// Sidebar content
+.sidebarWrapper {
+    display: flex;
+    flex-direction: column;
+    
+    // Height 100% only needed for mobile
+    // Desktop sidebar will use max-height from parent
+    @include responsiveMobile {
+        height: 100%;
+    }
+}
+
+.sidebarcontent {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    font-family: $defaultFont;
+    width: 100%;
+    flex: 1 1 auto;
+
+    // Filter sections
+    .filterSection {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        padding-bottom: 1rem;
+
+        .categoryTitle {
+            font-size: 1.1rem;
+        }
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        h3 {
+            font-size: 1rem;
+            color: $text-accent-secondary;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            font-family: $defaultFont;
+        }
+
+        // Categories list
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+
+            li {
+                margin-bottom: 0.8rem;
+            }
+        }
+
+        // Custom checkbox
+        .checkboxLabel {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            user-select: none;
+
+            input[type="checkbox"] {
+                appearance: none;
+                width: 18px;
+                height: 18px;
+                border: 2px solid $accent-gold;
+                border-radius: 4px;
+                position: relative;
+                cursor: pointer;
+                transition: all 0.3s ease;
+
+                &:checked {
+                    background-color: $accent-gold;
+
+                    &:after {
+                        content: "✓";
+                        position: absolute;
+                        color: $text-secondary;
+                        font-size: 12px;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                    }
+                }
+
+                &:hover {
+                    border-color: $accent-gold-hover;
+                }
+            }
+
+            span {
+                font-size: 0.95rem;
+                color: $text-quaternary;
+                transition: all 0.3s ease;
+            }
+
+            &:hover span {
+                color: $accent-gold;
+            }
+        }
+    }
+
+    // Price filter
+    .priceRange {
+        input[type="range"] {
+            width: 100%;
+            height: 2px;
+            background: $button-secondary-bg;
+            border-radius: 2px;
+            appearance: none;
+            margin: 1rem 0;
+
+            &::-webkit-slider-thumb {
+                appearance: none;
+                width: 16px;
+                height: 16px;
+                background: $accent-gold;
+                border-radius: 50%;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                box-shadow: 0 2px 6px rgba(184, 160, 126, 0.2);
+
+                &:hover {
+                    transform: scale(1.1);
+                }
+            }
+        }
+
+        span {
+            font-size: 0.9rem;
+            color: $text-quinary;
+            font-weight: 500;
+        }
+    }
+
+    // Colors filter
+    .colorFilters {
+        display: flex;
+        gap: 0.8rem;
+        flex-wrap: wrap;
+        padding: 0.5rem 0;
+
+        .colorBtn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+            &:nth-child(2) {
+                border: 2px solid $accent-gold;
+            }
+
+            &:hover {
+                outline: 2px solid $accent-gold;
+                transform: scale(1.1);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            }
+
+            &:after {
+                content: "";
+                position: absolute;
+                top: -2px;
+                left: -2px;
+                right: -2px;
+                bottom: -2px;
+                border: 2px solid transparent;
+                border-radius: 50%;
+                transition: all 0.2s ease;
+            }
+
+            &.active:after {
+                border: 4px solid black;
+            }
+        }
+    }
+
+    // Sizes filter
+    .sizeFilters {
+        display: flex;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+        padding: 0.5rem 0;
+
+        .sizeBtn {
+            min-width: 40px;
+            height: 40px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 8px;
+            background: $background-color;
+            font-size: 0.9rem;
+            font-family: $defaultFont;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: $text-quaternary;
+
+            &:hover {
+                background: $background-hover;
+                border: 2px solid $accent-gold;
+                color: $accent-gold;
+                transform: translateY(-2px);
+            }
+
+            &.active {
+                border: 2px solid $accent-gold;
+                background: $accent-gold;
+                color: $text-secondary;
+            }
+        }
+    }
+}
+
+// Sidebar footer
+.sidebarfooter {
+    margin-top: auto;
+    padding-top: 1rem;
+
+    button {
+        width: 100%;
+        background: $gradient-overlay;
+        color: $text-secondary;
+        padding: 0.9rem;
+        border-radius: 12px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: $defaultFont;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 15px rgba(184, 160, 126, 0.2);
+
+        &:hover {
+            background: $button-green;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(184, 160, 126, 0.3);
+        }
+    }
+
+    button.resetButton {
+        margin-top: 0.8rem;
+        background: $background-color;
+        color: $accent-gold;
+        border: 2px solid $accent-gold;
+
+        &:hover {
+            background: $background-hover;
+            color: $accent-gold-hover;
+            border-color: $accent-gold-hover;
+        }
+    }
+}
+
+// Mobile styles
+@include responsiveMobile {
+    .mobileWrapper {
+        height: 100%;
+        width: 100%;
+        max-width: 300px;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .sidebarcontent {
+        &.mobileContent {
+            overflow-y: auto;
+            height: 100%;
+            width: 100%;
+            max-width: 300px;
+            position: relative;
+            padding: 1rem;
+            border: 1px solid $border-color;
+            flex: 1 1 auto;
+        }
+    }
+
+    .sidebarfooter {
+        margin-top: 0;
+        padding-top: 0;
+
+        &.mobileFooter {
+            background-color: $text-secondary;
+            padding: 1rem;
+            border-top: 1px solid $border-color;
+            width: 100%;
+            max-width: 300px;
+        }
+    }
+}
+
+// ========================================
+// ESTILOS DE IMPRESSÃO
+// ========================================
+@media print {
+    // Ocultar todo o sidebar na impressão
+    .sidebarcontainer,
+    .mobileSidebarContainer,
+    .overlay,
+    .hamburger {
+        display: none !important;
+    }
+}

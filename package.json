@@ -1,0 +1,50 @@
+{
+  "name": "requinte-app",
+  "private": true,
+  "version": "0.0.5",
+  "type": "module",
+  "author": "Brunno Mota",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "set-admin": "node scripts/set-admin-claim.mjs",
+    "e2e": "playwright test",
+    "e2e:headed": "playwright test --headed",
+    "test:e2e": "playwright test --config=playwright.emulator.config.js",
+    "test:e2e:headed": "playwright test --config=playwright.emulator.config.js --headed",
+    "test:unit": "npm test --prefix functions"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "dependencies": {
+    "browser-image-compression": "^2.0.2",
+    "firebase": "^11.0.1",
+    "prop-types": "^15.8.1",
+    "qrcode.react": "^4.2.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-icons": "^5.3.0",
+    "react-range": "^1.10.0",
+    "react-router": "^7.1.5",
+    "react-toastify": "^11.0.5",
+    "swiper": "^12.1.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.14.0",
+    "@playwright/test": "^1.59.1",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react-swc": "^3.7.1",
+    "eslint": "^9.14.0",
+    "eslint-plugin-react": "^7.37.2",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-react-refresh": "^0.4.14",
+    "firebase-admin": "^12.7.0",
+    "globals": "^15.11.0",
+    "sass": "^1.80.6",
+    "vite": "^7.2.4"
+  }
+}

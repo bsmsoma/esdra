@@ -1,0 +1,87 @@
+@use "../App.scss" as *;
+@use "../styles/variables" as vars;
+@use "../styles/tokens" as *;
+
+.accountLayout {
+    min-height: 100vh;
+    padding: vars.$padding-3xl vars.$padding-xl;
+    background-color: $background-color;
+}
+
+.accountContainer {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.accountNav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid $border-color;
+    overflow-x: auto;
+    
+    // Hide scrollbar but keep functionality
+    scrollbar-width: thin;
+    scrollbar-color: $border-color transparent;
+    
+    &::-webkit-scrollbar {
+        height: 4px;
+    }
+    
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+        background-color: $border-color;
+        border-radius: 2px;
+    }
+    
+    .navLink,
+    .activeLink {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        text-decoration: none;
+        color: $text-primary;
+        font-family: $defaultFont;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+        border: 2px solid transparent;
+        cursor: pointer;
+    }
+    
+    .navLink:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+    
+    .activeLink {
+        background-color: $primary-color;
+        border: 2px solid $text-primary;
+        font-weight: 600;
+    }
+}
+
+// Mobile responsivo
+@include responsiveMobile {
+    .accountLayout {
+        padding: vars.$padding-2xl vars.$padding-md;
+    }
+    
+    .accountNav {
+        gap: 0.375rem;
+        padding-bottom: 0.5rem;
+        margin-top: 0.5rem;
+        margin-bottom: 1.25rem;
+        
+        .navLink,
+        .activeLink {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            border-radius: 6px;
+        }
+    }
+}

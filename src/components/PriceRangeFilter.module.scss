@@ -1,0 +1,47 @@
+@use "../App.scss" as *;
+@use "../styles/variables" as vars;
+
+.priceRangeFilter {
+    width: 100%;
+    
+    
+    
+    .thumb {
+        height: 24px;
+        width: 24px;
+        background-color: $accent-blue;
+        border-radius: 50%;
+        box-shadow: 0 2px 6px $border-color-secondary;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        outline: none;
+        position: relative;
+        cursor: grab;
+
+        @include focus-visible-ring($accent-blue);
+    }
+    .labels {
+        display: flex;
+        justify-content: space-between;
+        font-family: $clashGroteskMedium;
+        color: $text-primary;
+        margin-top: 0.5rem;
+    }
+}
+
+.track {
+    margin: 2rem 0;
+    background-color: $button-secondary-bg;
+}
+
+.tooltip {
+    position: absolute;
+    top: -32px;
+    background-color: $button-primary-hover;
+    color: $text-secondary;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+}

@@ -1,0 +1,64 @@
+// Sass Mixins
+@use "../styles/typography" as *;
+@use "tokens" as *;
+@use "../styles/variables" as vars;
+
+@mixin divider($borderColor: $border-color-secondary, $borderWidth: vars.$border-width-thin) {
+    width: 95%;
+    margin: vars.$margin-sm auto;
+    border-bottom: $borderWidth solid $borderColor;
+}
+
+@mixin shadow() {
+    box-shadow: $shadow-md;
+}
+
+// Contorno de foco para teclado (WCAG). Use em links, botões e controles customizados.
+@mixin focus-visible-ring(
+    $color: $focus-ring-color,
+    $width: $focus-ring-width,
+    $offset: $focus-ring-offset
+) {
+    &:focus-visible {
+        outline: $width solid $color;
+        outline-offset: $offset;
+    }
+
+    &:focus:not(:focus-visible) {
+        outline: none;
+    }
+}
+
+// Inputs: borda + halo suave (alinha a login e evita outline duplo com border-radius)
+@mixin focus-visible-input {
+    &:focus-visible {
+        outline: none;
+        border-color: $focus-ring-color-brand;
+        box-shadow: 0 0 0 3px $accent-brand-purple-muted;
+    }
+}
+
+// Responsive Mixins
+// Screen for less than 450px
+@mixin responsiveMobile($breakpoint: vars.$breakpoint-mobile) {
+    @media only screen and (max-width: $breakpoint) {
+        @content;
+    }
+}
+
+// Screens for less than 750px
+@mixin responsiveTablet($breakpoint: vars.$breakpoint-tablet) {
+    @media only screen and (max-width: $breakpoint) {
+        @content;
+    }
+}
+
+@mixin productName($fontSize: $font-size-8xl, $marginBottom: vars.$margin-2xl) {
+    font-family: $clashGroteskSemibold;
+    font-size: $fontSize;
+    font-weight: $font-weight-semibold;
+    color: $text-primary;
+    line-height: $line-height-tight;
+    letter-spacing: $letter-spacing-tight;
+    margin-bottom: $marginBottom;
+}

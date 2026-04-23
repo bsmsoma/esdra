@@ -1,0 +1,87 @@
+@use "../App.scss" as *;
+@use "../styles/variables" as vars;
+@use "../styles/tokens" as *;
+
+.productCard {
+    display: flex;
+    flex-direction: column;
+    gap: vars.$spacing-sm;
+    width: 100%;
+    padding: vars.$padding-xl;
+    border-radius: vars.$radius-xl;
+    border: 1px solid $border-color;
+    background-color: $background-color;
+    box-shadow: $shadow-xl;
+}
+
+.productCardMedia {
+    display: block;
+    width: 100%;
+    border-radius: vars.$radius-lg;
+    overflow: hidden;
+    text-decoration: none;
+
+    img {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        object-fit: cover;
+    }
+}
+
+.productCardBadge {
+    align-self: flex-start;
+    padding: 0.2rem 0.55rem;
+    border-radius: vars.$radius-999;
+    background-color: var(--color-badge-bg);
+    color: var(--color-badge-text);
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+}
+
+.productCardTitle {
+    margin: 0;
+    color: var(--color-title);
+    font-size: $font-size-4xl;
+    font-family: $clashGroteskSemibold;
+}
+
+.productCardDescription {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: $font-size-lg;
+    line-height: $line-height-relaxed;
+}
+
+.productCardFooter {
+    margin-top: auto;
+}
+
+.productCardPriceBlock {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.productCardPrice {
+    color: var(--color-title);
+    font-size: $font-size-5xl;
+    font-family: $clashGroteskSemibold;
+}
+
+.productCardInstallment {
+    color: var(--color-muted);
+    font-size: $font-size-sm;
+}
+
+.productCardButton {
+    margin-top: vars.$spacing-sm;
+    min-height: 44px;
+    border: none;
+    border-radius: vars.$radius-md;
+    background-color: var(--color-primary);
+    color: var(--color-primary-contrast);
+    font-family: $defaultFont;
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-semibold;
+    cursor: pointer;
+}

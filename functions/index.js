@@ -1,0 +1,1042 @@
+import crypto from "node:crypto";
+import {onCall, onRequest, HttpsError} from "firebase-functions/v2/https";
+import {logger} from "firebase-functions/v2";
+import {initializeApp} from "firebase-admin/app";
+import {getFirestore, FieldValue} from "firebase-admin/firestore";
+import {getStorage} from "firebase-admin/storage";
+import {
+  normalizeWebhookPaymentStatus,
+  mapPaymentStatusToOrderStatus,
+  normalizeShippingAmount,
+  normalizePaymentMethod,
+  validateShippingAddress,
+  validateCustomerSnapshot,
+  normalizeOrderItems,
+} from "./src/payment-utils.js";
+
+initializeApp();
+
+const db = getFirestore();
+const storage = getStorage();
+
+const FUNCTION_CONFIG = {
+  region: "southamerica-east1",
+  timeoutSeconds: 60,
+  memory: "256MiB",
+};
+
+const MAX_IMAGE_SIZE_BYTES = 8 * 1024 * 1024;
+const MAX_VIDEO_SIZE_BYTES = 50 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+const ALLOWED_VIDEO_TYPES = new Set(["video/mp4", "video/webm", "video/quicktime"]);
+const ALLOWED_ORDER_STATUS = new Set(["pendente", "pago", "enviado", "entregue", "cancelado"]);
+const ALLOWED_PAYMENT_STATUS = new Set(["pending", "paid", "failed", "refunded"]);
+const PAYMENT_PROVIDER = globalThis.process?.env?.PAYMENT_PROVIDER || "manual";
+
+function normalizeMimeType(contentType) {
+  let t = String(contentType || "").trim().toLowerCase();
+  if (t === "image/jpg") {
+    t = "image/jpeg";
+  }
+  return t;
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Após PUT na URL assinada, o objeto pode demorar a aparecer em file.exists().
+ */
+async function waitForStorageObject(file, {attempts = 12, delayMs = 400} = {}) {
+  for (let i = 0; i < attempts; i += 1) {
+    const [ok] = await file.exists();
+    if (ok) {
+      return true;
+    }
+    await sleep(delayMs);
+  }
+  return false;
+}
+
+function isAdmin(auth) {
+  return Boolean(auth?.token?.admin === true);
+}
+
+function requireAuth(request) {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Usuário não autenticado.");
+  }
+}
+
+function requireAdmin(request) {
+  requireAuth(request);
+  if (!isAdmin(request.auth)) {
+    throw new HttpsError("permission-denied", "Apenas administradores.");
+  }
+}
+
+function getStoreId(data) {
+  if (typeof data?.storeId === "string" && data.storeId.trim().length > 0) {
+    return data.storeId.trim().toLowerCase();
+  }
+  return globalThis.process?.env?.DEFAULT_STORE_ID || "esdra-aromas";
+}
+
+function getMercadoPagoSandboxPayerConfig() {
+  if (PAYMENT_PROVIDER !== "mercadopago") {
+    return null;
+  }
+
+  const forceSandboxPayer = String(globalThis.process?.env?.MERCADOPAGO_SANDBOX_FORCE_PAYER || "")
+      .trim()
+      .toLowerCase() === "true";
+
+  if (!forceSandboxPayer) {
+    return null;
+  }
+
+  const email = String(globalThis.process?.env?.MERCADOPAGO_SANDBOX_PAYER_EMAIL || "")
+      .trim()
+      .toLowerCase();
+  const document = String(globalThis.process?.env?.MERCADOPAGO_SANDBOX_PAYER_DOCUMENT || "")
+      .replace(/\D/g, "")
+      .trim();
+  const firstName = String(globalThis.process?.env?.MERCADOPAGO_SANDBOX_PAYER_FIRST_NAME || "")
+      .trim();
+  const lastName = String(globalThis.process?.env?.MERCADOPAGO_SANDBOX_PAYER_LAST_NAME || "")
+      .trim();
+
+  if (!email || !document) {
+    throw new HttpsError(
+        "failed-precondition",
+        "Fallback sandbox habilitado sem MERCADOPAGO_SANDBOX_PAYER_EMAIL e MERCADOPAGO_SANDBOX_PAYER_DOCUMENT.",
+    );
+  }
+
+  return {
+    email,
+    document,
+    firstName,
+    lastName,
+  };
+}
+
+async function createMercadoPagoPaymentIntent({orderId, orderNumber, total, customer, paymentMethod}) {
+  const accessToken = globalThis.process?.env?.MERCADOPAGO_ACCESS_TOKEN;
+  if (!accessToken) {
+    throw new HttpsError("failed-precondition", "MERCADOPAGO_ACCESS_TOKEN não configurado.");
+  }
+
+  const idempotencyKey = `${orderId}-${Date.now()}`;
+  const notificationUrl = globalThis.process?.env?.PAYMENT_WEBHOOK_URL;
+  const [firstName, ...restName] = `${customer.firstName} ${customer.lastName}`.trim().split(" ");
+  const lastName = restName.join(" ").trim() || customer.lastName;
+  const normalizedMethod = paymentMethod === "pix" ? "pix" : "credit_card";
+
+  const payload = {
+    transaction_amount: Number(total.toFixed(2)),
+    description: `Pedido ${orderNumber}`,
+    payment_method_id: normalizedMethod,
+    external_reference: orderId,
+    notification_url: notificationUrl,
+    payer: {
+      email: customer.email,
+      first_name: firstName || customer.firstName,
+      last_name: lastName || customer.lastName,
+      identification: {
+        type: "CPF",
+        number: customer.document.replace(/\D/g, ""),
+      },
+    },
+    metadata: {
+      orderId,
+      orderNumber,
+    },
+  };
+
+  const response = await fetch("https://api.mercadopago.com/v1/payments", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+      "X-Idempotency-Key": idempotencyKey,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new HttpsError("internal", `Falha ao criar pagamento Mercado Pago: ${errorBody}`);
+  }
+
+  const body = await response.json();
+  const qrData = body?.point_of_interaction?.transaction_data || {};
+  const providerStatus = normalizeWebhookPaymentStatus(body.status);
+
+  return {
+    provider: "mercadopago",
+    providerPaymentId: String(body.id || ""),
+    providerStatus: body.status || "",
+    paymentStatus: providerStatus,
+    pixQrCode: qrData.qr_code || "",
+    pixQrCodeBase64: qrData.qr_code_base64 || "",
+    paymentUrl: qrData.ticket_url || "",
+    rawPayload: {
+      id: body.id,
+      status: body.status,
+      status_detail: body.status_detail,
+    },
+  };
+}
+
+function createManualPaymentIntent({orderId, paymentMethod}) {
+  return {
+    provider: "manual",
+    providerPaymentId: `manual_${orderId}`,
+    providerStatus: "pending",
+    paymentStatus: "pending",
+    paymentMethod,
+    instructions: "Pagamento pendente de confirmação via webhook/manual.",
+    rawPayload: {},
+  };
+}
+
+async function createPaymentIntent({orderId, orderNumber, total, customer, paymentMethod}) {
+  if (PAYMENT_PROVIDER === "mercadopago") {
+    return createMercadoPagoPaymentIntent({orderId, orderNumber, total, customer, paymentMethod});
+  }
+  return createManualPaymentIntent({orderId, paymentMethod});
+}
+
+async function queueTransactionalEmail({
+  lojaId,
+  orderId,
+  orderNumber,
+  type,
+  to,
+  customerName,
+  payload = {},
+}) {
+  if (!to) {
+    return;
+  }
+
+  const queueRef = db.collection(`lojas/${lojaId}/emailQueue`).doc();
+  await queueRef.set({
+    orderId,
+    orderNumber,
+    type,
+    to,
+    customerName,
+    payload,
+    provider: "pending",
+    status: "queued",
+    createdAt: FieldValue.serverTimestamp(),
+    updatedAt: FieldValue.serverTimestamp(),
+  });
+}
+
+function logInfo(message, payload) {
+  try {
+    logger.info(message, {structuredData: true, ...payload});
+  } catch (error) {
+    console.info("logInfo_fallback", message, payload, error?.message || error);
+  }
+}
+
+function logError(message, payload) {
+  try {
+    const safePayload = {...payload};
+    if (Object.prototype.hasOwnProperty.call(safePayload, "message")) {
+      safePayload.errorMessage = safePayload.message;
+      delete safePayload.message;
+    }
+    logger.error(message, {structuredData: true, ...safePayload});
+  } catch (error) {
+    console.error("logError_fallback", message, payload, error?.message || error);
+  }
+}
+
+async function generateOrderNumberTx(transaction, lojaId) {
+  const year = new Date().getFullYear();
+  const counterRef = db.doc(`lojas/${lojaId}/meta/orderCounter`);
+  const counterSnap = await transaction.get(counterRef);
+
+  let sequence = 1;
+  if (counterSnap.exists) {
+    const data = counterSnap.data();
+    const counterYear = Number(data.year || year);
+    const currentValue = Number(data.value || 0);
+    sequence = counterYear === year ? currentValue + 1 : 1;
+  }
+
+  transaction.set(counterRef, {
+    year,
+    value: sequence,
+    updatedAt: FieldValue.serverTimestamp(),
+  }, {merge: true});
+
+  return `ESD-${year}-${String(sequence).padStart(3, "0")}`;
+}
+
+async function resolveOrderItemsTx(transaction, lojaId, cartItems) {
+  const resolvedItems = [];
+  const inventoryUpdates = [];
+  let subtotal = 0;
+
+  for (const item of cartItems) {
+    const productRef = db.doc(`lojas/${lojaId}/products/${item.productId}`);
+    const inventoryRef = db.doc(`lojas/${lojaId}/products/${item.productId}/inventory/${item.size}`);
+
+    const [productSnap, inventorySnap] = await Promise.all([
+      transaction.get(productRef),
+      transaction.get(inventoryRef),
+    ]);
+
+    if (!productSnap.exists) {
+      throw new HttpsError("failed-precondition", `Produto ${item.productId} não encontrado.`);
+    }
+
+    if (!inventorySnap.exists) {
+      throw new HttpsError("failed-precondition", `Estoque não encontrado para ${item.productId}/${item.size}.`);
+    }
+
+    const productData = productSnap.data();
+    const inventoryData = inventorySnap.data();
+    const quantity = Number(inventoryData.quantity || 0);
+    const sold = Number(inventoryData.sold || 0);
+    const reserved = Number(inventoryData.reserved || 0);
+    const available = quantity - reserved;
+
+    if (available < item.quantity) {
+      throw new HttpsError("failed-precondition", `Estoque insuficiente para ${productData.name || item.productId}.`);
+    }
+
+    const unitPrice = item.type === "rent" ?
+      Number(productData.rentValue || 0) :
+      Number(productData.sellValue || 0);
+
+    if (unitPrice <= 0) {
+      throw new HttpsError("failed-precondition", `Preço inválido para ${productData.name || item.productId}.`);
+    }
+
+    inventoryUpdates.push({
+      inventoryRef,
+      quantity: quantity - item.quantity,
+      reserved: Math.max(0, reserved - item.quantity),
+      sold: sold + item.quantity,
+    });
+
+    const lineTotal = unitPrice * item.quantity;
+    subtotal += lineTotal;
+    resolvedItems.push({
+      productId: item.productId,
+      productCode: String(productData.code || ""),
+      sku: String(productData.sku || productData.code || ""),
+      productName: productData.name || "",
+      productImage: Array.isArray(productData.images) ?
+        String(productData.images[Number(productData.coverIndex || 0)] || productData.images[0] || "") :
+        "",
+      size: item.size,
+      quantity: item.quantity,
+      type: item.type,
+      unitPrice,
+      lineTotal,
+    });
+  }
+
+  return {resolvedItems, subtotal, inventoryUpdates};
+}
+
+export const createOrder = onCall(FUNCTION_CONFIG, async (request) => {
+  requireAuth(request);
+  const startedAt = Date.now();
+  const uid = request.auth.uid;
+  const requestId = request.rawRequest?.headers["x-cloud-trace-context"] || crypto.randomUUID();
+  const lojaId = getStoreId(request.data);
+
+  const cartItems = normalizeOrderItems(request.data?.cartItems);
+  const shippingAddress = validateShippingAddress(request.data?.shippingAddress);
+  const shipping = normalizeShippingAmount(request.data?.shippingAmount);
+  const paymentMethod = normalizePaymentMethod(String(request.data?.paymentMethod || ""));
+  const notes = String(request.data?.notes || "").trim();
+  const sandboxPayerConfig = getMercadoPagoSandboxPayerConfig();
+  const customerSnapshot = validateCustomerSnapshot(
+      request.data?.customer,
+      {allowMissingSensitiveFields: Boolean(sandboxPayerConfig)},
+  );
+  const idempotencyKey = String(request.data?.idempotencyKey || "").trim();
+
+  if (!idempotencyKey || idempotencyKey.length < 10) {
+    throw new HttpsError("invalid-argument", "idempotencyKey inválida.");
+  }
+
+  const idempotencyRef = db.doc(`lojas/${lojaId}/idempotency/${uid}_${idempotencyKey}`);
+
+  try {
+    const result = await db.runTransaction(async (transaction) => {
+      const idempotencySnap = await transaction.get(idempotencyRef);
+      if (idempotencySnap.exists) {
+        const previous = idempotencySnap.data();
+        return {
+          orderId: previous.orderId,
+          orderNumber: previous.orderNumber,
+          reusedOrderData: true,
+          reused: true,
+        };
+      }
+
+      const customerRef = db.doc(`lojas/${lojaId}/customers/${uid}`);
+      const customerSnap = await transaction.get(customerRef);
+      if (!customerSnap.exists) {
+        throw new HttpsError("failed-precondition", "Cliente não encontrado.");
+      }
+
+      const customer = customerSnap.data() || {};
+      const customerEmail = String(
+          sandboxPayerConfig?.email ||
+          customerSnapshot.email ||
+          customer.email ||
+          "",
+      ).trim().toLowerCase();
+      const customerFirstName = String(
+          customerSnapshot.firstName ||
+          customer.firstName ||
+          sandboxPayerConfig?.firstName ||
+          "Cliente",
+      ).trim();
+      const customerLastName = String(
+          customerSnapshot.lastName ||
+          customer.lastName ||
+          sandboxPayerConfig?.lastName ||
+          "Sandbox",
+      ).trim();
+      const customerPhone = customerSnapshot.phone || String(customer.phone || "").trim();
+      const customerDocument = String(
+          sandboxPayerConfig?.document ||
+          customerSnapshot.document ||
+          customer.document ||
+          "",
+      ).replace(/\D/g, "").trim();
+
+      if (!customerEmail || !customerDocument) {
+        throw new HttpsError("invalid-argument", "Email e documento do pagador são obrigatórios.");
+      }
+
+      const {resolvedItems, subtotal, inventoryUpdates} = await resolveOrderItemsTx(transaction, lojaId, cartItems);
+      const discount = 0;
+      const total = subtotal + shipping - discount;
+      const orderNumber = await generateOrderNumberTx(transaction, lojaId);
+      const orderRef = db.collection(`lojas/${lojaId}/orders`).doc();
+
+      const now = FieldValue.serverTimestamp();
+      transaction.set(orderRef, {
+        orderNumber,
+        customerId: uid,
+        customerEmail,
+        customerName: `${customerFirstName} ${customerLastName}`.trim(),
+        customerPhone,
+        customerDocument,
+        items: resolvedItems,
+        subtotal,
+        discount,
+        shipping,
+        total,
+        shippingAddress,
+        paymentMethod,
+        paymentStatus: "pending",
+        status: "pendente",
+        payment: {
+          provider: PAYMENT_PROVIDER,
+          providerPaymentId: "",
+          providerStatus: "pending",
+          updatedAt: now,
+        },
+        notes,
+        createdAt: now,
+        updatedAt: now,
+      });
+
+      const cartRef = db.doc(`lojas/${lojaId}/carts/${uid}`);
+      transaction.set(cartRef, {
+        items: [],
+        updatedAt: now,
+      }, {merge: true});
+
+      transaction.set(idempotencyRef, {
+        orderId: orderRef.id,
+        orderNumber,
+        uid,
+        createdAt: now,
+      });
+
+      for (const inventoryUpdate of inventoryUpdates) {
+        transaction.update(inventoryUpdate.inventoryRef, {
+          quantity: inventoryUpdate.quantity,
+          reserved: inventoryUpdate.reserved,
+          sold: inventoryUpdate.sold,
+          lastUpdated: FieldValue.serverTimestamp(),
+        });
+      }
+
+      return {
+        orderId: orderRef.id,
+        orderNumber,
+        total,
+        customer: {
+          firstName: customerFirstName,
+          lastName: customerLastName,
+          email: customerEmail,
+          phone: customerPhone,
+          document: customerDocument,
+        },
+        reused: false,
+      };
+    });
+
+    const orderRef = db.doc(`lojas/${lojaId}/orders/${result.orderId}`);
+    const orderSnap = await orderRef.get();
+    if (!orderSnap.exists) {
+      throw new HttpsError("internal", "Pedido não encontrado após criação.");
+    }
+    const orderData = orderSnap.data();
+    const shouldCreatePaymentIntent = !orderData?.payment?.providerPaymentId || !result.reused;
+
+    let paymentIntentData = orderData?.payment || null;
+    if (shouldCreatePaymentIntent) {
+      paymentIntentData = await createPaymentIntent({
+        orderId: result.orderId,
+        orderNumber: result.orderNumber,
+        total: Number(orderData.total || result.total || 0),
+        customer: result.customer || {
+          firstName: String(orderData.customerName || "").split(" ")[0] || "",
+          lastName: String(orderData.customerName || "").split(" ").slice(1).join(" "),
+          email: orderData.customerEmail || "",
+          phone: orderData.customerPhone || "",
+          document: orderData.customerDocument || "",
+        },
+        paymentMethod,
+      });
+
+      await orderRef.set({
+        paymentStatus: paymentIntentData.paymentStatus,
+        status: mapPaymentStatusToOrderStatus(paymentIntentData.paymentStatus, orderData.status),
+        payment: {
+          provider: paymentIntentData.provider,
+          providerPaymentId: paymentIntentData.providerPaymentId,
+          providerStatus: paymentIntentData.providerStatus,
+          paymentUrl: paymentIntentData.paymentUrl || "",
+          pixQrCode: paymentIntentData.pixQrCode || "",
+          pixQrCodeBase64: paymentIntentData.pixQrCodeBase64 || "",
+          rawPayload: paymentIntentData.rawPayload || {},
+          updatedAt: FieldValue.serverTimestamp(),
+        },
+        updatedAt: FieldValue.serverTimestamp(),
+      }, {merge: true});
+
+      if (!result.reused) {
+        await queueTransactionalEmail({
+          lojaId,
+          orderId: result.orderId,
+          orderNumber: result.orderNumber,
+          type: "order_confirmation",
+          to: orderData.customerEmail,
+          customerName: orderData.customerName,
+          payload: {
+            total: orderData.total,
+            paymentMethod: orderData.paymentMethod,
+          },
+        });
+      }
+    }
+
+    logInfo("createOrder_success", {
+      requestId,
+      uid,
+      lojaId,
+      orderId: result.orderId,
+      orderNumber: result.orderNumber,
+      reused: result.reused,
+      durationMs: Date.now() - startedAt,
+    });
+
+    return {
+      orderId: result.orderId,
+      orderNumber: result.orderNumber,
+      reused: result.reused,
+      payment: paymentIntentData,
+    };
+  } catch (error) {
+    logError("createOrder_error", {
+      requestId,
+      uid,
+      lojaId,
+      message: error.message,
+      code: error.code || "internal",
+      durationMs: Date.now() - startedAt,
+    });
+    if (error instanceof HttpsError) {
+      throw error;
+    }
+    throw new HttpsError("internal", "Erro ao processar pedido.");
+  }
+});
+
+export const paymentWebhook = onRequest(FUNCTION_CONFIG, async (request, response) => {
+  if (request.method === "GET" || request.method === "HEAD") {
+    response.status(200).json({ok: true, message: "paymentWebhook online"});
+    return;
+  }
+
+  if (request.method !== "POST") {
+    response.status(405).json({error: "method_not_allowed"});
+    return;
+  }
+
+  try {
+    const expectedSecret = globalThis.process?.env?.PAYMENT_WEBHOOK_SECRET || "";
+    if (expectedSecret) {
+      const receivedSecret = String(request.headers["x-webhook-secret"] || "");
+      if (!receivedSecret || receivedSecret !== expectedSecret) {
+        response.status(401).json({error: "invalid webhook secret"});
+        return;
+      }
+    }
+
+    const payload = request.body || {};
+    const orderId = String(
+      payload?.external_reference ||
+      payload?.metadata?.orderId ||
+      payload?.data?.orderId ||
+      ""
+    ).trim();
+    const storeId = getStoreId(payload);
+    if (!orderId) {
+      response.status(200).json({received: true});
+      return;
+    }
+
+    const providerPaymentId = String(payload?.id || payload?.data?.id || "").trim();
+    const paymentStatus = normalizeWebhookPaymentStatus(payload?.status || payload?.data?.status);
+    const orderRef = db.doc(`lojas/${storeId}/orders/${orderId}`);
+    const orderSnap = await orderRef.get();
+    if (!orderSnap.exists) {
+      response.status(404).json({error: "order not found"});
+      return;
+    }
+
+    const orderData = orderSnap.data() || {};
+    const nextStatus = mapPaymentStatusToOrderStatus(paymentStatus, orderData.status);
+
+    await orderRef.set({
+      paymentStatus,
+      status: nextStatus,
+      payment: {
+        provider: orderData.payment?.provider || PAYMENT_PROVIDER,
+        providerPaymentId: providerPaymentId || orderData.payment?.providerPaymentId || "",
+        providerStatus: String(payload?.status || ""),
+        rawPayload: payload,
+        updatedAt: FieldValue.serverTimestamp(),
+      },
+      updatedAt: FieldValue.serverTimestamp(),
+    }, {merge: true});
+
+    if (paymentStatus === "paid") {
+      await queueTransactionalEmail({
+        lojaId: storeId,
+        orderId,
+        orderNumber: orderData.orderNumber || "",
+        type: "payment_approved",
+        to: orderData.customerEmail || "",
+        customerName: orderData.customerName || "",
+        payload: {
+          total: orderData.total,
+          paymentMethod: orderData.paymentMethod,
+        },
+      });
+    }
+
+    response.status(200).json({ok: true});
+  } catch (error) {
+    logger.error("paymentWebhook_error", {
+      structuredData: true,
+      message: error.message,
+      stack: error.stack,
+      code: error.code || "internal",
+    });
+    response.status(500).json({error: "internal"});
+  }
+});
+
+export const updateOrderStatusByAdmin = onCall(FUNCTION_CONFIG, async (request) => {
+  requireAdmin(request);
+
+  const orderId = String(request.data?.orderId || "").trim();
+  const lojaId = getStoreId(request.data);
+  const nextStatus = String(request.data?.status || "").trim().toLowerCase();
+  const paymentStatus = String(request.data?.paymentStatus || "").trim().toLowerCase();
+  const adminNotes = String(request.data?.adminNotes || "").trim();
+
+  if (!orderId) {
+    throw new HttpsError("invalid-argument", "orderId é obrigatório.");
+  }
+
+  if (!ALLOWED_ORDER_STATUS.has(nextStatus)) {
+    throw new HttpsError("invalid-argument", "Status do pedido inválido.");
+  }
+
+  if (paymentStatus && !ALLOWED_PAYMENT_STATUS.has(paymentStatus)) {
+    throw new HttpsError("invalid-argument", "Status de pagamento inválido.");
+  }
+
+  const orderRef = db.doc(`lojas/${lojaId}/orders/${orderId}`);
+  const orderSnap = await orderRef.get();
+  if (!orderSnap.exists) {
+    throw new HttpsError("not-found", "Pedido não encontrado.");
+  }
+
+  const updateData = {
+    status: nextStatus,
+    updatedAt: FieldValue.serverTimestamp(),
+  };
+  if (paymentStatus) {
+    updateData.paymentStatus = paymentStatus;
+  }
+  if (adminNotes) {
+    updateData.adminNotes = adminNotes;
+  }
+
+  await orderRef.set(updateData, {merge: true});
+  const orderData = orderSnap.data() || {};
+
+  if (nextStatus === "pago" || paymentStatus === "paid") {
+    await queueTransactionalEmail({
+      lojaId,
+      orderId,
+      orderNumber: orderData.orderNumber || "",
+      type: "payment_approved",
+      to: orderData.customerEmail || "",
+      customerName: orderData.customerName || "",
+      payload: {
+        total: orderData.total,
+        paymentMethod: orderData.paymentMethod,
+      },
+    });
+  }
+
+  return {ok: true};
+});
+
+function validateFilesMetadata(filesMeta) {
+  if (!Array.isArray(filesMeta) || filesMeta.length === 0) {
+    throw new HttpsError("invalid-argument", "filesMeta inválido.");
+  }
+
+  return filesMeta.map((fileMeta) => {
+    const kind = String(fileMeta.kind || "").trim();
+    const contentType = normalizeMimeType(fileMeta.contentType);
+    const size = Number(fileMeta.size || 0);
+    const extension = String(fileMeta.extension || "").trim().toLowerCase();
+
+    if (!["image", "video"].includes(kind) || !contentType || !Number.isFinite(size) || size <= 0) {
+      throw new HttpsError("invalid-argument", "Metadados de arquivo inválidos.");
+    }
+
+    if (kind === "image" && (!ALLOWED_IMAGE_TYPES.has(contentType) || size > MAX_IMAGE_SIZE_BYTES)) {
+      throw new HttpsError("invalid-argument", "Imagem fora da política.");
+    }
+
+    if (kind === "video" && (!ALLOWED_VIDEO_TYPES.has(contentType) || size > MAX_VIDEO_SIZE_BYTES)) {
+      throw new HttpsError("invalid-argument", "Vídeo fora da política.");
+    }
+
+    return {kind, contentType, size, extension};
+  });
+}
+
+export const createUploadSession = onCall(FUNCTION_CONFIG, async (request) => {
+  requireAdmin(request);
+  const uid = request.auth.uid;
+  const requestId = request.rawRequest?.headers["x-cloud-trace-context"] || crypto.randomUUID();
+
+  try {
+    const lojaId = getStoreId(request.data);
+    const productId = String(request.data?.productId || "").trim();
+    const filesMeta = validateFilesMetadata(request.data?.filesMeta);
+
+    if (!productId) {
+      throw new HttpsError("invalid-argument", "productId é obrigatório.");
+    }
+
+    const bucket = storage.bucket();
+    const expires = Date.now() + 15 * 60 * 1000;
+    const uploads = [];
+
+    for (const fileMeta of filesMeta) {
+      const objectKey = `lojas/${lojaId}/produtos/${productId}/${fileMeta.kind === "image" ? "imagens" : "videos"}/${crypto.randomUUID()}.${fileMeta.extension || "bin"}`;
+      const file = bucket.file(objectKey);
+      const [signedUrl] = await file.getSignedUrl({
+        version: "v4",
+        action: "write",
+        expires,
+        contentType: fileMeta.contentType,
+      });
+
+      uploads.push({
+        kind: fileMeta.kind,
+        objectKey,
+        signedUrl,
+        contentType: fileMeta.contentType,
+        size: fileMeta.size,
+        expiresAt: expires,
+      });
+    }
+
+    logInfo("createUploadSession_success", {
+      requestId,
+      uid,
+      lojaId,
+      productId,
+      filesCount: uploads.length,
+    });
+
+    return {uploads};
+  } catch (error) {
+    logError("createUploadSession_error", {
+      requestId,
+      uid: request.auth?.uid,
+      message: error.message,
+      stack: error.stack,
+      code: error.code,
+    });
+    if (error instanceof HttpsError) {
+      throw error;
+    }
+    const detail = error && error.message ? String(error.message).trim() : "Erro desconhecido";
+    const hint =
+      /signBlob|signblob|Token Creator|iam\.serviceaccounts/i.test(detail) ?
+        " No GCP: conceda roles/iam.serviceAccountTokenCreator à conta que roda a função " +
+        "(ex.: default compute) sobre ela mesma e, se necessário, sobre " +
+        "service-<PROJECT_NUMBER>@gs-project-accounts.iam.gserviceaccount.com." :
+        "";
+    throw new HttpsError(
+        "failed-precondition",
+        `createUploadSession: ${detail.slice(0, 450)}${hint}`.slice(0, 500),
+    );
+  }
+});
+
+async function toDownloadUrl(file) {
+  const [metadata] = await file.getMetadata();
+  const token = metadata.metadata?.firebaseStorageDownloadTokens || crypto.randomUUID();
+  if (!metadata.metadata?.firebaseStorageDownloadTokens) {
+    try {
+      await file.setMetadata({
+        metadata: {
+          firebaseStorageDownloadTokens: token,
+        },
+      });
+    } catch (metaErr) {
+      logError("toDownloadUrl_setMetadata_failed", {
+        objectName: file.name,
+        message: metaErr.message,
+      });
+      throw metaErr;
+    }
+  }
+  const bucketName = file.bucket.name;
+  const encodedPath = encodeURIComponent(file.name);
+  return `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodedPath}?alt=media&token=${token}`;
+}
+
+export const commitMedia = onCall(FUNCTION_CONFIG, async (request) => {
+  requireAdmin(request);
+  const uid = request.auth.uid;
+  const requestId = request.rawRequest?.headers["x-cloud-trace-context"] || crypto.randomUUID();
+
+  try {
+    const lojaId = getStoreId(request.data);
+    const productId = String(request.data?.productId || "").trim();
+    const uploadedObjects = Array.isArray(request.data?.uploadedObjects) ? request.data.uploadedObjects : [];
+    const keepExistingImageUrls = Array.isArray(request.data?.keepExistingImageUrls) ? request.data.keepExistingImageUrls : [];
+    const removedImageUrls = Array.isArray(request.data?.removedImageUrls) ? request.data.removedImageUrls : [];
+    const replaceVideo = Boolean(request.data?.replaceVideo);
+    const removeVideo = Boolean(request.data?.removeVideo);
+    const oldVideoUrl = request.data?.oldVideoUrl ? String(request.data.oldVideoUrl) : "";
+
+    if (!productId) {
+      throw new HttpsError("invalid-argument", "productId é obrigatório.");
+    }
+
+    const bucket = storage.bucket();
+    const images = [];
+    let videoUrl = null;
+
+    for (const object of uploadedObjects) {
+      const objectKey = String(object.objectKey || "").trim();
+      const kind = String(object.kind || "").trim();
+      if (!objectKey || !["image", "video"].includes(kind)) {
+        throw new HttpsError("invalid-argument", "uploadedObjects inválido.");
+      }
+
+      const expectedPrefix = `lojas/${lojaId}/produtos/${productId}/`;
+      if (!objectKey.startsWith(expectedPrefix)) {
+        throw new HttpsError("permission-denied", "Objeto fora do escopo permitido.");
+      }
+
+      const file = bucket.file(objectKey);
+      const visible = await waitForStorageObject(file);
+      if (!visible) {
+        throw new HttpsError(
+            "failed-precondition",
+            "O arquivo ainda não apareceu no Storage após o upload. Tente salvar novamente.",
+        );
+      }
+
+      const [metadata] = await file.getMetadata();
+      const contentType = normalizeMimeType(metadata.contentType || "");
+      const size = Number(metadata.size || 0);
+
+      if (kind === "image" && (!ALLOWED_IMAGE_TYPES.has(contentType) || size > MAX_IMAGE_SIZE_BYTES)) {
+        throw new HttpsError(
+            "failed-precondition",
+            `Tipo ou tamanho de imagem inválido (recebido: ${contentType || "vazio"}). Use JPEG, PNG ou WebP.`,
+        );
+      }
+      if (kind === "video" && (!ALLOWED_VIDEO_TYPES.has(contentType) || size > MAX_VIDEO_SIZE_BYTES)) {
+        throw new HttpsError(
+            "failed-precondition",
+            `Tipo ou tamanho de vídeo inválido (recebido: ${contentType || "vazio"}).`,
+        );
+      }
+
+      const downloadUrl = await toDownloadUrl(file);
+      if (kind === "image") {
+        images.push(downloadUrl);
+      } else {
+        videoUrl = downloadUrl;
+      }
+    }
+
+    const productRef = db.doc(`lojas/${lojaId}/products/${productId}`);
+    const finalImages = [...keepExistingImageUrls, ...images];
+    const updatePayload = {
+      images: finalImages,
+      lastModified: FieldValue.serverTimestamp(),
+    };
+
+    if (replaceVideo) {
+      updatePayload.video = videoUrl;
+    } else if (removeVideo) {
+      updatePayload.video = null;
+    }
+
+    await productRef.set(updatePayload, {merge: true});
+
+    const toDelete = [...removedImageUrls];
+    if ((replaceVideo || removeVideo) && oldVideoUrl) {
+      toDelete.push(oldVideoUrl);
+    }
+
+    for (const mediaUrl of toDelete) {
+      try {
+        const decoded = decodeURIComponent(mediaUrl);
+        const pathMatch = decoded.match(/\/o\/([^?]+)/);
+        if (!pathMatch || !pathMatch[1]) {
+          continue;
+        }
+        const filePath = pathMatch[1];
+        if (!filePath.startsWith(`lojas/${lojaId}/produtos/${productId}/`)) {
+          continue;
+        }
+        await bucket.file(filePath).delete({ignoreNotFound: true});
+      } catch (error) {
+        logError("commitMedia_delete_old_media_failed", {
+          uid,
+          lojaId,
+          productId,
+          mediaUrl,
+          message: error.message,
+        });
+      }
+    }
+
+    logInfo("commitMedia_success", {
+      requestId,
+      uid,
+      lojaId,
+      productId,
+      imagesCount: finalImages.length,
+      hasVideo: Boolean(updatePayload.video),
+    });
+
+    return {
+      images: finalImages,
+      video: updatePayload.video ?? null,
+    };
+  } catch (error) {
+    logError("commitMedia_error", {
+      requestId,
+      uid: request.auth?.uid,
+      message: error.message,
+      stack: error.stack,
+      code: error.code,
+    });
+    if (error instanceof HttpsError) {
+      throw error;
+    }
+    throw new HttpsError(
+        "internal",
+        "Erro ao confirmar mídia. Veja os logs da função commitMedia no Firebase Console.",
+    );
+  }
+});
+
+export const deleteMedia = onCall(FUNCTION_CONFIG, async (request) => {
+  requireAdmin(request);
+  const lojaId = getStoreId(request.data);
+  const productId = String(request.data?.productId || "").trim();
+  const mediaUrls = Array.isArray(request.data?.mediaUrls) ? request.data.mediaUrls : [];
+  const objectKeys = Array.isArray(request.data?.objectKeys) ? request.data.objectKeys : [];
+  const bucket = storage.bucket();
+
+  if (!productId || (mediaUrls.length === 0 && objectKeys.length === 0)) {
+    throw new HttpsError("invalid-argument", "Parâmetros inválidos para remoção.");
+  }
+
+  let deletedCount = 0;
+  const expectedPrefix = `lojas/${lojaId}/produtos/${productId}/`;
+
+  for (const objectKeyRaw of objectKeys) {
+    const objectKey = String(objectKeyRaw || "").trim();
+    if (!objectKey || !objectKey.startsWith(expectedPrefix)) {
+      continue;
+    }
+    await bucket.file(objectKey).delete({ignoreNotFound: true});
+    deletedCount += 1;
+  }
+
+  for (const mediaUrl of mediaUrls) {
+    const decoded = decodeURIComponent(String(mediaUrl || ""));
+    const pathMatch = decoded.match(/\/o\/([^?]+)/);
+    if (!pathMatch || !pathMatch[1]) {
+      continue;
+    }
+    const filePath = pathMatch[1];
+    if (!filePath.startsWith(expectedPrefix)) {
+      continue;
+    }
+    await bucket.file(filePath).delete({ignoreNotFound: true});
+    deletedCount += 1;
+  }
+
+  logInfo("deleteMedia_success", {
+    uid: request.auth.uid,
+    lojaId,
+    productId,
+    deletedCount,
+  });
+
+  return {deletedCount};
+});

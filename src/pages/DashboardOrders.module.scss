@@ -1,0 +1,103 @@
+@use "../App.scss" as *;
+@use "../styles/variables" as vars;
+@use "../styles/tokens" as *;
+
+.ordersAdmin {
+    width: 95%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: vars.$padding-2xl 0 vars.$padding-4xl;
+}
+
+.header {
+    margin-bottom: vars.$margin-3xl;
+
+    h1 {
+        font-size: $font-size-6xl;
+        color: $text-primary;
+        margin: 0 0 vars.$margin-sm;
+    }
+
+    p {
+        margin: 0;
+        color: $text-quinary;
+        font-family: $defaultFont;
+    }
+}
+
+.feedback {
+    margin-bottom: vars.$margin-2xl;
+    padding: vars.$padding-lg;
+    border: vars.$border-width-thin solid $border-color;
+    border-radius: vars.$radius-sm;
+    background: $background-even;
+    color: $text-primary;
+    font-family: $defaultFont;
+}
+
+.emptyState {
+    padding: vars.$padding-3xl;
+    text-align: center;
+    border: vars.$border-width-thin solid $border-color;
+    border-radius: vars.$radius-sm;
+    color: $text-quinary;
+    background: $background-color;
+}
+
+.tableWrapper {
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: $defaultFont;
+
+    th,
+    td {
+        padding: vars.$padding-lg vars.$padding-md;
+        border-bottom: vars.$border-width-thin solid $border-color;
+        text-align: left;
+        vertical-align: middle;
+    }
+
+    th {
+        color: $text-primary;
+        font-weight: $font-weight-semibold;
+        background: $background-even;
+    }
+
+    select,
+    input {
+        width: 100%;
+        min-width: 120px;
+        border: vars.$border-width-thin solid $border-color;
+        border-radius: vars.$radius-xs;
+        padding: vars.$padding-sm vars.$padding-md;
+        font-family: $defaultFont;
+        color: $text-primary;
+        background: $background-color;
+    }
+
+    button {
+        @include defaultButton(0.5rem, 1rem);
+        background-color: $primary-color;
+        color: $text-primary;
+
+        &:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+    }
+}
+
+.loading {
+    width: 95%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: vars.$padding-3xl 0;
+    text-align: center;
+    color: $text-primary;
+    font-family: $defaultFont;
+}
+

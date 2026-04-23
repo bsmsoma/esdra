@@ -1,0 +1,136 @@
+@use "../App.scss" as *;
+@use "../styles/variables" as vars;
+@use "../styles/tokens" as *;
+
+.success {
+    padding: vars.$padding-4xl vars.$padding-3xl;
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.successIcon {
+    width: 80px;
+    height: 80px;
+    border-radius: vars.$radius-full;
+    background: $status-success;
+    color: $button-primary-text;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: $font-size-10xl;
+    font-family: $defaultFont;
+    margin: 0 auto vars.$margin-5xl;
+}
+
+.title {
+    font-size: $font-size-9xl;
+    font-family: $defaultFont;
+    margin-bottom: vars.$margin-xl;
+    font-weight: $font-weight-semibold;
+    color: $text-primary;
+}
+
+.message {
+    font-size: $font-size-3xl;
+    font-family: $defaultFont;
+    color: $text-quinary;
+    margin-bottom: vars.$padding-3xl;
+}
+
+.orderInfo {
+    background: $background-color;
+    padding: vars.$padding-3xl;
+    border-radius: vars.$radius-md;
+    border: vars.$border-width-thin solid $border-color;
+    margin-bottom: vars.$margin-5xl;
+    text-align: left;
+
+    h2 {
+        font-size: $font-size-6xl;
+        font-family: $defaultFont;
+        margin-bottom: vars.$margin-4xl;
+        text-align: center;
+        color: $text-primary;
+    }
+}
+
+.orderNumber,
+.orderStatus,
+.orderTotal {
+    margin: vars.$margin-xl 0;
+    font-size: $font-size-3xl;
+    font-family: $defaultFont;
+    color: $text-primary;
+}
+
+.statusBadge {
+    padding: vars.$padding-xs vars.$padding-lg;
+    background: $background-secondary;
+    border-radius: vars.$radius-2xl;
+    font-family: $defaultFont;
+    text-transform: capitalize;
+    color: $text-primary;
+}
+
+.actions {
+    display: flex;
+    gap: vars.$gap-xl;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.primaryButton,
+.secondaryButton {
+    padding: vars.$padding-xl vars.$padding-3xl;
+    border-radius: vars.$radius-xs;
+    text-decoration: none;
+    font-family: $clashGroteskSemibold;
+    font-weight: $font-weight-semibold;
+    font-size: $font-size-2xl;
+    transition: all vars.$transition-base vars.$ease-base;
+}
+
+.primaryButton {
+    background: $button-primary-bg;
+    color: $button-primary-text;
+
+    &:hover {
+        background: $button-primary-hover;
+    }
+}
+
+.secondaryButton {
+    background: $background-color;
+    color: $text-primary;
+    border: vars.$border-width-base solid $border-color-active;
+
+    &:hover {
+        background: $background-hover;
+    }
+}
+
+.loading {
+    text-align: center;
+    padding: vars.$padding-3xl;
+    font-size: $font-size-4xl;
+    font-family: $defaultFont;
+    color: $text-primary;
+}
+
+.link {
+    display: inline-block;
+    margin-top: vars.$margin-5xl;
+    padding: vars.$padding-xl vars.$padding-3xl;
+    background: $button-primary-bg;
+    color: $button-primary-text;
+    text-decoration: none;
+    border-radius: vars.$radius-xs;
+    font-family: $clashGroteskSemibold;
+    font-size: $font-size-2xl;
+    transition: background vars.$transition-base vars.$ease-base;
+
+    &:hover {
+        background: $button-primary-hover;
+    }
+}

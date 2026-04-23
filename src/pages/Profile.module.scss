@@ -1,0 +1,100 @@
+@use "../App.scss" as *;
+@use "../styles/variables" as vars;
+@use "../styles/tokens" as *;
+
+.profile {
+    padding: vars.$padding-3xl 0;
+}
+
+.title {
+    font-size: $font-size-5xl;
+    font-family: $defaultFont;
+    margin-bottom: vars.$margin-5xl;
+    font-weight: $font-weight-semibold;
+    color: $text-primary;
+}
+
+.form {
+    max-width: 600px;
+    background: $background-color;
+    padding: vars.$padding-3xl;
+    border-radius: vars.$radius-md;
+    border: vars.$border-width-thin solid $border-color;
+}
+
+.formGroup {
+    margin-bottom: vars.$margin-4xl;
+
+    label {
+        display: block;
+        margin-bottom: vars.$margin-md;
+        font-family: $defaultFont;
+        font-weight: $font-weight-medium;
+        color: $text-accent;
+    }
+
+    .input {
+        width: 100%;
+        padding: vars.$padding-lg;
+        border: vars.$border-width-thin solid $border-color;
+        border-radius: vars.$radius-xs;
+        font-size: $font-size-2xl;
+        font-family: $defaultFont;
+        color: $text-primary;
+
+        &:disabled,
+        &:read-only {
+            background: $background-secondary;
+            cursor: not-allowed;
+        }
+
+        &:focus {
+            outline: none;
+            border-color: $border-color-active;
+        }
+    }
+
+    .helpText {
+        margin-top: vars.$margin-xs;
+        font-size: $font-size-lg;
+        font-family: $defaultFont;
+        color: $text-quinary;
+    }
+}
+
+.submitButton {
+    padding: vars.$padding-lg vars.$padding-3xl;
+    background: $button-primary-bg;
+    color: $button-primary-text;
+    border: none;
+    border-radius: vars.$radius-xs;
+    font-size: $font-size-2xl;
+    font-family: $clashGroteskSemibold;
+    cursor: pointer;
+    transition: background vars.$transition-base vars.$ease-base;
+
+    &:hover {
+        background: $button-primary-hover;
+    }
+}
+
+.errorMessage {
+    padding: vars.$padding-xl;
+    background: $status-error;
+    color: $text-error;
+    font-family: $defaultFont;
+    border-radius: vars.$radius-xs;
+    margin-bottom: vars.$margin-4xl;
+}
+
+.loading,
+.error {
+    text-align: center;
+    padding: vars.$padding-3xl;
+    font-size: $font-size-4xl;
+    font-family: $defaultFont;
+}
+
+.error {
+    color: $status-error;
+}

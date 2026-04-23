@@ -1,0 +1,43 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+
+    function isValidImage() {
+      return request.resource != null &&
+        request.resource.size < 8 * 1024 * 1024 &&
+        request.resource.contentType.matches("image/(jpeg|png|webp)");
+    }
+
+    function isValidVideo() {
+      return request.resource != null &&
+        request.resource.size < 50 * 1024 * 1024 &&
+        request.resource.contentType.matches("video/(mp4|webm|quicktime)");
+    }
+
+    // Product images: only admin can write (prevents fraud/overwrite)
+    match /lojas/{lojaId}/produtos/{productId}/imagens/{fileName} {
+      allow read: if false;
+      allow create: if isAdmin() && resource == null && isValidImage();
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+    
+    // Product videos: only admin can write
+    match /lojas/{lojaId}/produtos/{productId}/videos/{fileName} {
+      allow read: if false;
+      allow create: if isAdmin() && resource == null && isValidVideo();
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+    
+    // Default: deny write to prevent arbitrary uploads by any authenticated user
+    match /{allPaths=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+  }
+}

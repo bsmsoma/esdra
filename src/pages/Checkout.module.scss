@@ -1,0 +1,327 @@
+@use "../App.scss" as *;
+@use "../styles/variables" as vars;
+@use "../styles/tokens" as *;
+
+.checkout {
+    padding: vars.$padding-3xl vars.$padding-xl;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.title {
+    font-size: $font-size-8xl;
+    font-family: $defaultFont;
+    margin-bottom: vars.$margin-5xl;
+    font-weight: $font-weight-semibold;
+    color: $text-primary;
+}
+
+.errorMessage {
+    padding: vars.$padding-xl;
+    background: $status-error-surface;
+    color: $status-error-text;
+    border: vars.$border-width-thin solid $status-error-border;
+    font-family: $defaultFont;
+    border-radius: vars.$radius-md;
+    margin-bottom: vars.$margin-5xl;
+
+    a {
+        color: inherit;
+        font-weight: $font-weight-semibold;
+        text-decoration: underline;
+    }
+}
+
+.checkoutContainer {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: vars.$gap-3xl;
+
+    @media (max-width: vars.$breakpoint-desktop) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.leftSection {
+    display: flex;
+    flex-direction: column;
+    gap: vars.$gap-3xl;
+}
+
+.section {
+    background: $background-color;
+    padding: vars.$padding-3xl;
+    border-radius: vars.$radius-md;
+    border: vars.$border-width-thin solid $border-color;
+}
+
+.sectionTitle {
+    font-size: $font-size-6xl;
+    font-family: $defaultFont;
+    margin-bottom: vars.$margin-4xl;
+    font-weight: $font-weight-semibold;
+    color: $text-primary;
+}
+
+.addressesList {
+    display: flex;
+    flex-direction: column;
+    gap: vars.$gap-xl;
+}
+
+.addressOption {
+    display: flex;
+    gap: vars.$gap-xl;
+    padding: vars.$padding-xl;
+    border: vars.$border-width-base solid $border-color;
+    border-radius: vars.$radius-md;
+    cursor: pointer;
+    transition: all vars.$transition-base vars.$ease-base;
+
+    &:hover {
+        border-color: $border-color-secondary;
+    }
+
+    &:focus-within {
+        border-color: $border-color-accent;
+        box-shadow: 0 0 0 3px $accent-brand-purple-muted;
+    }
+
+    &.selected {
+        border-color: $border-color-active;
+        background: $background-even;
+    }
+
+    input[type="radio"] {
+        margin-top: vars.$margin-xs;
+    }
+}
+
+.addressContent {
+    flex: 1;
+}
+
+.addressHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: vars.$margin-md;
+}
+
+.defaultBadge {
+    padding: vars.$padding-xs vars.$padding-lg;
+    background: $button-primary-bg;
+    color: $button-primary-text;
+    border-radius: vars.$radius-2xl;
+    font-size: $font-size-sm;
+    font-family: $defaultFont;
+}
+
+.addressContent p {
+    margin: vars.$margin-xs 0;
+    font-family: $defaultFont;
+    color: $text-quinary;
+    font-size: $font-size-xl;
+}
+
+.addAddressLink {
+    display: inline-block;
+    margin-top: vars.$margin-xl;
+    font-family: $defaultFont;
+    color: $text-primary;
+    text-decoration: underline;
+    border-radius: vars.$radius-sm;
+
+    &:hover {
+        color: $button-primary-hover;
+    }
+
+    @include focus-visible-ring;
+}
+
+.noAddresses {
+    text-align: center;
+    padding: vars.$padding-3xl;
+
+    p {
+        margin-bottom: vars.$margin-xl;
+        font-family: $defaultFont;
+        color: $text-quinary;
+    }
+}
+
+.addAddressButton {
+    display: inline-block;
+    padding: vars.$padding-lg vars.$padding-4xl;
+    background: $button-primary-bg;
+    color: $button-primary-text;
+    text-decoration: none;
+    border-radius: vars.$radius-md;
+    font-family: $clashGroteskSemibold;
+    font-size: $font-size-2xl;
+    transition: background vars.$transition-base vars.$ease-base;
+
+    &:hover {
+        background: $button-primary-hover;
+    }
+
+    @include focus-visible-ring;
+}
+
+.paymentMethods {
+    display: flex;
+    flex-direction: column;
+    gap: vars.$gap-xl;
+}
+
+.paymentOption {
+    display: flex;
+    align-items: center;
+    gap: vars.$gap-lg;
+    padding: vars.$padding-xl;
+    border: vars.$border-width-base solid $border-color;
+    border-radius: vars.$radius-md;
+    cursor: pointer;
+    transition: all vars.$transition-base vars.$ease-base;
+
+    &:hover {
+        border-color: $border-color-secondary;
+    }
+
+    &:focus-within {
+        border-color: $border-color-accent;
+        box-shadow: 0 0 0 3px $accent-brand-purple-muted;
+    }
+
+    input[type="radio"]:checked + span {
+        font-weight: $font-weight-semibold;
+    }
+
+    &:has(input[type="radio"]:checked) {
+        border-color: $border-color-active;
+        background: $background-even;
+    }
+}
+
+.notesInput {
+    width: 100%;
+    padding: vars.$padding-lg;
+    border: vars.$border-width-thin solid $border-color;
+    border-radius: vars.$radius-md;
+    font-size: $font-size-2xl;
+    font-family: $defaultFont;
+    color: $text-primary;
+    resize: vertical;
+    transition:
+        border-color vars.$transition-base vars.$ease-base,
+        box-shadow vars.$transition-base vars.$ease-base;
+
+    @include focus-visible-input;
+}
+
+.rightSection {
+    position: sticky;
+    top: vars.$margin-3xl;
+    height: fit-content;
+}
+
+.orderSummary {
+    background: $background-color;
+    padding: vars.$padding-3xl;
+    border-radius: vars.$radius-md;
+    border: vars.$border-width-thin solid $border-color;
+}
+
+.summaryTitle {
+    font-size: $font-size-6xl;
+    font-family: $defaultFont;
+    margin-bottom: vars.$margin-4xl;
+    font-weight: $font-weight-semibold;
+    color: $text-primary;
+}
+
+.summaryItems {
+    display: flex;
+    flex-direction: column;
+    gap: vars.$gap-xl;
+    margin-bottom: vars.$margin-4xl;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.summaryItem {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: vars.$padding-xl;
+    border-bottom: vars.$border-width-thin solid $border-color;
+}
+
+.itemInfo {
+    flex: 1;
+}
+
+.itemName {
+    font-family: $defaultFont;
+    font-weight: $font-weight-semibold;
+    margin-bottom: vars.$margin-xs;
+    color: $text-primary;
+}
+
+.itemDetails {
+    font-size: $font-size-lg;
+    font-family: $defaultFont;
+    color: $text-quinary;
+    margin: 0;
+}
+
+.itemPrice {
+    font-family: $defaultFont;
+    font-weight: $font-weight-semibold;
+    color: $text-primary;
+}
+
+.summaryTotals {
+    margin-top: vars.$margin-4xl;
+}
+
+.summaryRow {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: vars.$margin-lg;
+    font-family: $defaultFont;
+    color: $text-quinary;
+}
+
+.summaryDivider {
+    height: vars.$border-width-thin;
+    background: $border-color;
+    margin: vars.$margin-xl 0;
+}
+
+.summaryRowTotal {
+    display: flex;
+    justify-content: space-between;
+    font-size: $font-size-5xl;
+    font-family: $defaultFont;
+    font-weight: $font-weight-semibold;
+    color: $text-primary;
+    margin-bottom: vars.$margin-4xl;
+}
+
+.submitButton {
+    @include ctaPrimaryBlock;
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+}
+
+.loading {
+    text-align: center;
+    padding: vars.$padding-3xl;
+    font-size: $font-size-4xl;
+    font-family: $defaultFont;
+    color: $text-primary;
+}

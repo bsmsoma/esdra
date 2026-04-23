@@ -1,0 +1,586 @@
+@use "sass:color";
+@use "../App.scss" as *;
+@use "../styles/variables" as vars;
+
+.homeContainer {
+    padding-top: vars.$spacing-md;
+    padding-bottom: vars.$spacing-2xl;
+    background-color: $background-color;
+    min-height: 100vh;
+    position: relative;
+    z-index: 0;
+}
+
+// --- Hero ---
+.heroSection {
+    width: 90%;
+    max-width: 1400px;
+    margin: 0 auto vars.$spacing-2xl;
+
+    &BannerOnly {
+        max-width: 1400px;
+    }
+}
+
+.topGridSection {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) minmax(0, 2.6fr);
+    gap: vars.$gap-3xl;
+    align-items: stretch;
+    min-height: clamp(280px, 52vh, 640px);
+
+    @media (max-width: $breakpoint-tablet) {
+        grid-template-columns: 1fr;
+        min-height: 0;
+    }
+
+    &BannerOnly {
+        grid-template-columns: 1fr;
+    }
+}
+
+.portraitVideoContainer {
+    position: relative;
+    border-radius: $radius-lg;
+    overflow: hidden;
+    background-color: $surface-video;
+    height: 100%;
+    min-height: 280px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 380px;
+    margin: 0 auto;
+    border: $border-width-thin solid $border-color-accent;
+    box-shadow: $shadow-accent;
+
+    @media (max-width: $breakpoint-tablet) {
+        max-width: 100%;
+        aspect-ratio: 9 / 16;
+        height: auto;
+        min-height: 0;
+        max-height: 72vh;
+        order: 2;
+    }
+}
+
+.heroVideoSwiper {
+    width: 100%;
+    height: 100%;
+
+    :global(.swiper-pagination) {
+        bottom: 15px;
+    }
+
+    :global(.swiper-pagination-bullet) {
+        background-color: rgba(255, 255, 255, 0.5);
+        opacity: 1;
+        width: 10px;
+        height: 10px;
+    }
+
+    :global(.swiper-pagination-bullet-active) {
+        background-color: white;
+    }
+}
+
+.heroVideoSlide {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.portraitVideo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background-color: $surface-video;
+}
+
+.promotionBanner {
+    position: relative;
+    border-radius: $radius-lg;
+    overflow: hidden;
+    height: 100%;
+    min-height: 280px;
+    width: 100%;
+
+    @media (max-width: $breakpoint-tablet) {
+        order: 1;
+        min-height: 320px;
+        aspect-ratio: 16 / 10;
+    }
+}
+
+.promotionVideo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background-color: $surface-video;
+    z-index: 0;
+}
+
+.promotionBanner::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.25) 0%,
+        rgba(0, 0, 0, 0.55) 100%
+    );
+    z-index: 1;
+    border-radius: $radius-lg;
+}
+
+.promotionContent {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: vars.$padding-3xl;
+    box-sizing: border-box;
+}
+
+.promotionTitle {
+    font-family: $defaultFont;
+    font-size: 2.2rem;
+    font-weight: bold;
+    color: white;
+    margin: 0 0 vars.$spacing-sm 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+
+    @media (max-width: $breakpoint-tablet) {
+        font-size: 1.5rem;
+    }
+}
+
+.promotionEyebrow {
+    margin: 0 0 vars.$spacing-md;
+    font-family: $defaultFont;
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+.promotionSubtitle {
+    font-family: $defaultFont;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.95);
+    margin: 0 0 vars.$spacing-md 0;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+
+    @media (max-width: $breakpoint-tablet) {
+        font-size: 0.9rem;
+        margin-bottom: vars.$spacing-lg;
+    }
+}
+
+.promotionDescription {
+    margin: 0 0 vars.$spacing-xl;
+    max-width: 540px;
+    font-family: $defaultFont;
+    font-size: 0.98rem;
+    line-height: $line-height-relaxed;
+    color: rgba(255, 255, 255, 0.92);
+}
+
+.promotionActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: vars.$gap-md;
+    align-items: center;
+    justify-content: center;
+}
+
+.promotionButton {
+    background-color: $quinary-color;
+    color: white;
+    padding: 12px 28px;
+    border-radius: $radius-md;
+    border: none;
+    font-family: $defaultFont;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition:
+        background-color $transition-base $ease-base,
+        transform $transition-fast $ease-base;
+
+    @media (max-width: $breakpoint-tablet) {
+        padding: 10px 22px;
+        font-size: 0.9rem;
+    }
+
+    &:hover {
+        background-color: color.adjust($quinary-color, $lightness: -10%);
+    }
+
+    &:focus-visible {
+        outline: 2px solid $accent-gold-secondary;
+        outline-offset: 3px;
+    }
+}
+
+.promotionButtonSecondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 28px;
+    border-radius: $radius-md;
+    border: $border-width-base solid rgba(255, 255, 255, 0.85);
+    background-color: transparent;
+    color: white;
+    font-family: $defaultFont;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition:
+        background-color $transition-base $ease-base,
+        border-color $transition-base $ease-base,
+        transform $transition-fast $ease-base;
+
+    @media (max-width: $breakpoint-tablet) {
+        padding: 10px 22px;
+        font-size: 0.9rem;
+    }
+
+    &:hover {
+        background-color: rgba(255, 255, 255, 0.12);
+        border-color: white;
+    }
+
+    &:focus-visible {
+        outline: 2px solid $accent-gold-secondary;
+        outline-offset: 3px;
+    }
+}
+
+// --- Trust strip ---
+.sectionBand {
+    width: 100%;
+}
+
+.sectionBandTrust {
+    background-color: $background-tertiary;
+    border-top: 3px solid $accent-gold;
+    border-bottom: 1px solid $border-color;
+    padding: vars.$spacing-xl 0;
+    margin-bottom: 0;
+}
+
+.trustStrip {
+    width: 90%;
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: vars.$gap-2xl;
+    align-items: start;
+
+    @media (max-width: $breakpoint-tablet) {
+        grid-template-columns: 1fr;
+        gap: vars.$spacing-xl;
+        text-align: center;
+    }
+}
+
+.trustItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: vars.$spacing-sm;
+
+    @media (max-width: $breakpoint-tablet) {
+        flex-direction: row;
+        justify-content: flex-start;
+        text-align: left;
+        gap: vars.$spacing-md;
+    }
+}
+
+.trustIcon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    color: $accent-gold;
+
+    svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+}
+
+.trustText {
+    font-family: $defaultFont;
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: $line-height-relaxed;
+    color: $text-primary;
+    margin: 0;
+    max-width: 280px;
+
+    @media (max-width: $breakpoint-tablet) {
+        max-width: none;
+    }
+}
+
+// --- Categories ---
+.sectionBandCategories {
+    background-color: $background-color;
+    padding: vars.$spacing-2xl 0;
+}
+
+.sectionInner {
+    width: 90%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.sectionHeading {
+    font-family: $defaultFont;
+    font-size: 2.5rem;
+    text-align: center;
+    margin: 0 0 vars.$spacing-2xl 0;
+    color: $text-primary;
+
+    @media (max-width: $breakpoint-mobile) {
+        font-size: 1.85rem;
+    }
+}
+
+.categoriesGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: vars.$gap-2xl;
+
+    @media (max-width: $breakpoint-desktop) {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+}
+
+.categoryCardLink {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    border-radius: $radius-lg;
+    transition: transform $transition-base $ease-base;
+
+    &:focus-visible {
+        outline: 2px solid $border-color-accent;
+        outline-offset: 4px;
+    }
+
+    &:hover .categoryCard {
+        box-shadow: $shadow-accent-hover;
+        transform: translateY(-6px);
+    }
+}
+
+.categoryCard {
+    border-radius: $radius-lg;
+    overflow: hidden;
+    box-shadow: $shadow-lg;
+    transition:
+        box-shadow $transition-base $ease-base,
+        transform $transition-base $ease-base;
+}
+
+.categoryCardMedia {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+
+}
+
+.categoryMediaPlaceholder {
+    width: 100%;
+    height: 100%;
+    display: block;
+    background: linear-gradient(155deg, #e8ddd0 0%, #cdb9a4 100%);
+    transition: transform $transition-slow $ease-base;
+}
+
+.categoryCardLink:hover .categoryMediaPlaceholder {
+    transform: scale(1.05);
+}
+
+.categoryCardOverlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.75) 0%,
+        rgba(0, 0, 0, 0.2) 45%,
+        transparent 100%
+    );
+    pointer-events: none;
+}
+
+.categoryCardTitle {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0;
+    padding: vars.$spacing-lg vars.$spacing-md;
+    font-family: $defaultFont;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: $text-secondary;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
+    z-index: 1;
+}
+
+// --- Releases ---
+.sectionBandReleases {
+    background-color: $background-secondary;
+    padding: vars.$spacing-2xl 0 vars.$spacing-2xl;
+}
+
+.sectionBandRoutine {
+    background-color: $background-secondary;
+    padding: vars.$spacing-2xl 0;
+    border-top: 1px solid $border-color;
+    border-bottom: 1px solid $border-color;
+}
+
+.routineHeader {
+    text-align: center;
+    margin-bottom: vars.$spacing-xl;
+}
+
+.routineSubtitle {
+    max-width: 680px;
+    margin: vars.$spacing-sm auto 0;
+    font-family: $defaultFont;
+    font-size: 1rem;
+    line-height: $line-height-relaxed;
+    color: $text-secondary;
+}
+
+.routineGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: vars.$gap-lg;
+
+    @media (max-width: $breakpoint-tablet) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.routineCard {
+    background-color: $background-color;
+    border: 1px solid $border-color;
+    border-radius: $radius-md;
+    padding: vars.$spacing-lg;
+    box-shadow: $shadow-sm;
+}
+
+.routineCardTitle {
+    margin: 0 0 vars.$spacing-sm;
+    font-family: $defaultFont;
+    font-size: 1.15rem;
+    color: $text-primary;
+}
+
+.routineCardDescription {
+    margin: 0;
+    font-family: $defaultFont;
+    font-size: 0.95rem;
+    line-height: $line-height-relaxed;
+    color: $text-secondary;
+}
+
+.releasesHeader {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: vars.$gap-md;
+    margin-bottom: vars.$spacing-2xl;
+}
+
+.recentProductsTitle {
+    font-family: $defaultFont;
+    font-size: 2.5rem;
+    margin: 0;
+    color: $text-primary;
+
+    @media (max-width: $breakpoint-mobile) {
+        font-size: 1.85rem;
+    }
+}
+
+.releasesViewAll {
+    font-family: $defaultFont;
+    font-size: 1rem;
+    font-weight: 600;
+    color: $accent-gold;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition:
+        color $transition-base $ease-base,
+        border-color $transition-base $ease-base;
+
+    &:hover {
+        color: $accent-gold-hover;
+        border-bottom-color: $accent-gold-hover;
+    }
+
+    &:focus-visible {
+        outline: 2px solid $border-color-accent;
+        outline-offset: 3px;
+        border-radius: 2px;
+    }
+}
+
+.recentProductsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: vars.$gap-3xl;
+    justify-items: center;
+
+    @media (max-width: $breakpoint-tablet) {
+        display: none;
+    }
+}
+
+.recentProductsSwiper {
+    display: none;
+
+    @media (max-width: $breakpoint-tablet) {
+        display: block;
+        width: 100%;
+        padding-bottom: 50px;
+    }
+}
+
+.recentProductsSwiperContainer {
+    width: 100%;
+    padding-bottom: 50px;
+}
+
+.recentProductSlide {
+    height: auto;
+    display: flex;
+    justify-content: center;
+}

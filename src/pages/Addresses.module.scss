@@ -1,0 +1,306 @@
+@use "../App.scss" as *;
+@use "../styles/variables" as vars;
+@use "../styles/tokens" as *;
+@use "../styles/mixins" as *;
+
+.addresses {
+    padding: vars.$padding-3xl 0;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: vars.$margin-5xl;
+}
+
+.title {
+    font-size: $font-size-5xl;
+    font-family: $defaultFont;
+    font-weight: $font-weight-semibold;
+    color: $text-primary;
+}
+
+.addButton {
+    padding: vars.$padding-lg vars.$padding-4xl;
+    background: $button-primary-bg;
+    color: $button-primary-text;
+    border: none;
+    border-radius: vars.$radius-xs;
+    cursor: pointer;
+    font-size: $font-size-2xl;
+    font-family: $clashGroteskSemibold;
+    transition: background vars.$transition-base vars.$ease-base;
+
+    &:hover {
+        background: $button-primary-hover;
+    }
+}
+
+.errorMessage {
+    padding: vars.$padding-xl;
+    background: $status-error;
+    color: $text-error;
+    font-family: $defaultFont;
+    border-radius: vars.$radius-xs;
+    margin-bottom: vars.$margin-4xl;
+}
+
+.successMessage {
+    padding: vars.$padding-xl;
+    background: $status-success;
+    color: $text-success;
+    font-family: $defaultFont;
+    border-radius: vars.$radius-xs;
+    margin-bottom: vars.$margin-4xl;
+}
+
+.addressForm {
+    background: $background-color;
+    padding: vars.$padding-3xl;
+    border-radius: vars.$radius-md;
+    border: vars.$border-width-thin solid $border-color;
+    margin-bottom: vars.$margin-5xl;
+}
+
+.formRow {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: vars.$gap-xl;
+    margin-bottom: vars.$margin-xl;
+}
+
+.formGroup {
+    margin-bottom: vars.$margin-xl;
+    position: relative;
+
+    label {
+        display: block;
+        margin-bottom: vars.$margin-md;
+        font-family: $defaultFont;
+        font-weight: $font-weight-medium;
+        color: $text-accent;
+    }
+
+    .input {
+        width: 100%;
+        padding: vars.$padding-lg;
+        border: vars.$border-width-thin solid $border-color;
+        border-radius: vars.$radius-xs;
+        font-size: $font-size-2xl;
+        font-family: $defaultFont;
+        color: $text-primary;
+
+        &:focus {
+            outline: none;
+            border-color: $border-color-active;
+        }
+    }
+}
+
+.cepStatus {
+    font-family: $defaultFont;
+    font-size: $font-size-sm;
+    color: $text-quaternary;
+    margin-top: vars.$margin-xs;
+    font-style: italic;
+    display: block;
+}
+
+.cepError {
+    font-family: $defaultFont;
+    font-size: $font-size-sm;
+    color: $status-error;
+    margin-top: vars.$margin-xs;
+    display: block;
+}
+
+.submitButton {
+    padding: vars.$padding-lg vars.$padding-3xl;
+    background: $button-primary-bg;
+    color: $button-primary-text;
+    border: none;
+    border-radius: vars.$radius-xs;
+    font-size: $font-size-2xl;
+    font-family: $clashGroteskSemibold;
+    cursor: pointer;
+    transition: background vars.$transition-base vars.$ease-base;
+
+    &:hover {
+        background: $button-primary-hover;
+    }
+}
+
+.cancelButton {
+    padding: vars.$padding-lg vars.$padding-3xl;
+    background: transparent;
+    color: $text-primary;
+    border: vars.$border-width-thin solid $border-color;
+    border-radius: vars.$radius-xs;
+    font-size: $font-size-2xl;
+    font-family: $clashGroteskSemibold;
+    cursor: pointer;
+    transition: all vars.$transition-base vars.$ease-base;
+
+    &:hover {
+        background: rgba(0, 0, 0, 0.05);
+        border-color: $border-color-active;
+    }
+}
+
+.editForm {
+    padding: vars.$padding-3xl;
+    border-top: vars.$border-width-thin solid $border-color;
+    margin-top: vars.$margin-xl;
+}
+
+.editFormActions {
+    display: flex;
+    gap: vars.$gap-xl;
+    margin-top: vars.$margin-3xl;
+    
+    button {
+        flex: 1;
+    }
+}
+
+.addressesList {
+    display: grid;
+    gap: vars.$gap-3xl;
+}
+
+.addressCard {
+    background: $background-color;
+    padding: vars.$padding-4xl;
+    border-radius: vars.$radius-md;
+    border: vars.$border-width-thin solid $border-color;
+}
+
+.addressHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: vars.$margin-xl;
+
+    h3 {
+        font-size: $font-size-5xl;
+        font-family: $defaultFont;
+        color: $text-primary;
+        display: flex;
+        align-items: center;
+        gap: vars.$gap-sm;
+    }
+}
+
+.defaultBadge {
+    padding: vars.$padding-xs vars.$padding-lg;
+    background: $button-primary-bg;
+    color: $button-primary-text;
+    border-radius: vars.$radius-2xl;
+    font-size: $font-size-sm;
+    font-family: $defaultFont;
+}
+
+.addressText {
+    font-family: $defaultFont;
+    color: $text-quinary;
+    margin-bottom: vars.$margin-md;
+}
+
+.addressActions {
+    display: flex;
+    gap: vars.$gap-xl;
+    margin-top: vars.$margin-xl;
+}
+
+.inlineForm {
+    display: inline;
+}
+
+.actionButton {
+    padding: vars.$padding-md vars.$padding-xl;
+    background: $background-secondary;
+    color: $text-primary;
+    border: vars.$border-width-thin solid $border-color;
+    border-radius: vars.$radius-xs;
+    cursor: pointer;
+    font-size: $font-size-lg;
+    font-family: $defaultFont;
+    transition: all vars.$transition-base vars.$ease-base;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: vars.$gap-sm;
+
+    svg {
+        stroke: currentColor;
+        flex-shrink: 0;
+    }
+
+    &:hover {
+        background: $background-hover;
+    }
+
+    &.deleteButton {
+        background: $status-error;
+        color: $text-error;
+        border-color: $border-color-error;
+
+        &:hover {
+            background: $button-error;
+        }
+    }
+}
+
+.buttonText {
+    white-space: nowrap;
+}
+
+.emptyState {
+    text-align: center;
+    padding: vars.$padding-3xl;
+    font-family: $defaultFont;
+    color: $text-quinary;
+    background: $background-color;
+    border-radius: vars.$radius-md;
+    border: vars.$border-width-thin solid $border-color;
+}
+
+.loading {
+    text-align: center;
+    padding: vars.$padding-3xl;
+    font-size: $font-size-4xl;
+    font-family: $defaultFont;
+    color: $text-primary;
+}
+
+@include responsiveMobile {
+    .title {
+        font-size: $font-size-3xl;
+    }
+
+    .addButton {
+        padding: vars.$padding-sm vars.$padding-lg;
+        font-size: $font-size-base;
+        white-space: nowrap;
+    }
+
+    .header {
+        gap: vars.$gap-sm;
+        margin-bottom: vars.$margin-3xl;
+    }
+
+    .buttonText {
+        display: none;
+    }
+
+    .actionButton {
+        padding: vars.$padding-md;
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    .addressActions {
+        flex-wrap: wrap;
+    }
+}

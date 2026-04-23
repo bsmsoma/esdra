@@ -1,0 +1,38 @@
+# Build e artefatos gerados
+dist/
+node_modules/
+functions/node_modules/
+
+# Resultados de testes
+test-results/
+playwright-report/
+
+# macOS
+.DS_Store
+
+# Claude Code
+.claude/settings.local.json
+
+# Contas de serviço Firebase (NUNCA commitar — acesso total ao projeto)
+scripts/firebase-service-account.json
+scripts/*.json
+secrets/
+
+# Arquivos de ambiente (contêm tokens, chaves e senhas)
+.env
+.env.local
+.env.*.local
+functions/.env
+functions/.env.local
+functions/.env.*.local
+
+# Playwright auth state e dados do emulador
+tests/.auth/
+tests/emulator-data/
+
+# Firebase emulator exports e cache
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+firestore-debug.log
+ui-debug.log

@@ -1,0 +1,93 @@
+@use "../styles/typography" as *;
+@use "tokens" as *;
+@use "../styles/variables" as vars;
+@use "mixins" as mix;
+
+@mixin defaultButton($radius: vars.$radius-sm, $height: 3rem, $width: 290px) {
+    background-color: $button-primary-bg;
+    color: $button-primary-text;
+    width: $width;
+    height: $height;
+    cursor: pointer;
+    border-radius: $radius;
+    transition: all vars.$transition-base vars.$ease-base;
+    font-family: $clashGroteskSemibold;
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-semibold;
+    letter-spacing: $letter-spacing-tight;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+
+    &:hover:not(:disabled) {
+        background-color: $button-primary-hover;
+        color: $button-primary-text;
+        transform: scale(vars.$transform-scale-hover);
+    }
+
+    &:disabled {
+        opacity: $opacity-disabled;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    @include mix.focus-visible-ring;
+}
+
+// CTA primário largura total (carrinho, checkout, estados vazios)
+@mixin ctaPrimaryBlock(
+    $radius: vars.$radius-md,
+    $padding-y: vars.$padding-xl,
+    $font-size: $font-size-3xl
+) {
+    width: 100%;
+    padding: $padding-y vars.$padding-xl;
+    background-color: $button-primary-bg;
+    color: $button-primary-text;
+    border: none;
+    border-radius: $radius;
+    font-family: $clashGroteskSemibold;
+    font-size: $font-size;
+    font-weight: $font-weight-semibold;
+    cursor: pointer;
+    transition: background vars.$transition-base vars.$ease-base;
+    box-sizing: border-box;
+
+    &:hover:not(:disabled) {
+        background-color: $button-primary-hover;
+    }
+
+    &:disabled {
+        opacity: $opacity-disabled;
+        cursor: not-allowed;
+    }
+
+    @include mix.focus-visible-ring;
+}
+
+@mixin closeButton() {
+    all: unset;
+    border: vars.$border-width-thin solid $border-color;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: $font-size-2xl;
+    font-family: $defaultFont;
+    color: $text-primary;
+    cursor: pointer;
+    position: relative;
+    right: vars.$margin-xs;
+    height: 1.1rem;
+    width: 1.1rem;
+    padding: vars.$padding-sm;
+    border-radius: vars.$radius-full;
+    transition: all vars.$transition-base vars.$ease-base;
+    
+    &:hover {
+        background-color: $border-color;
+        border-radius: vars.$radius-sm;
+    }
+
+    @include mix.focus-visible-ring;
+}

@@ -1,0 +1,535 @@
+@use "../App.scss" as *;
+@use "../styles/variables" as vars;
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+header {
+    color: $text-primary;
+    font-family: $clashGroteskMedium;
+    font-size: 1.0625rem;
+    max-width: 1200px;
+    min-width: 320px;
+    width: 100%;
+    padding: 0.6rem clamp(1rem, 4vw, 2.5rem);
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    z-index: 10;
+    position: relative;
+
+    .logo {
+        all: unset;
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: border-bottom 0.3s ease;
+        height: fit-content;
+
+        svg {
+            display: block;
+            width: auto;
+            height: 51px;
+            max-width: 145px;
+            color: $text-primary;
+            transition: transform 0.2s ease;
+
+            path {
+                fill: currentColor;
+            }
+        }
+
+        &:hover {
+            border-bottom: 2px solid $border-color;
+
+            svg {
+                transform: scale(1.02);
+            }
+        }
+
+        &:active {
+            svg {
+                transform: scale(0.98);
+            }
+        }
+
+        @include focus-visible-ring;
+    }
+
+    .menu {
+        display: flex;
+        justify-content: space-between;
+        font-family: $clashGroteskMedium;
+        list-style: none;
+        align-items: flex-end;
+        position: relative;
+
+        ul {
+            display: flex;
+            justify-content: space-between;
+            list-style: none;
+            align-items: center;
+
+            .searchbar {
+                display: flex;
+                align-items: center;
+                border: 2px solid $border-color;
+                border-radius: 1rem;
+                padding: 0.3rem;
+                width: 65px;
+                height: 2.35rem;
+                transition: width 0.5s ease;
+                position: relative;
+
+                &::after {
+                    content: "";
+                    position: absolute;
+                    bottom: 3px;
+                    left: 10px;
+                    width: 1rem;
+                    height: 3px;
+                    background-color: $text-primary;
+                }
+
+                &.searchbaropen {
+                    width: 200px;
+                    border: 2px solid $border-color-active;
+                    transition: all 0.3s ease;
+
+                    &::after {
+                        content: "";
+                        position: absolute;
+                        bottom: 3px;
+                        left: 10px;
+                        width: 1rem;
+                        height: 3px;
+                        background-color: $text-primary;
+                        animation: loadingPulse 1.5s infinite;
+                    }
+                }
+
+                .searchInput {
+                    all: unset;
+                    width: 100%;
+                    position: relative;
+                    z-index: 1;
+                    margin-left: 0.3rem;
+                    font: inherit;
+                    color: inherit;
+                }
+
+                // animation for the searchbar pulsing type effect
+                @keyframes loadingPulse {
+                    0% {
+                        opacity: 0.3;
+                    }
+
+                    50% {
+                        opacity: 1;
+                    }
+
+                    100% {
+                        opacity: 0.3;
+                    }
+                }
+
+                .clearButtonDesktop {
+                    all: unset;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 1.4rem;
+                    line-height: 1;
+                    font-family: $clashGroteskMedium;
+                    color: $text-primary;
+                    cursor: pointer;
+                    width: 1.4rem;
+                    height: 1.4rem;
+                    border-radius: 50%;
+                    transition: all 0.2s ease;
+                    flex-shrink: 0;
+                    margin-right: 0.5rem;
+                    opacity: 0.6;
+
+                    &:hover {
+                        background-color: $border-color;
+                        opacity: 1;
+                        transform: scale(1.1);
+                    }
+
+                    &:active {
+                        transform: scale(0.95);
+                    }
+
+                    @include focus-visible-ring;
+                }
+
+                .magnifierContainer {
+                    position: relative;
+                    width: 1.4rem;
+                    height: 1.4rem;
+                    color: $text-primary;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 0.5rem;
+                    transition: background-color 0.3s ease;
+                    margin-left: 0.2rem;
+                    flex-shrink: 0;
+                    padding: 0.2rem;
+
+                    &:hover {
+                        background-color: $border-color;
+                    }
+
+                    .magnifierIcon {
+                        width: 100%;
+                        height: 100%;
+                    }
+                }
+            }
+
+            .searchbar.hideAnimation::after {
+                animation: none;
+                opacity: 0;
+            }
+
+            a {
+                all: unset;
+                margin-left: 1rem;
+                border-bottom: 2px solid transparent;
+                cursor: pointer;
+                font: inherit;
+                color: inherit;
+
+                &:hover {
+                    border-bottom: 2px solid $border-color;
+                }
+
+                @include focus-visible-ring;
+            }
+
+            .cartIcon {
+                position: relative;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: inherit;
+                text-decoration: none;
+                margin-left: 1rem;
+                border-bottom: 2px solid transparent;
+
+                &:hover {
+                    border-bottom: 2px solid $border-color;
+                }
+
+                @include focus-visible-ring;
+
+                svg {
+                    width: 24px;
+                    height: 24px;
+                    display: block;
+                }
+
+                .cartItemCount {
+                    position: absolute;
+                    top: -8px;
+                    right: -8px;
+                    background-color: $quaternary-color;
+                    color: $primary-color;
+                    border-radius: 50%;
+                    min-width: 22px;
+                    height: 22px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 0.875rem;
+                    font-weight: 600;
+                    padding: 0 4px;
+                    border: 2px solid $primary-color;
+                    z-index: 10;
+                    font-family: $clashGroteskMedium;
+                    line-height: 1;
+                }
+            }
+        }
+
+        .dropdown {
+            display: inline-flex;
+            align-items: center;
+            margin-left: 1rem;
+            border-bottom: 2px solid transparent;
+            position: relative;
+
+            .userTrigger {
+                display: flex;
+                align-items: center;
+                gap: $spacing-sm;
+            }
+
+            .userTrigger .userDisplayName {
+                font-family: $clashGroteskMedium;
+                font-size: 1em;
+                font-weight: 500;
+                color: $text-primary;
+                margin: 0;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 12ch;
+                transition: color $transition-fast $ease-base;
+            }
+
+            .iconWithCaret {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 2px;
+            }
+
+            .dropbtn {
+                flex-shrink: 0;
+                cursor: pointer;
+            }
+
+            .dropdownCaret {
+                width: 0;
+                height: 0;
+                border-left: 4px solid transparent;
+                border-right: 4px solid transparent;
+                border-top: 5px solid $text-primary;
+            }
+
+            .dropdownContent {
+                display: none;
+                position: absolute;
+                background-color: $secondary-color;
+                padding: 1rem;
+                @include shadow();
+                border-radius: 0.4rem;
+                min-width: 160px;
+                right: 0;
+                top: 100%;
+                margin-top: 0;
+                z-index: 100;
+
+                div {
+                    color: $text-primary;
+                    padding: 1rem;
+                    text-decoration: none;
+                    display: block;
+                    border-bottom: 2px solid transparent;
+
+                    &:hover {
+                        border-bottom: 2px solid $border-color;
+                        cursor: pointer;
+                    }
+                }
+
+                div:last-child {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 0.5rem;
+                }
+            }
+
+            &:hover .dropdownContent {
+                display: block;
+            }
+        }
+    }
+    .hamburgerButton {
+        display: none;
+    }
+}
+.searchBarMobile {
+    display: none;
+}
+.pagedivider {
+    @include divider;
+}
+
+//Menos que 600px ~~
+@media only screen and (max-width: 750px) {
+    header {
+        flex-direction: column;
+
+        .menu {
+            font-size: 1.0625rem;
+        }
+    }
+}
+
+// Menores que 450px ~~
+@include responsiveMobile {
+    header {
+        padding: 0 1.2rem;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        height: 60px;
+        position: relative;
+        z-index: 100;
+
+        h4 {
+            display: none;
+        }
+
+        .menu {
+            display: none;
+        }
+
+        .hamburgerButton {
+            display: block;
+            position: relative;
+            z-index: 1000;
+        }
+        .logo {
+            position: relative;
+            z-index: 0;
+
+            svg {
+                height: 36px;
+                max-width: 111px;
+            }
+        }
+    }
+    // handles mobile searchBar in mobile devices
+    .searchBarMobile {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 90%;
+        min-height: 2.35rem;
+        height: auto;
+        font-size: 1.0625rem;
+        border: 2px solid $border-color;
+        border-radius: 0.4rem;
+        padding: 0.3rem;
+        margin: 0 auto;
+        transition: all 0.3s ease;
+
+        &.active {
+            outline: 2px solid $border-color-active;
+        }
+
+        .searchInputMobile {
+            all: unset;
+            width: 100%;
+            position: relative;
+            z-index: 0;
+            margin-left: 0.3rem;
+            font-family: $clashGroteskMedium;
+            font-size: inherit;
+        }
+
+        .clearButton {
+            all: unset;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            line-height: 1;
+            font-family: $clashGroteskMedium;
+            color: $text-primary;
+            cursor: pointer;
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+            margin-right: 0.5rem;
+            opacity: 0.6;
+
+            &:hover {
+                background-color: $border-color;
+                opacity: 1;
+                transform: scale(1.1);
+            }
+
+            &:active {
+                transform: scale(0.95);
+            }
+
+            @include focus-visible-ring;
+        }
+        .searchButton {
+            all: unset;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: $text-primary;
+            cursor: pointer;
+            height: 1.5rem;
+            width: 1.5rem;
+            padding: 0.2rem;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+
+            &:hover {
+                background-color: $border-color;
+                transform: scale(1.05);
+            }
+
+            &:active {
+                transform: scale(0.95);
+            }
+
+            @include focus-visible-ring;
+
+            .magnifierIcon {
+                width: 100%;
+                height: 100%;
+            }
+        }
+    }
+
+    .pagedivider {
+        @include divider;
+    }
+}
+
+.logoutButton {
+    @include defaultButton(0.4rem, 2rem);
+    background-color: transparent;
+    color: $text-primary;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    svg {
+        width: 1.2rem;
+        height: 1.2rem;
+    }
+}
+
+// ========================================
+// ESTILOS DE IMPRESSÃO
+// ========================================
+@media print {
+    // Ocultar todos os elementos de navegação e o logo
+    .menu,
+    .hamburgerButton,
+    .searchBarMobile,
+    .searchbar,
+    .dropdown,
+    .pagedivider,
+    .logo {
+        display: none !important;
+    }
+
+    // Header minimalista para impressão
+    header {
+        display: none !important;
+    }
+}

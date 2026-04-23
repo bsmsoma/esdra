@@ -1,0 +1,480 @@
+@use "../App.scss" as *;
+@use "../styles/variables" as vars;
+@use "../styles/tokens" as *;
+
+.page {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    // Keep the form close to the header on desktop too
+    padding: vars.$spacing-sm vars.$spacing-md vars.$spacing-md;
+
+    .container {
+        background: $background-color;
+        border-radius: vars.$radius-xl;
+        box-shadow: 0 10px 40px $shadow-color-secondary;
+        position: relative;
+        overflow: hidden;
+        width: 768px;
+        max-width: 100%;
+        min-height: 520px;
+        margin-bottom: vars.$spacing-md;
+
+        .formContainer {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            width: 50%;
+            transition: all vars.$transition-slow vars.$ease-in-out;
+
+            .form {
+                height: 100%;
+                padding: 0 vars.$spacing-xl;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                gap: vars.$spacing-sm;
+
+                .logoContainer {
+                    width: 100%;
+                    display: flex;
+                    justify-content: center;
+                    margin-bottom: vars.$spacing-xs;
+
+                    .logo {
+                        object-fit: contain;
+                        width: 100px;
+                        height: auto;
+                        max-height: 64px;
+                    }
+                }
+
+                .title {
+                    margin: 0 0 vars.$spacing-sm;
+                    font-family: $clashGroteskSemibold;
+                    font-size: $font-size-6xl;
+                    font-weight: $font-weight-semibold;
+                    color: $text-primary;
+                    letter-spacing: $letter-spacing-tight;
+                    text-align: center;
+                }
+
+                .errorMessage {
+                    width: 100%;
+                    padding: vars.$spacing-sm vars.$spacing-md;
+                    background-color: $status-error-surface;
+                    border: vars.$border-width-thin solid $status-error-border;
+                    border-radius: vars.$radius-md;
+
+                    p {
+                        margin: 0;
+                        font-family: $defaultFont;
+                        font-size: $font-size-sm;
+                        color: $status-error-text;
+                        text-align: center;
+                        line-height: 1.4;
+                    }
+                }
+
+                .input {
+                    width: 100%;
+                    height: 44px;
+                    background: $background-secondary;
+                    border: vars.$border-width-base solid $border-color;
+                    padding: 0 vars.$spacing-md;
+                    margin: 0;
+                    border-radius: vars.$radius-md;
+                    outline: 0 transparent;
+                    font-family: $defaultFont;
+                    font-size: $font-size-2xl;
+                    color: $text-primary;
+                    transition:
+                        border-color vars.$transition-base vars.$ease-base,
+                        box-shadow vars.$transition-base vars.$ease-base;
+
+                    @include focus-visible-input;
+
+                    &::placeholder {
+                        color: $text-tertiary;
+                    }
+                }
+
+                .passwordWrapper {
+                    position: relative;
+                    width: 100%;
+                    display: flex;
+                    align-items: center;
+
+                    .input {
+                        padding-right: 2.75rem;
+                    }
+
+                    .eyeIcon {
+                        position: absolute;
+                        right: vars.$spacing-md;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        cursor: pointer;
+                        padding: vars.$spacing-sm;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: $text-tertiary;
+                        transition: color vars.$transition-base vars.$ease-base;
+
+                        &:hover {
+                            color: $text-primary;
+                        }
+
+                        @include focus-visible-ring($focus-ring-color-brand);
+                    }
+                }
+
+                .rememberRow {
+                    display: flex;
+                    align-items: center;
+                    gap: vars.$spacing-sm;
+                    width: 100%;
+                    margin-top: vars.$spacing-xs;
+
+                    .checkbox {
+                        width: 18px;
+                        height: 18px;
+                        cursor: pointer;
+                        accent-color: $accent-brand-purple;
+                    }
+
+                    label {
+                        font-family: $defaultFont;
+                        font-size: $font-size-sm;
+                        color: $text-tertiary;
+                        cursor: pointer;
+                        user-select: none;
+                    }
+                }
+
+                .submitButton {
+                    width: 100%;
+                    height: 44px;
+                    border-radius: vars.$radius-md;
+                    border: none;
+                    cursor: pointer;
+                    font-family: $defaultFont;
+                    font-weight: $font-weight-semibold;
+                    font-size: $font-size-2xl;
+                    text-transform: uppercase;
+                    color: $text-secondary;
+                    background: $gradient-brand-accent;
+                    transition: transform vars.$transition-fast vars.$ease-base,
+                        opacity vars.$transition-fast vars.$ease-base;
+
+                    &:hover:not(:disabled) {
+                        transform: translateY(-1px);
+                        opacity: 0.96;
+                    }
+
+                    &:disabled {
+                        opacity: 0.6;
+                        cursor: not-allowed;
+                    }
+
+                    @include focus-visible-ring($text-secondary, $focus-ring-width, 2px);
+                }
+
+                .dividerText {
+                    margin: vars.$spacing-xs 0 0;
+                    font-family: $defaultFont;
+                    font-size: $font-size-sm;
+                    color: $text-tertiary;
+                }
+
+                .googleButton {
+                    width: 100%;
+                    height: 44px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: vars.$spacing-sm;
+                    background: $background-color;
+                    border: vars.$border-width-base solid $border-color;
+                    border-radius: vars.$radius-md;
+                    cursor: pointer;
+                    font-family: $defaultFont;
+                    font-size: $font-size-2xl;
+                    font-weight: $font-weight-medium;
+                    color: $text-primary;
+                    transition: border-color vars.$transition-base vars.$ease-base,
+                        background-color vars.$transition-base vars.$ease-base;
+
+                    &:hover:not(:disabled) {
+                        border-color: $accent-brand-purple;
+                        background: $accent-brand-purple-tint;
+                    }
+
+                    &:disabled {
+                        opacity: 0.6;
+                        cursor: not-allowed;
+                    }
+
+                    @include focus-visible-ring;
+
+                    .googleIcon {
+                        width: 20px;
+                        height: 20px;
+                        flex-shrink: 0;
+                    }
+                }
+
+                .registerPrompt {
+                    margin: vars.$spacing-xs 0 0;
+                    font-family: $defaultFont;
+                    font-size: $font-size-md;
+                    text-align: center;
+                    color: $text-tertiary;
+                }
+
+                .registerLinkButton {
+                    background: transparent;
+                    border: none;
+                    padding: 0;
+                    margin: 0;
+                    cursor: pointer;
+                    font-family: $defaultFont;
+                    font-size: inherit;
+                    font-weight: $font-weight-semibold;
+                    color: $accent-brand-purple;
+                    border-bottom: 2px solid transparent;
+                    transition: border-color vars.$transition-fast vars.$ease-base;
+
+                    &:hover {
+                        border-bottom-color: $accent-brand-purple;
+                    }
+
+                    @include focus-visible-ring($focus-ring-color-brand);
+                }
+            }
+        }
+
+        .signIn {
+            left: 0;
+            z-index: 2;
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .signUp {
+            left: 0;
+            opacity: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .toggleContainer {
+            position: absolute;
+            left: 50%;
+            width: 50%;
+            height: 100%;
+            overflow: hidden;
+            transition: all vars.$transition-slow vars.$ease-in-out;
+            z-index: 100;
+            border-radius: vars.$radius-xl 0 0 vars.$radius-xl;
+
+            .toggle {
+                background-color: $text-primary;
+                color: $text-secondary;
+                height: 100%;
+                width: 200%;
+                position: relative;
+                left: -100%;
+                transition: all vars.$transition-slow vars.$ease-in-out;
+
+                // Overlay for text readability (deep charcoal, soft opacity)
+                &::before {
+                    content: "";
+                    position: absolute;
+                    inset: 0;
+                    background: linear-gradient(
+                        135deg,
+                        rgba(26, 26, 26, 0.55) 0%,
+                        rgba(26, 26, 26, 0.35) 100%
+                    );
+                    pointer-events: none;
+                }
+            }
+
+            .togglePanel {
+                position: absolute;
+                width: 50%;
+                height: 100%;
+                padding: 0 vars.$spacing-xl;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                gap: vars.$spacing-md;
+                z-index: 1;
+
+                .toggleTitle {
+                    margin: 0;
+                    font-family: $clashGroteskSemibold;
+                    font-size: $font-size-6xl;
+                    font-weight: $font-weight-semibold;
+                }
+
+                .toggleText {
+                    margin: 0;
+                    font-family: $defaultFont;
+                    font-size: $font-size-2xl;
+                    line-height: 1.5;
+                    opacity: 0.95;
+                }
+
+                .hiddenButton {
+                    background: transparent;
+                    color: $text-secondary;
+                    font-family: $defaultFont;
+                    font-size: $font-size-2xl;
+                    font-weight: $font-weight-semibold;
+                    padding: vars.$spacing-sm vars.$spacing-xl;
+                    border-radius: vars.$radius-md;
+                    border: vars.$border-width-base solid rgba(255, 255, 255, 0.75);
+                    cursor: pointer;
+                    transition: transform vars.$transition-fast vars.$ease-base,
+                        background-color vars.$transition-fast vars.$ease-base;
+
+                    &:hover {
+                        transform: translateY(-1px);
+                        background-color: rgba(255, 255, 255, 0.12);
+                    }
+
+                    @include focus-visible-ring($text-secondary, $focus-ring-width, 2px);
+                }
+            }
+
+            .toggleLeft {
+                transform: translateX(-200%);
+            }
+
+            .toggleRight {
+                right: 0;
+                transform: translateX(0);
+            }
+        }
+
+        &[data-active="true"] {
+            .signIn {
+                transform: translateX(100%);
+                opacity: 0;
+                pointer-events: none;
+            }
+
+            .signUp {
+                transform: translateX(100%);
+                opacity: 1;
+                z-index: 5;
+                pointer-events: auto;
+            }
+
+            .toggleContainer {
+                transform: translateX(-100%);
+                border-radius: 0 vars.$radius-xl vars.$radius-xl 0;
+            }
+
+            .toggle {
+                transform: translateX(50%);
+            }
+
+            .toggleLeft {
+                transform: translateX(0);
+            }
+
+            .toggleRight {
+                transform: translateX(200%);
+            }
+        }
+
+        &[data-active="false"] {
+            .signIn {
+                opacity: 1;
+                pointer-events: auto;
+            }
+
+            .signUp {
+                opacity: 0;
+                pointer-events: none;
+            }
+        }
+    }
+}
+
+@include responsiveTablet {
+    .page {
+        // Center container vertically and reduce height on mobile
+        align-items: center;
+        min-height: 70vh;
+        padding: vars.$spacing-sm vars.$spacing-md vars.$spacing-md;
+
+        .container {
+            width: 100%;
+            min-height: auto;
+            display: flex;
+            flex-direction: column;
+            border-radius: vars.$radius-lg;
+
+            .formContainer {
+                position: relative;
+                width: 100%;
+                height: auto;
+                transition: none;
+                transform: none !important;
+
+                .form {
+                    padding: vars.$spacing-lg vars.$spacing-md;
+                    gap: vars.$spacing-sm;
+
+                    .title {
+                        font-size: $font-size-5xl;
+                    }
+
+                    .input,
+                    .submitButton,
+                    .googleButton {
+                        height: 44px;
+                    }
+                }
+            }
+
+            .toggleContainer {
+                // Mobile simplification: remove welcome/cta panels entirely.
+                display: none;
+            }
+
+            // Mobile behavior: show only one form (toggle via buttons inside forms)
+            &[data-active="true"] {
+                .signIn {
+                    display: none;
+                }
+
+                .signUp {
+                    display: block;
+                    opacity: 1;
+                    pointer-events: auto;
+                }
+            }
+
+            &[data-active="false"] {
+                .signIn {
+                    display: block;
+                    opacity: 1;
+                    pointer-events: auto;
+                }
+
+                .signUp {
+                    display: none;
+                }
+            }
+        }
+    }
+}

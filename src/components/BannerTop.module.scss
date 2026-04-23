@@ -1,0 +1,14 @@
+.bannerTop {
+    background: var(--color-banner-bg);
+    border-bottom: 1px solid var(--color-border-soft);
+    padding: 8px 16px;
+    text-align: center;
+}
+
+.bannerText {
+    color: var(--color-banner-text);
+    font-size: 0.82rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    margin: 0;
+}

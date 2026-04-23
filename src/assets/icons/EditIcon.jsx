@@ -1,0 +1,25 @@
+import * as React from "react";
+
+// Standardized icon component with consistent props interface
+function EditIcon({ width = 24, height = 24, className, ...props }) {
+    return (
+        <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            fill="none" 
+            width={width}
+            height={height}
+            viewBox="0 0 24 24" 
+            className={className} 
+            {...props}
+        >
+            <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="m12 8-8 8v4h4l8-8m-4-4 2.869-2.869.001-.001c.395-.395.593-.593.821-.667a1 1 0 0 1 .618 0c.228.074.425.272.82.666l1.74 1.74c.396.396.594.594.668.822a1 1 0 0 1 0 .618c-.074.228-.272.426-.668.822h0L16 12.001m-4-4 4 4"
+            />
+        </svg>
+    );
+}
+
+export default EditIcon;

@@ -1,0 +1,141 @@
+@use "../App.scss" as *;
+@use "../styles/variables" as vars;
+@use "../styles/tokens" as *;
+
+.cart {
+    padding: vars.$padding-3xl vars.$padding-xl;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.title {
+    font-size: $font-size-8xl;
+    font-family: $defaultFont;
+    margin-bottom: vars.$margin-5xl;
+    font-weight: $font-weight-semibold;
+    color: $text-primary;
+}
+
+.emptyState {
+    text-align: center;
+    padding: vars.$padding-4xl vars.$padding-3xl;
+    background: $background-color;
+    border-radius: vars.$radius-md;
+    border: vars.$border-width-thin solid $border-color;
+
+    p {
+        font-size: $font-size-3xl;
+        font-family: $defaultFont;
+        color: $text-quinary;
+        margin-bottom: vars.$margin-4xl;
+    }
+}
+
+.shopLink {
+    display: inline-block;
+    padding: vars.$padding-lg vars.$padding-3xl;
+    background: $button-primary-bg;
+    color: $button-primary-text;
+    text-decoration: none;
+    border-radius: vars.$radius-md;
+    font-family: $clashGroteskSemibold;
+    font-size: $font-size-2xl;
+    transition: background vars.$transition-base vars.$ease-base;
+
+    &:hover {
+        background: $button-primary-hover;
+    }
+
+    @include focus-visible-ring;
+}
+
+.cartContainer {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: vars.$gap-3xl;
+
+    @media (max-width: vars.$breakpoint-desktop) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.itemsSection {
+    display: flex;
+    flex-direction: column;
+    gap: vars.$gap-xl;
+}
+
+.summarySection {
+    position: sticky;
+    top: vars.$margin-3xl;
+    height: fit-content;
+}
+
+.summaryCard {
+    background: $background-color;
+    padding: vars.$padding-3xl;
+    border-radius: vars.$radius-md;
+    border: vars.$border-width-thin solid $border-color;
+}
+
+.summaryTitle {
+    font-size: $font-size-6xl;
+    font-family: $defaultFont;
+    margin-bottom: vars.$margin-4xl;
+    font-weight: $font-weight-semibold;
+    color: $text-primary;
+}
+
+.summaryRow {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: vars.$margin-xl;
+    font-family: $defaultFont;
+    color: $text-quinary;
+}
+
+.summaryDivider {
+    height: vars.$border-width-thin;
+    background: $border-color;
+    margin: vars.$margin-xl 0;
+}
+
+.summaryRowTotal {
+    display: flex;
+    justify-content: space-between;
+    font-size: $font-size-5xl;
+    font-family: $defaultFont;
+    font-weight: $font-weight-semibold;
+    color: $text-primary;
+    margin-bottom: vars.$margin-4xl;
+}
+
+.checkoutButton {
+    @include ctaPrimaryBlock;
+    margin-bottom: vars.$margin-xl;
+}
+
+.continueShopping {
+    display: block;
+    text-align: center;
+    font-family: $defaultFont;
+    color: $text-quinary;
+    text-decoration: none;
+    padding: vars.$padding-md;
+    border-radius: vars.$radius-sm;
+
+    &:hover {
+        color: $text-primary;
+        text-decoration: underline;
+    }
+
+    @include focus-visible-ring;
+}
+
+.loading {
+    text-align: center;
+    padding: vars.$padding-3xl;
+    font-size: $font-size-4xl;
+    font-family: $defaultFont;
+    color: $text-primary;
+}

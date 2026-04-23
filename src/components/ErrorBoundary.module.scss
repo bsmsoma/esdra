@@ -1,0 +1,118 @@
+@use "../App.scss" as *;
+@use "../styles/variables" as vars;
+@use "../styles/tokens" as *;
+
+.errorBoundary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    padding: vars.$spacing-xl;
+    background-color: $secondary-color;
+}
+
+.errorContent {
+    max-width: 600px;
+    width: 100%;
+    text-align: center;
+    padding: vars.$padding-3xl;
+    background-color: $primary-color;
+    border-radius: vars.$radius-lg;
+    box-shadow: $shadow-lg;
+}
+
+.errorTitle {
+    font-size: 2rem;
+    font-weight: 600;
+    color: $status-error;
+    margin-bottom: vars.$spacing-md;
+    font-family: $clashGroteskSemibold;
+}
+
+.errorMessage {
+    font-size: 1.1rem;
+    color: $text-primary;
+    margin-bottom: vars.$spacing-xl;
+    line-height: 1.6;
+}
+
+.errorDetails {
+    margin: vars.$spacing-xl 0;
+    text-align: left;
+    background-color: $secondary-color;
+    padding: vars.$spacing-md;
+    border-radius: vars.$radius-md;
+    border: 1px solid $status-error;
+
+    summary {
+        cursor: pointer;
+        font-weight: 600;
+        color: $status-error;
+        margin-bottom: vars.$spacing-sm;
+        user-select: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
+.errorStack {
+    margin-top: vars.$spacing-sm;
+    font-size: 0.85rem;
+    color: $text-primary;
+    white-space: pre-wrap;
+    word-break: break-all;
+    overflow-x: auto;
+    font-family: monospace;
+    background-color: rgba(0, 0, 0, 0.05);
+    padding: vars.$spacing-sm;
+    border-radius: vars.$radius-md;
+}
+
+.errorActions {
+    display: flex;
+    gap: vars.$spacing-md;
+    justify-content: center;
+    margin-top: vars.$spacing-xl;
+    flex-wrap: wrap;
+}
+
+.resetButton,
+.reloadButton {
+    padding: vars.$spacing-md vars.$spacing-xl;
+    font-size: 1rem;
+    font-weight: 500;
+    border: none;
+    border-radius: vars.$radius-md;
+    cursor: pointer;
+    transition: all vars.$transition-base vars.$ease-in-out;
+    font-family: $clashGroteskMedium;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+}
+
+.resetButton {
+    background-color: $border-color;
+    color: $primary-color;
+
+    &:hover {
+        background-color: $border-color-hover;
+    }
+}
+
+.reloadButton {
+    background-color: $status-error;
+    color: white;
+
+    &:hover {
+        background-color: $button-error;
+    }
+}

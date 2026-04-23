@@ -1,0 +1,96 @@
+// ========================================
+// GLOBAL VARIABLES
+// ========================================
+// Espaçamento, breakpoints, transições e valores estruturais compartilhados
+
+// Breakpoints
+$breakpoint-mobile: 450px;
+$breakpoint-tablet: 750px;
+$breakpoint-desktop: 1024px;
+
+// Z-index layers
+$z-index-base: 0;
+$z-index-dropdown: 100;
+$z-index-sticky: 200;
+$z-index-modal: 1000;
+$z-index-overlay: 1001;
+$z-index-loading: 1000;
+
+// Transitions
+$transition-fast: 0.2s;
+$transition-base: 0.3s;
+$transition-slow: 0.6s;
+$transition-slower: 1.5s;
+
+// Easing functions
+$ease-base: ease;
+$ease-in-out: ease-in-out;
+$ease-cubic: cubic-bezier(0.165, 0.84, 0.44, 1);
+
+// Animation durations
+$animation-duration-fast: 0.2s;
+$animation-duration-base: 0.3s;
+$animation-duration-slow: 1s;
+$animation-duration-slower: 1.5s;
+$animation-duration-slowest: 2s;
+
+// Spacing scale (base unit: 0.25rem = 4px)
+$spacing-xs: 0.25rem;    // 4px
+$spacing-sm: 0.5rem;     // 8px
+$spacing-md: 1rem;       // 16px
+$spacing-lg: 1.5rem;     // 24px
+$spacing-xl: 2rem;       // 32px
+$spacing-2xl: 3rem;      // 48px
+
+// Border radius scale
+$radius-xs: 0.25rem;     // 4px
+$radius-sm: 0.4rem;     // 6.4px
+$radius-md: 0.5rem;     // 8px
+$radius-lg: 0.75rem;     // 12px
+$radius-xl: 1rem;        // 16px
+$radius-2xl: 1.2rem;     // 19.2px
+$radius-full: 50%;       // 50%
+$radius-999: 999px;      // 999px
+
+// Padding
+$padding-xs: 0.25rem;      // 4px
+$padding-sm: 0.3rem;      // 4.8px
+$padding-md: 0.5rem;      // 8px
+$padding-lg: 0.75rem;     // 12px
+$padding-xl: 1rem;        // 16px
+$padding-2xl: 1.5rem;      // 24px
+$padding-3xl: 2rem;       // 32px
+$padding-4xl: 2.5rem;     // 40px
+
+// Margin
+$margin-xs: 0.2rem;       // 3.2px
+$margin-sm: 0.4rem;       // 6.4px
+$margin-md: 0.5rem;       // 8px
+$margin-lg: 0.8rem;       // 12.8px
+$margin-xl: 1rem;         // 16px
+$margin-2xl: 1.2rem;      // 19.2px
+$margin-3xl: 1.4rem;      // 22.4px
+$margin-4xl: 1.5rem;      // 24px
+$margin-5xl: 2rem;       // 32px
+$margin-6xl: 3rem;        // 48px
+
+// Gap
+$gap-xs: 0.3rem;          // 4.8px
+$gap-sm: 0.5rem;          // 8px
+$gap-md: 0.6rem;          // 9.6px
+$gap-lg: 0.8rem;          // 12.8px
+$gap-xl: 1rem;            // 16px
+$gap-2xl: 1.5rem;         // 24px
+$gap-3xl: 2rem;           // 32px
+
+// Border width scale
+$border-width-thin: 1px;
+$border-width-base: 2px;
+$border-width-thick: 4px;
+
+// Transform Values
+$transform-scale-hover: 1.1;
+$transform-scale-active: 1.05;
+$transform-scale-disabled: 0.95;
+$transform-translate-y: -2px;
+$transform-translate-y-hover: -5px;

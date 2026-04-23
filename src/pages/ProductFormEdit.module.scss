@@ -1,0 +1,548 @@
+@use "../App.scss" as *;
+@use "../styles/variables" as vars;
+
+.productform {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: $background-color;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+    font-family: $defaultFont;
+
+    .formgroup {
+        display: flex;
+        flex-direction: column;
+
+        label {
+            margin-bottom: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        input,
+        textarea,
+        select {
+            padding: 12px;
+            border: 1px solid $border-color;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-family: inherit;
+            width: 100%;
+        }
+
+        .inputError {
+            border: 2px solid $border-color-error;
+            background-color: $status-error-surface;
+        }
+
+        .errorMessage {
+            margin-top: 8px;
+            padding: 10px;
+            background-color: $status-error-surface;
+            color: $status-error-text;
+            border: 1px solid $status-error-border;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .multipleSizesToggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            cursor: pointer;
+            font-weight: normal;
+            user-select: none;
+
+            input[type="checkbox"] {
+                width: 16px;
+                height: 16px;
+                cursor: pointer;
+                accent-color: $button-info;
+            }
+
+            span {
+                font-size: 0.9rem;
+                color: $text-quinary;
+            }
+        }
+
+        .sizesSection {
+            margin-top: 12px;
+            padding: 14px;
+            background-color: $background-even;
+            border: 1px solid $border-color;
+            border-radius: 6px;
+
+            .sizesHeader {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 10px;
+
+                span {
+                    font-size: 0.85rem;
+                    color: $text-quaternary;
+                    font-weight: 500;
+                }
+            }
+
+            .sizesButtons {
+                display: flex;
+                gap: 8px;
+            }
+
+            .selectAllButton,
+            .clearButton {
+                padding: 4px 10px;
+                background-color: transparent;
+                color: $button-info;
+                border: 1px solid $button-info;
+                border-radius: 4px;
+                font-size: 0.8rem;
+                cursor: pointer;
+                transition: all 0.2s ease;
+
+                &:hover {
+                    background-color: $button-info;
+                    color: white;
+                }
+            }
+
+            .clearButton {
+                color: $border-color-error;
+                border-color: $border-color-error;
+
+                &:hover {
+                    background-color: $border-color-error;
+                    color: white;
+                }
+            }
+
+            .sizesGrid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+                gap: 6px;
+            }
+
+            .sizeCheckbox {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 8px 4px;
+                background-color: white;
+                border: 1px solid $border-color;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: all 0.15s ease;
+                font-weight: normal;
+                margin-bottom: 0;
+
+                &:hover {
+                    border-color: $button-info;
+                }
+
+                &:has(input:checked) {
+                    border-color: $button-info;
+                    background-color: $button-info;
+
+                    .sizeLabel {
+                        color: white;
+                    }
+                }
+
+                input[type="checkbox"] {
+                    display: none;
+                }
+
+                .sizeLabel {
+                    font-size: 0.9rem;
+                    font-weight: 500;
+                    color: $button-secondary-text;
+                }
+            }
+
+            .selectedCount {
+                margin-top: 10px;
+                margin-bottom: 0;
+                text-align: right;
+                color: $text-tertiary;
+                font-size: 0.8rem;
+            }
+        }
+
+        .inventorySection {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+            padding: 14px;
+            background-color: $background-even;
+            border: 1px solid $border-color;
+            border-radius: 6px;
+
+            .inventoryItem {
+                display: inline-flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 6px;
+                min-width: 80px;
+                padding: 10px 8px;
+                background-color: white;
+                border: 1px solid $border-color;
+                border-radius: 6px;
+                transition: all 0.15s ease;
+
+                &:hover {
+                    border-color: $button-info;
+                    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.1);
+                }
+
+                label {
+                    font-size: 0.75rem;
+                    font-weight: 600;
+                    color: $text-quaternary;
+                    text-align: center;
+                    margin-bottom: 0;
+                    white-space: nowrap;
+                }
+
+                input[type="number"] {
+                    width: 100%;
+                    max-width: 70px;
+                    padding: 8px;
+                    border: 1px solid $border-color-secondary;
+                    border-radius: 4px;
+                    font-size: 0.9rem;
+                    text-align: center;
+                    font-weight: 500;
+                    transition: all 0.15s ease;
+
+                    &:focus {
+                        outline: none;
+                        border-color: $button-info;
+                        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+                    }
+
+                    &::-webkit-inner-spin-button,
+                    &::-webkit-outer-spin-button {
+                        -webkit-appearance: none;
+                        margin: 0;
+                    }
+
+                    &[type="number"] {
+                        -moz-appearance: textfield;
+                    }
+                }
+            }
+        }
+    }
+
+    .buttonsContainer {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin: 0 auto;
+        width: 80%;
+    }
+
+    .cancelbutton {
+        flex: 1;
+        padding: 12px;
+        text-align: center;
+        background-color: $button-cancel;
+        color: white;
+        font-size: 1rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+
+        &:hover {
+            background-color: $button-cancel-hover;
+        }
+    }
+
+    .submitbutton {
+        flex: 1;
+        padding: 12px;
+        text-align: center;
+        background-color: $button-info;
+        color: white;
+        font-size: 1rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+
+        &:hover {
+            background-color: $button-info-hover;
+        }
+
+        &:disabled {
+            background-color: $button-disabled;
+            cursor: not-allowed;
+            opacity: 0.6;
+
+            &:hover {
+                background-color: $button-disabled;
+            }
+        }
+    }
+}
+
+.imageUploadSection {
+    margin: 1rem 0;
+
+    .pasteHint {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        background-color: $background-secondary;
+        border: 1px solid $border-color;
+        border-radius: 6px;
+        color: $text-quaternary;
+        font-size: 0.9rem;
+        line-height: 1.4;
+        margin-bottom: 1rem;
+
+        svg {
+            flex-shrink: 0;
+            opacity: 0.7;
+        }
+
+        span {
+            flex: 1;
+        }
+
+        kbd {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            margin: 0 0.2rem;
+            font-size: 0.85rem;
+            font-family: monospace;
+            background-color: $background-color;
+            border: 1px solid $border-color;
+            border-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            font-weight: 600;
+            color: $button-secondary-text;
+        }
+    }
+
+    .imagePreviewContainer {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+
+        .imagePreview {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+            img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            .removeImage {
+                position: absolute;
+                top: 8px;
+                right: 8px;
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.9);
+                border: none;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 18px;
+                color: $text-quinary;
+                transition: all 0.2s ease;
+
+                &:hover {
+                    background: white;
+                    color: $status-error;
+                    transform: scale(1.1);
+                }
+            }
+
+            .coverImage {
+                position: absolute;
+                top: 8px;
+                left: 8px;
+                width: 32px;
+                height: 32px;
+                padding: 0;
+                border: none;
+                background: none;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+
+                &:hover {
+                    transform: scale(1.1);
+                }
+
+                &.active {
+                    svg g:first-child rect {
+                        fill: $status-success;
+                    }
+                }
+
+                svg {
+                    width: 24px;
+                    height: 24px;
+                }
+            }
+        }
+
+        .videoPreview {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            background-color: $surface-video;
+
+            video {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            .removeImage {
+                position: absolute;
+                top: 8px;
+                right: 8px;
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.9);
+                border: none;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 18px;
+                color: $text-quinary;
+                transition: all 0.2s ease;
+                z-index: 2;
+
+                &:hover {
+                    background: white;
+                    color: $status-error;
+                    transform: scale(1.1);
+                }
+            }
+
+            .videoIcon {
+                position: absolute;
+                bottom: 8px;
+                left: 8px;
+                width: 32px;
+                height: 32px;
+                background: rgba(0, 0, 0, 0.6);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                z-index: 2;
+
+                svg {
+                    width: 20px;
+                    height: 20px;
+                }
+            }
+        }
+
+        .uploadButton {
+            aspect-ratio: 1;
+            border: 2px dashed $border-color;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+
+            .uploadPlaceholder {
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
+                color: $text-quinary;
+
+                svg {
+                    width: 32px;
+                    height: 32px;
+                    stroke: $text-tertiary;
+
+                    &:hover {
+                        stroke: $accent-gold;
+                    }
+                }
+
+                .imageCount {
+                    font-size: 0.8rem;
+                    color: $text-tertiary;
+                }
+            }
+
+            &:hover {
+                border-color: $accent-gold;
+                background: rgba(184, 160, 126, 0.05);
+
+                .uploadPlaceholder {
+                    color: $accent-gold;
+
+                    svg {
+                        color: $accent-gold;
+                    }
+                }
+            }
+        }
+    }
+
+    .compressionFeedback {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        margin-top: 1rem;
+        background-color: $background-editing;
+        border: 1px solid $border-color-info;
+        border-radius: 8px;
+        color: $text-info;
+        font-weight: 500;
+        font-size: 0.95rem;
+        animation: pulse 1.5s ease-in-out infinite;
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+    }
+}
+

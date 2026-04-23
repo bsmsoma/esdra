@@ -1,0 +1,194 @@
+@use "../App.scss" as *;
+@use "../styles/variables" as vars;
+
+.productsContainer {
+    width: 100%;
+    padding: 0.5rem;
+
+    .collectionBanner {
+        margin-bottom: 1.2rem;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, rgba(184, 160, 126, 0.15) 0%, rgba(184, 160, 126, 0.05) 100%);
+        border-radius: 16px;
+        border: 2px solid rgba(184, 160, 126, 0.3);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+        .collectionContent {
+            text-align: center;
+
+            .collectionLabel {
+                display: inline-block;
+                font-family: $defaultFont;
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                letter-spacing: 0.15em;
+                color: rgba(184, 160, 126, 0.8);
+                background-color: white;
+                padding: 0.25rem 0.75rem;
+                border-radius: 999px;
+                margin-bottom: 0.5rem;
+                font-weight: 600;
+            }
+
+            .collectionName {
+                font-family: $defaultFont;
+                font-size: 1.8rem;
+                color: $text-accent-tertiary;
+                margin: 0.5rem 0;
+                font-weight: 600;
+                letter-spacing: 0.02em;
+            }
+
+            .collectionDescription {
+                font-family: $defaultFont;
+                font-size: 0.95rem;
+                color: rgba(45, 45, 45, 0.7);
+                margin: 0.5rem 0 0 0;
+                line-height: 1.5;
+            }
+        }
+    }
+
+    .searchResults {
+        margin-bottom: 0.8rem;
+        padding: 0.5rem;
+        background-color: $background-hover;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+        h2 {
+            font-family: $defaultFont;
+            font-size: 1.4rem;
+            color: $text-primary;
+            margin-bottom: 0.5rem;
+        }
+
+        p {
+            font-family: $defaultFont;
+            font-size: 1rem;
+            color: $text-tertiary;
+        }
+    }
+
+    .productsGrid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: vars.$gap-xl;
+        margin-top: vars.$margin-5xl;
+        padding: vars.$padding-xl;
+
+        button {
+            padding: vars.$padding-md vars.$padding-xl;
+            border: vars.$border-width-thin solid $border-color-accent;
+            background-color: $background-color;
+            color: $accent-gold;
+            border-radius: vars.$radius-sm;
+            cursor: pointer;
+            font-family: $defaultFont;
+            font-size: $font-size-lg;
+            font-weight: $font-weight-medium;
+            letter-spacing: $letter-spacing-normal;
+            transition: all $transition-base $ease-base;
+
+            &:hover:not(:disabled) {
+                background-color: $accent-gold;
+                color: $button-primary-text;
+                transform: translateY(vars.$transform-translate-y);
+                box-shadow: $shadow-accent;
+            }
+
+            &:disabled {
+                opacity: $opacity-disabled;
+                cursor: not-allowed;
+            }
+
+            @include focus-visible-ring;
+        }
+
+        span {
+            font-family: $defaultFont;
+            color: $text-quinary;
+            font-size: $font-size-lg;
+        }
+    }
+}
+
+.filtersInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background-color: rgba(184, 160, 126, 0.1);
+    border-radius: 12px;
+    border: 1px solid rgba(184, 160, 126, 0.25);
+    font-family: $defaultFont;
+    margin-bottom: 0.75rem;
+
+    .filtersInfoLabel {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: rgba(45, 45, 45, 0.7);
+    }
+
+    .filtersInfoList {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .filtersInfoTag {
+        background-color: white;
+        color: $text-quaternary;
+        border: 1px solid rgba(184, 160, 126, 0.4);
+        border-radius: 999px;
+        padding: 0.35rem 0.75rem;
+        font-size: 0.85rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+}
+
+@include responsiveMobile {
+    .productsContainer {
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        padding: 0;
+
+        .collectionBanner {
+            margin-bottom: 0.8rem;
+            padding: 1rem;
+            border-radius: 12px;
+
+            .collectionContent {
+                .collectionLabel {
+                    font-size: 0.7rem;
+                }
+
+                .collectionName {
+                    font-size: 1.4rem;
+                }
+
+                .collectionDescription {
+                    font-size: 0.85rem;
+                }
+            }
+        }
+
+        .searchResults {
+            margin-bottom: 0;
+        }
+
+        .productsGrid {
+            gap: 0.5rem;
+        }
+    }
+}

@@ -1,0 +1,154 @@
+@use "../App.scss" as *;
+@use "../styles/variables" as vars;
+@use "../styles/tokens" as *;
+
+.cartItem {
+    display: grid;
+    grid-template-columns: 120px 1fr auto auto auto;
+    gap: vars.$gap-2xl;
+    padding: vars.$padding-2xl;
+    background: $background-color;
+    border: vars.$border-width-thin solid $border-color;
+    border-radius: vars.$radius-md;
+    align-items: center;
+
+    @media (max-width: vars.$breakpoint-tablet) {
+        grid-template-columns: 100px 1fr;
+        gap: vars.$gap-xl;
+    }
+}
+
+.imageLink {
+    display: block;
+}
+
+.image {
+    width: 100%;
+    height: auto;
+    border-radius: vars.$radius-xs;
+    object-fit: cover;
+}
+
+.itemInfo {
+    display: flex;
+    flex-direction: column;
+    gap: vars.$gap-sm;
+}
+
+.productLink {
+    text-decoration: none;
+    color: inherit;
+}
+
+.productName {
+    font-size: $font-size-3xl;
+    font-weight: $font-weight-semibold;
+    font-family: $defaultFont;
+    color: $text-primary;
+    margin: 0;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+.productCode {
+    font-size: $font-size-lg;
+    font-family: $defaultFont;
+    color: $text-quinary;
+    margin: 0;
+}
+
+.productDetails {
+    font-size: $font-size-lg;
+    font-family: $defaultFont;
+    color: $text-quinary;
+    margin: 0;
+}
+
+.quantitySection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: vars.$gap-sm;
+
+    @media (max-width: vars.$breakpoint-tablet) {
+        grid-column: 1 / -1;
+        flex-direction: row;
+        justify-content: center;
+    }
+}
+
+.quantityLabel {
+    font-size: $font-size-lg;
+    font-family: $defaultFont;
+    color: $text-quinary;
+}
+
+.quantityInput {
+    width: 80px;
+    padding: vars.$padding-md;
+    border: vars.$border-width-thin solid $border-color;
+    border-radius: vars.$radius-xs;
+    text-align: center;
+    font-size: $font-size-2xl;
+    font-family: $defaultFont;
+    color: $text-primary;
+
+    &:focus {
+        outline: none;
+        border-color: $border-color-active;
+    }
+}
+
+.priceSection {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: vars.$gap-sm;
+
+    @media (max-width: vars.$breakpoint-tablet) {
+        grid-column: 2;
+        align-items: flex-start;
+    }
+}
+
+.unitPrice {
+    font-size: $font-size-lg;
+    font-family: $defaultFont;
+    color: $text-quinary;
+    margin: 0;
+}
+
+.totalPrice {
+    font-size: $font-size-3xl;
+    font-weight: $font-weight-semibold;
+    font-family: $defaultFont;
+    color: $text-primary;
+    margin: 0;
+}
+
+.removeButton {
+    background: transparent;
+    border: none;
+    font-size: $font-size-8xl;
+    font-family: $defaultFont;
+    color: $text-tertiary;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color vars.$transition-base vars.$ease-base;
+
+    &:hover {
+        color: $status-error;
+    }
+
+    @media (max-width: vars.$breakpoint-tablet) {
+        grid-column: 2;
+        justify-self: end;
+    }
+}

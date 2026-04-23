@@ -1,0 +1,954 @@
+@use "../App.scss" as *;
+@use "../styles/variables" as vars;
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.backButton {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    font-family: $clashGroteskMedium;
+    color: $text-primary;
+    text-align: center;
+    margin: 1rem 0 0 10rem;
+
+    .backButtonIcon {
+        width: 34px;
+        height: 34px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .backButtonText {
+        font-family: $clashGroteskMedium;
+        color: $text-primary;
+        text-align: center;
+    }
+}
+
+
+.productDetailsContainer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+    align-items: start;
+    width: 1200px;
+    max-width: 1500px;
+    min-height: 735px;
+    margin: 1rem auto 3rem;
+    overflow-x: hidden;
+
+    //modal for the image, when user clicks on the image
+    .modal {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        margin: 0 auto;
+        background-color: $surface-video;
+        z-index: 10000;
+
+        .modalImageLength {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            color: $text-secondary;
+            font-family: $clashGroteskMedium;
+            z-index: 10001;
+        }
+
+        .modalImageContainer {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            
+
+            .modalImage {
+                width: 540px;
+                height: 700px;
+                border-radius: 1rem;
+                object-fit: contain;
+            }
+
+            .modalVideo {
+                width: 540px;
+                height: 700px;
+                border-radius: 1rem;
+                object-fit: cover;
+                background-color: $surface-video;
+            }
+
+            .closeModalButton {
+                position: absolute;
+                height: 32px;
+                width: 32px;
+                top: 1rem;
+                right: 1rem;
+                border: none;
+                z-index: 10001;
+                cursor: pointer;
+                border-radius: 1rem;
+                font-size: 1rem;
+                border: 2px solid $border-color-active;
+                opacity: 0.5;
+
+                &:hover {
+                    background-color: $button-primary-hover;
+                    color: $text-secondary;
+                    transform: scale(1.1);
+                    border: 2px solid $text-secondary;
+                }
+            }
+        }
+
+    }
+
+    .imageContainer {
+        width: 100%;
+        height: 100%;
+        display: grid;
+        grid-template-columns: 5fr;
+        grid-template-rows: 1fr 200px;
+        grid-template-areas:
+            "imageCover imageCover imageCover imageCover imageCover buttonsContainer"
+            "miniContainer miniContainer miniContainer miniContainer miniContainer .";
+        width: 545px;
+        height: 745px;
+        grid-row-gap: 24px;
+        overflow: hidden;
+        max-width: 100%;
+
+
+        .imageCover {
+            height: 610px;
+            width: 418px;
+            row-gap: 1rem;
+            margin: 0 auto;
+            border-radius: 0.5rem;
+            object-fit: cover;
+            column-span: 5fr;
+            will-change: transform;
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            cursor: pointer;
+            display: block;
+            position: relative;
+            z-index: 1;
+        }
+
+        // Estilos específicos para vídeo no imageCover - manter mesmas dimensões
+        video.imageCover {
+            height: 610px;
+            width: 418px;
+            object-fit: cover;
+            background-color: $surface-video;
+            display: block;
+            position: relative;
+            z-index: 1;
+        }
+
+
+        .miniContainer {
+            display: flex;
+            flex-direction: row;
+            gap: 0.5rem;
+            grid-area: miniContainer;
+            justify-content: flex-start;
+            overflow-x: auto;
+            overflow-y: visible;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            padding: 2px 0.5rem;
+            margin-top: 4px;
+            max-width: 100%;
+            width: 100%;
+            box-sizing: border-box;
+            overscroll-behavior-x: contain;
+            contain: layout style paint;
+
+            // Custom scrollbar styling
+            &::-webkit-scrollbar {
+                height: 4px;
+            }
+
+            &::-webkit-scrollbar-track {
+                background: $background-active;
+                border-radius: 2px;
+            }
+
+            &::-webkit-scrollbar-thumb {
+                background: $border-color-secondary;
+                border-radius: 2px;
+
+                &:hover {
+                    background: $border-color-hover;
+                }
+            }
+
+            .imageMini {
+                border-radius: 0.5rem;
+                height: 100px;
+                width: 76px;
+                grid-area: imageMini;
+                margin: 0 0.5rem;
+                object-fit: cover;
+                cursor: pointer;
+                will-change: transform;
+                transform: translateZ(0);
+                backface-visibility: hidden;
+                transition: transform 0.2s ease-out;
+                flex-shrink: 0;
+                box-sizing: border-box;
+
+                &:hover {
+                    transform: scale(1.05);
+                }
+            }
+
+            .videoMini {
+                position: relative;
+                border-radius: 0.5rem;
+                height: 100px;
+                width: 76px;
+                margin: 0 0.5rem;
+                cursor: pointer;
+                will-change: transform;
+                transform: translateZ(0);
+                backface-visibility: hidden;
+                transition: transform 0.2s ease-out;
+                flex-shrink: 0;
+                overflow: hidden;
+                background-color: $surface-video;
+
+                &:hover {
+                    transform: scale(1.05);
+                }
+
+                .videoMiniPlayer {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                }
+
+                .videoMiniIcon {
+                    position: absolute;
+                    bottom: 4px;
+                    left: 4px;
+                    width: 20px;
+                    height: 20px;
+                    background: rgba(0, 0, 0, 0.6);
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: $text-secondary;
+                    z-index: 2;
+
+                    svg {
+                        width: 14px;
+                        height: 14px;
+                    }
+                }
+            }
+
+            .selectedImage {
+                border: 2px solid $border-color-active;
+                border-radius: 4px;
+                box-sizing: border-box;
+                transform: scale(1.05);
+            }
+        }
+
+
+
+        .buttonsContainer {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 50px;
+            height: 610px;
+            grid-area: buttonsContainer;
+
+            .shareAndLikeContainer {
+                display: flex;
+                gap: 1rem;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .controlsContainer {
+                display: flex;
+                gap: 1rem;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+
+            }
+
+            svg {
+                width: 40px;
+                height: 40px;
+                cursor: pointer;
+                background-color: $background-button;
+                border-radius: 0.5rem;
+                fill: none;
+                transition: all 0.3s ease;
+
+
+                &:hover {
+                    transform: scale(1.1);
+                    background-color: gray;
+                }
+            }
+        }
+    }
+
+    .productInfoContainer {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        min-height: fit-content;
+
+        .productPriceContainer {
+            width: 100%;
+            border-bottom: 1px dashed $text-tertiary;
+
+
+            .category {
+                font-family: $clashGroteskMedium;
+                font-size: 1rem;
+                font-weight: 500;
+                color: $text-tertiary;
+                letter-spacing: 1%;
+                margin-bottom: 0.5rem;
+            }
+
+            .name {
+                @include productName(2rem);
+            }
+
+            .rentValue {
+                font-family: $clashGroteskSemibold;
+                font-size: 1.5rem;
+                font-weight: 600;
+                color: $text-primary;
+                letter-spacing: -0.5%;
+                margin-bottom: 1.2rem;
+            }
+
+            .sellValue {
+                font-family: $clashGroteskSemibold;
+                font-size: 1.5rem;
+                font-weight: 600;
+                color: $text-primary;
+                letter-spacing: -0.5%;
+                margin-bottom: 1.2rem;
+            }
+        }
+
+        .productDetailContainer {
+            h4 {
+                font-family: $clashGroteskMedium;
+                font-size: 1.2rem;
+                font-weight: 500;
+                color: $text-primary;
+                letter-spacing: 1%;
+                margin-bottom: 0.5rem;
+            }
+
+            .productDetail {
+                font-family: $clashGroteskMedium;
+                font-size: 1rem;
+                font-weight: 500;
+                color: $text-tertiary;
+                letter-spacing: 1%;
+                max-height: 120px;
+                overflow-y: auto;
+                padding-right: 0.5rem;
+                white-space: pre-line;
+
+                // Custom scrollbar styling
+                &::-webkit-scrollbar {
+                    width: 6px;
+                }
+
+                &::-webkit-scrollbar-track {
+                    background: $background-active;
+                    border-radius: 3px;
+                }
+
+                &::-webkit-scrollbar-thumb {
+                    background: $border-color-secondary;
+                    border-radius: 3px;
+
+                    &:hover {
+                        background: $border-color-hover;
+                    }
+                }
+            }
+
+            .color {
+                font-family: $clashGroteskMedium;
+                font-size: 1.1rem;
+                font-weight: 500;
+                color: $text-tertiary;
+                margin-top: 2.5rem;
+
+                span {
+                    font-family: $clashGroteskMedium;
+                    font-size: 1.1rem;
+                    font-weight: 500;
+                    color: $text-primary;
+                    margin-left: 0.2rem;
+                }
+            }
+
+            .colorContainer {
+                width: 100%;
+                display: flex;
+                flex-direction: row;
+                gap: 0.5rem;
+
+                .colorBlock {
+                    margin: 0.5rem 0.05rem 1rem 0.2rem;
+                    width: 74px;
+                    height: 40px;
+                    color: $text-secondary;
+                    border: 0.5px solid $text-tertiary;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    border-radius: 0.5rem;
+                    transition: all 0.3s ease;
+
+                    &:hover {
+                        transform: scale(1.1);
+                    }
+
+                    .colorInside {
+                        margin: 0 auto;
+                        width: 63px;
+                        height: 28px;
+                        border-radius: 0.5rem;
+                    }
+                }
+            }
+
+            .productSizeContainer {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+
+                h4 {
+                    color: $text-tertiary;
+                    font-family: $clashGroteskMedium;
+                    font-size: 1rem;
+                    font-weight: 500;
+                    letter-spacing: 1%;
+                    margin-bottom: 0.5rem;
+                }
+
+                .sizeText {
+                    font-family: $clashGroteskMedium;
+                    font-size: 1rem;
+                    color: $text-tertiary;
+                }
+
+                .sizeButtonsContainer {
+                    display: flex;
+                    flex-direction: row;
+                    gap: 0.5rem;
+                    width: 100%;
+
+                    .sizeButton {
+                        border: 1px solid $button-primary-hover;
+                        background-color: $background-button;
+                        color: $button-primary-bg;
+                        width: 75px;
+                        height: 39px;
+                        border-radius: 0.5rem;
+                        font-family: $clashGroteskSemibold;
+                        font-size: 1rem;
+                        font-weight: 600;
+                        letter-spacing: 1%;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+
+                        &:hover {
+                            background-color: $button-primary-hover;
+                            color: $text-secondary;
+                            transform: scale(1.1);
+                        }
+                    }
+
+                    .selectedSize {
+                        background-color: $button-primary-hover;
+                        border-color: $border-color-active;
+                        color: $text-secondary;
+                        transform: scale(1.05);
+                    }
+                }
+
+                .sizeSummaryContainer {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+
+                    .sizeSummaryText {
+                        font-family: $clashGroteskSemibold;
+                        font-size: 1.1rem;
+                        font-weight: 600;
+                        color: $button-primary-bg;
+                        padding: 8px 16px;
+                        background-color: $background-button;
+                        border: 1px solid $border-color;
+                        border-radius: 0.5rem;
+                    }
+
+                    .sizeSelect {
+                        padding: 10px 16px;
+                        border: 1px solid $button-primary-hover;
+                        border-radius: 0.5rem;
+                        font-family: $clashGroteskMedium;
+                        font-size: 1rem;
+                        background-color: $background-button;
+                        color: $button-primary-bg;
+                        cursor: pointer;
+                        min-width: 120px;
+                        transition: all 0.2s ease;
+
+                        &:hover {
+                            border-color: $border-color-active;
+                        }
+
+                        &:focus {
+                            outline: none;
+                            border-color: $border-color-active;
+                        }
+                    }
+                }
+            }
+
+            .rentAndBuyContainer {
+                display: flex;
+                flex-direction: row;
+                gap: 1rem;
+                width: 100%;
+                margin-top: 2rem;
+
+                .addToCartWrapper {
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .addToCartContainer {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0;
+                    position: relative;
+                    min-height: fit-content;
+                }
+
+                .addToCartButton {
+                    padding: 1rem 2rem;
+                    background: $button-primary-bg;
+                    color: $text-secondary;
+                    border: none;
+                    border-radius: 4px;
+                    font-size: 1rem;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: background 0.3s ease;
+                    font-family: $clashGroteskSemibold;
+                    position: relative;
+                    z-index: 1;
+
+                    &:hover:not(:disabled) {
+                        background: $button-secondary-text;
+                    }
+
+                    &:disabled {
+                        background: $border-color-secondary;
+                        cursor: not-allowed;
+                    }
+                }
+
+                .availability {
+                    font-size: 0.875rem;
+                    color: $status-warning;
+                    font-weight: 500;
+                    margin: 0;
+                    font-family: $clashGroteskMedium;
+                    position: absolute;
+                    bottom: calc(100% + 0.5rem);
+                    left: 0;
+                    right: 0;
+                    z-index: 2;
+                    pointer-events: none;
+                }
+
+                .unavailable {
+                    font-size: 0.875rem;
+                    color: $status-error;
+                    font-weight: 500;
+                    margin: 0;
+                    font-family: $clashGroteskMedium;
+                    position: absolute;
+                    bottom: calc(100% + 0.5rem);
+                    left: 0;
+                    right: 0;
+                    z-index: 2;
+                    pointer-events: none;
+                }
+
+                .error {
+                    font-size: 0.875rem;
+                    color: $status-error;
+                    margin: 0;
+                    font-family: $clashGroteskMedium;
+                    position: absolute;
+                    bottom: calc(100% + 0.5rem);
+                    left: 0;
+                    right: 0;
+                    z-index: 2;
+                    pointer-events: none;
+                }
+
+                .rentButton {
+                    background-color: $button-primary-bg;
+                    color: $text-secondary;
+                    width: 290px;
+                    height: 55px;
+                    cursor: pointer;
+                    border-radius: 0.5rem;
+                    transition: all 0.3s ease;
+                    font-family: $clashGroteskSemibold;
+                    font-size: 1rem;
+                    font-weight: 600;
+                    letter-spacing: -0.5%;
+
+                    &:hover {
+                        background-color: $button-primary-hover;
+                        color: $text-secondary;
+                        transform: scale(1.1);
+                    }
+                }
+
+                .buyButtonWrapper {
+                    position: relative;
+                    display: inline-block;
+
+                    .buyButton {
+                        background-color: $background-button;
+                        color: $button-primary-hover;
+                        border: 1px solid $border-color-secondary;
+                        width: 200px;
+                        height: 55px;
+                        cursor: pointer;
+                        border-radius: 0.5rem;
+                        transition: all 0.3s ease;
+                        font-family: $clashGroteskSemibold;
+                        font-size: 1rem;
+                        font-weight: 600;
+                        letter-spacing: -0.5%;
+
+                        &:hover {
+                            background-color: $button-primary-hover;
+                            color: $text-secondary;
+                            transform: scale(1.1);
+                        }
+
+                        &:disabled {
+                            opacity: 0.6;
+                            cursor: not-allowed;
+                            position: relative;
+                        }
+
+                        &:disabled:hover .tooltip {
+                            visibility: visible;
+                            opacity: 1;
+                        }
+
+                        .tooltip {
+                            visibility: hidden;
+                            opacity: 0;
+                            background-color: rgba(0, 0, 0, 1);
+                            color: $text-secondary;
+                            text-align: center;
+                            padding: 8px;
+                            border-radius: 6px;
+                            position: absolute;
+                            z-index: 0;
+                            bottom: 125%;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            width: max-content;
+                            transition: opacity 0.3s;
+                            font-size: 14px;
+
+                            &::after {
+                                //faz a flecha do tooltip :D
+                                content: "";
+                                position: absolute;
+                                top: 100%;
+                                left: 50%;
+                                margin-left: -5px;
+                                border-width: 5px;
+                                border-style: solid;
+                                border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+
+    }
+}
+
+.shareWrapper {
+    position: relative;
+
+    .shareButton {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        transition: all 0.2s ease;
+
+        &:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+    }
+
+    .shareMenu {
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+        padding: 8px;
+        min-width: 200px;
+        z-index: 0;
+        animation: fadeIn 0.2s ease;
+
+        &::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            right: 16px;
+            width: 12px;
+            height: 12px;
+            background: white;
+            transform: rotate(45deg);
+            box-shadow: -2px -2px 5px rgba(0, 0, 0, 0.06);
+        }
+
+        button {
+            width: 100%;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 4px;
+            color: $button-secondary-text;
+            font-size: 0.9rem;
+
+            svg {
+                width: 20px;
+                height: 20px;
+            }
+
+            &:hover {
+                background: rgba(0, 0, 0, 0.05);
+            }
+        }
+    }
+}
+
+// media queries
+@media only screen and (max-width: 450px) {
+    .backButton {
+        margin: 0.5rem 0 0.5rem 0.9rem;
+    }
+    .productDetailsContainer {
+        margin: 0 auto 3rem;
+        min-height: 100%;
+        width: 335px;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+        grid-row-gap: 1rem;
+
+        .imageContainer {
+            width: 335px;
+            height: auto;
+            min-height: 465px;
+            column-gap: 1rem;
+            grid-template-columns: 1fr 44px;
+            grid-template-rows: 1fr 88px;
+            grid-template-areas:
+                "imageCover buttonsContainer"
+                "miniContainer miniContainer";
+            overflow: visible;
+
+            .imageCover {
+                width: 279px;
+                height: 371px;
+                max-height: 371px;
+                position: relative;
+                z-index: 1;
+            }
+
+            // Estilos específicos para vídeo no imageCover no mobile
+            video.imageCover {
+                width: 279px;
+                height: 371px;
+                max-height: 371px;
+                object-fit: cover;
+                position: relative;
+                z-index: 1;
+            }
+
+            .miniContainer {
+                width: 335px;
+                max-width: 335px;
+                height: 76px;
+                margin: 0 auto;
+                margin-top: 4px;
+                justify-content: flex-start;
+                position: relative;
+                z-index: 2;
+
+                .imageMini {
+                    width: 55px;
+                    height: 72px;
+                    margin: 0 0.25rem;
+                    flex-shrink: 0;
+                }
+
+                .videoMini {
+                    width: 55px;
+                    height: 72px;
+                    margin: 0 0.25rem;
+                    flex-shrink: 0;
+
+                    .videoMiniPlayer {
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
+                    }
+
+                    .videoMiniIcon {
+                        width: 16px;
+                        height: 16px;
+                        bottom: 2px;
+                        left: 2px;
+
+                        svg {
+                            width: 10px;
+                            height: 10px;
+                        }
+                    }
+                }
+            }
+
+            .buttonsContainer {
+                width: 44px;
+                height: 371px;
+
+                .shareButton {
+                    padding: 0;
+                }
+            }
+
+            .modal {
+                background-color: $surface-video;
+                width: 100%;
+                height: 100vh;
+                position: fixed;
+                top: 0;
+                left: 0;
+                z-index: 10000;
+
+                .modalImageLength {
+                    top: 0.5rem;
+                    left: 2rem;
+                    z-index: 10001;
+                }
+
+                .modalSwiper {
+                    width: 100%;
+                    margin: 0 auto;
+
+                    .modalImageLength {
+                        position: absolute;
+                        top: 1rem;
+                        left: 1rem;
+                        color: $text-secondary;
+                        font-family: $clashGroteskMedium;
+                        z-index: 10001;
+                    }
+
+                    .modalImageContainer {
+                        margin-top: 2rem; // Adicionado margem superior
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+
+                        .modalImage {
+                            max-width: 100%;
+                            max-height: 100%;
+                            object-fit: cover;
+                        }
+
+                        .closeModalButton {
+                            height: 2rem;
+                            width: 2rem;
+                            right: 5%;
+                            position: absolute;
+                            top: 1rem;
+                            z-index: 10001;
+                        }
+                    }
+                }
+
+            }
+        }
+
+        .productInfoContainer {
+            width: 335px;
+            margin: 0 auto;
+        }
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

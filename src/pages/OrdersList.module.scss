@@ -1,0 +1,111 @@
+@use "../App.scss" as *;
+@use "../styles/variables" as vars;
+@use "../styles/tokens" as *;
+
+.ordersList {
+    padding: vars.$padding-3xl 0;
+}
+
+.title {
+    font-size: $font-size-5xl;
+    font-family: $defaultFont;
+    margin-bottom: vars.$margin-5xl;
+    font-weight: $font-weight-semibold;
+    color: $text-primary;
+}
+
+.emptyState {
+    text-align: center;
+    padding: vars.$padding-4xl vars.$padding-3xl;
+    background: $background-color;
+    border-radius: vars.$radius-md;
+    border: vars.$border-width-thin solid $border-color;
+
+    p {
+        font-size: $font-size-3xl;
+        font-family: $defaultFont;
+        color: $text-quinary;
+        margin-bottom: vars.$margin-4xl;
+    }
+}
+
+.shopLink {
+    display: inline-block;
+    padding: vars.$padding-lg vars.$padding-3xl;
+    background: $button-primary-bg;
+    color: $button-primary-text;
+    text-decoration: none;
+    border-radius: vars.$radius-xs;
+    font-family: $clashGroteskSemibold;
+    font-size: $font-size-2xl;
+    transition: background vars.$transition-base vars.$ease-base;
+
+    &:hover {
+        background: $button-primary-hover;
+    }
+}
+
+.ordersGrid {
+    display: grid;
+    gap: vars.$gap-3xl;
+}
+
+.orderCard {
+    display: block;
+    padding: vars.$padding-4xl;
+    background: $background-color;
+    border: vars.$border-width-thin solid $border-color;
+    border-radius: vars.$radius-md;
+    text-decoration: none;
+    color: inherit;
+    transition: all vars.$transition-base vars.$ease-base;
+
+    &:hover {
+        border-color: $border-color-active;
+        transform: translateY(vars.$transform-translate-y);
+        box-shadow: $shadow-lg;
+    }
+}
+
+.orderHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: vars.$margin-md;
+
+    h3 {
+        font-size: $font-size-5xl;
+        font-family: $defaultFont;
+        color: $text-primary;
+    }
+}
+
+.status {
+    padding: vars.$padding-xs vars.$padding-lg;
+    background: $background-secondary;
+    border-radius: vars.$radius-2xl;
+    font-size: $font-size-lg;
+    font-family: $defaultFont;
+    text-transform: capitalize;
+    color: $text-primary;
+}
+
+.date,
+.total {
+    font-family: $defaultFont;
+    color: $text-quinary;
+    margin-top: vars.$margin-md;
+}
+
+.total {
+    font-weight: $font-weight-semibold;
+    color: $text-primary;
+}
+
+.loading {
+    text-align: center;
+    padding: vars.$padding-3xl;
+    font-size: $font-size-4xl;
+    font-family: $defaultFont;
+    color: $text-primary;
+}

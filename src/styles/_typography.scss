@@ -1,0 +1,73 @@
+@use "tokens" as *;
+
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap');
+
+//Global Fonts
+
+// Files are using @ for vite, because I'm exporting the relative path to other scss files that are in other directories
+// this is necessary for vite to resolve the path correctly
+// without this, vite gives an ots parsing error. needs to define the alias in vite.config.js
+// go there to check the alias.
+@font-face {
+    font-family: "Futura PT Book";
+    font-style: normal;
+    font-weight: 400;
+    src: url("@/assets/fonts/FuturaCyrillicBook.woff") format("woff");
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Futura PT Heavy";
+    font-style: normal;
+    font-weight: 700;
+    src: url("@/assets/fonts/FuturaCyrillicHeavy.woff") format("woff");
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "ClashGrotesk-Medium";
+    src: url("@/assets/fonts/ClashGrotesk-Medium.woff") format("woff"),
+        url("@/assets/fonts/ClashGrotesk-Medium.woff2") format("woff2"),
+        url("@/assets/fonts/ClashGrotesk-Medium.ttf") format("truetype");
+    font-weight: 500;
+    font-display: swap;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "ClashGrotesk-Semibold";
+    src: url("@/assets/fonts/ClashGrotesk-Semibold.woff") format("woff"),
+        url("@/assets/fonts/ClashGrotesk-Semibold.woff2") format("woff2"),
+        url("@/assets/fonts/ClashGrotesk-Semibold.ttf") format("truetype");
+    font-weight: 600;
+    font-display: swap;
+    font-style: normal;
+}
+
+$logoFont: "Lora", serif;
+$defaultFont: "Montserrat", sans-serif;
+$secondaryFont: "Futura PT Book", sans-serif;
+$tertiaryFont: "Futura PT Heavy", sans-serif;
+$clashGroteskMedium: "ClashGrotesk-Medium", sans-serif;
+$clashGroteskSemibold: "ClashGrotesk-Semibold", sans-serif;
+
+// Base tipográfica global (evita fallback do browser em rotas sem font-family no módulo)
+html {
+    font-size: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: $defaultFont;
+    font-size: $font-size-base;
+    font-weight: $font-weight-normal;
+    line-height: $line-height-normal;
+    color: $text-primary;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+    min-height: 100vh;
+}

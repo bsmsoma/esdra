@@ -1,0 +1,21 @@
+{
+  "name": "aromasstore-functions",
+  "private": true,
+  "engines": {
+    "node": "20"
+  },
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint .",
+    "test": "node --test tests/payment-utils.test.mjs"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.7.0",
+    "firebase-functions": "^5.1.1"
+  },
+  "devDependencies": {
+    "eslint": "^9.14.0",
+    "globals": "^15.11.0"
+  }
+}

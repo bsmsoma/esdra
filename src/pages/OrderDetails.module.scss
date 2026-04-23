@@ -1,0 +1,212 @@
+@use "../App.scss" as *;
+@use "../styles/variables" as vars;
+@use "../styles/tokens" as *;
+
+.orderDetails {
+    padding: vars.$padding-3xl vars.$padding-xl;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.backLink {
+    display: inline-block;
+    margin-bottom: vars.$margin-5xl;
+    font-family: $defaultFont;
+    color: $text-primary;
+    text-decoration: none;
+    font-weight: $font-weight-medium;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+.title {
+    font-size: $font-size-5xl;
+    font-family: $defaultFont;
+    margin-bottom: vars.$margin-5xl;
+    font-weight: $font-weight-semibold;
+    color: $text-primary;
+}
+
+.orderHeader {
+    background: $background-color;
+    padding: vars.$padding-3xl;
+    border-radius: vars.$radius-md;
+    border: vars.$border-width-thin solid $border-color;
+    margin-bottom: vars.$margin-5xl;
+}
+
+.orderInfo {
+    p {
+        margin: vars.$margin-lg 0;
+        font-size: $font-size-3xl;
+        font-family: $defaultFont;
+        color: $text-primary;
+    }
+}
+
+.orderNumber {
+    font-size: $font-size-5xl;
+    font-family: $defaultFont;
+    font-weight: $font-weight-semibold;
+    color: $text-primary;
+}
+
+.statusBadge {
+    padding: vars.$padding-xs vars.$padding-lg;
+    background: $background-secondary;
+    border-radius: vars.$radius-2xl;
+    font-family: $defaultFont;
+    text-transform: capitalize;
+    font-weight: $font-weight-medium;
+    color: $text-primary;
+}
+
+.section {
+    background: $background-color;
+    padding: vars.$padding-3xl;
+    border-radius: vars.$radius-md;
+    border: vars.$border-width-thin solid $border-color;
+    margin-bottom: vars.$margin-5xl;
+}
+
+.sectionTitle {
+    font-size: $font-size-6xl;
+    font-family: $defaultFont;
+    margin-bottom: vars.$margin-4xl;
+    font-weight: $font-weight-semibold;
+    color: $text-primary;
+}
+
+.itemsList {
+    display: flex;
+    flex-direction: column;
+    gap: vars.$gap-3xl;
+}
+
+.orderItem {
+    display: grid;
+    grid-template-columns: 100px 1fr auto;
+    gap: vars.$gap-3xl;
+    padding-bottom: vars.$gap-3xl;
+    border-bottom: vars.$border-width-thin solid $border-color;
+
+    &:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+}
+
+.itemImage {
+    width: 100%;
+    height: auto;
+    border-radius: vars.$radius-xs;
+    object-fit: cover;
+}
+
+.itemInfo {
+    display: flex;
+    flex-direction: column;
+    gap: vars.$gap-sm;
+}
+
+.itemName {
+    font-size: $font-size-3xl;
+    font-family: $defaultFont;
+    font-weight: $font-weight-semibold;
+    margin: 0;
+    color: $text-primary;
+}
+
+.itemCode {
+    font-size: $font-size-lg;
+    font-family: $defaultFont;
+    color: $text-quinary;
+    margin: 0;
+}
+
+.itemDetails {
+    font-size: $font-size-lg;
+    font-family: $defaultFont;
+    color: $text-quinary;
+    margin: 0;
+}
+
+.itemPrice {
+    text-align: right;
+
+    p {
+        margin: vars.$margin-xs 0;
+        font-family: $defaultFont;
+        color: $text-primary;
+    }
+}
+
+.itemTotal {
+    font-family: $defaultFont;
+    font-weight: $font-weight-semibold;
+    color: $text-primary;
+}
+
+.address {
+    p {
+        margin: vars.$margin-md 0;
+        font-family: $defaultFont;
+        color: $text-quinary;
+    }
+}
+
+.summary {
+    max-width: 400px;
+    margin-left: auto;
+}
+
+.summaryRow {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: vars.$margin-lg;
+    font-family: $defaultFont;
+    color: $text-quinary;
+}
+
+.summaryDivider {
+    height: vars.$border-width-thin;
+    background: $border-color;
+    margin: vars.$margin-xl 0;
+}
+
+.summaryRowTotal {
+    display: flex;
+    justify-content: space-between;
+    font-size: $font-size-5xl;
+    font-family: $defaultFont;
+    font-weight: $font-weight-semibold;
+    color: $text-primary;
+}
+
+.notes {
+    font-family: $defaultFont;
+    color: $text-quinary;
+    line-height: $line-height-relaxed;
+}
+
+.loading,
+.error {
+    text-align: center;
+    padding: vars.$padding-3xl;
+    font-size: $font-size-4xl;
+    font-family: $defaultFont;
+}
+
+.error {
+    color: $status-error;
+
+    a {
+        display: inline-block;
+        margin-top: vars.$margin-xl;
+        font-family: $defaultFont;
+        color: $text-primary;
+        text-decoration: underline;
+    }
+}
