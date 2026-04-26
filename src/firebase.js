@@ -27,7 +27,12 @@ import {
     signOut,
     createUserWithEmailAndPassword,
     GoogleAuthProvider,
+    OAuthProvider,
+    sendPasswordResetEmail,
     connectAuthEmulator,
+    setPersistence,
+    browserLocalPersistence,
+    browserSessionPersistence,
 } from "firebase/auth";
 import {
     getStorage,
@@ -79,12 +84,20 @@ export const storage = getStorage(app);
 //handle authentication
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
+export const appleProvider = new OAuthProvider("apple.com");
+appleProvider.addScope("email");
+appleProvider.addScope("name");
 export {
     onAuthStateChanged,
     signInWithEmailAndPassword,
     signInWithPopup,
     signOut,
     createUserWithEmailAndPassword,
+    setPersistence,
+    browserLocalPersistence,
+    browserSessionPersistence,
+    OAuthProvider,
+    sendPasswordResetEmail,
 };
 
 // Documents

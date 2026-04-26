@@ -12,6 +12,7 @@ const AUTH_ERROR_MESSAGES = {
     "auth/invalid-email": "Informe um e-mail válido.",
     "auth/user-disabled": "Esta conta foi desativada. Entre em contato com o suporte.",
     "auth/user-not-found": "Nenhuma conta encontrada com este e-mail.",
+    "auth/missing-email": "Informe um e-mail válido.",
     "auth/wrong-password": "Senha incorreta. Tente novamente.",
 
     // Rate limiting and security

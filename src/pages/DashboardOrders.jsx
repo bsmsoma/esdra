@@ -1,10 +1,28 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { Fragment, useEffect, useMemo, useState, useCallback } from "react";
 import {
     getAllOrdersPaginated,
     updateOrderStatusByAdmin,
 } from "../firebase";
 import { formatPrice } from "../utils/priceUtils";
 import styles from "./DashboardOrders.module.scss";
+
+function formatDate(ts) {
+    if (!ts) return "-";
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+
+function formatAddress(addr) {
+    if (!addr) return "-";
+    const parts = [
+        addr.street && addr.number ? `${addr.street}, ${addr.number}` : addr.street,
+        addr.complement,
+        addr.neighborhood,
+        addr.city && addr.state ? `${addr.city} – ${addr.state}` : addr.city,
+        addr.zipCode,
+    ].filter(Boolean);
+    return parts.join(", ") || "-";
+}
 
 const PAGE_SIZE = 20;
 
@@ -62,6 +80,7 @@ export default function DashboardOrders() {
     const [feedbackMessage, setFeedbackMessage] = useState("");
     const [feedbackType, setFeedbackType] = useState("success");
     const [orderDrafts, setOrderDrafts] = useState({});
+    const [expandedOrderId, setExpandedOrderId] = useState(null);
 
     const fetchOrders = useCallback(async function ({ append = false, currentLastDoc = null } = {}) {
         try {
@@ -144,6 +163,10 @@ export default function DashboardOrders() {
         }
     }
 
+    function toggleExpand(orderId) {
+        setExpandedOrderId(function (prev) { return prev === orderId ? null : orderId; });
+    }
+
     function updateDraft(orderId, key, value) {
         setOrderDrafts(function updateCurrentDraft(previous) {
             return {
@@ -162,13 +185,13 @@ export default function DashboardOrders() {
 
     return (
         <section className={styles.ordersAdmin}>
-            <header className={styles.header}>
+            <div className={styles.header}>
                 <h1>Operação de Pedidos</h1>
                 <p>
                     Atualize status sem acesso manual ao banco e mantenha o ciclo
                     operacional completo.
                 </p>
-            </header>
+            </div>
 
             {error && (
                 <div className={`${styles.feedback} ${styles.feedbackError}`} role="alert">
@@ -227,6 +250,7 @@ export default function DashboardOrders() {
                         <table className={styles.table}>
                             <thead>
                                 <tr>
+                                    <th></th>
                                     <th>Pedido</th>
                                     <th>Cliente</th>
                                     <th>Total</th>
@@ -239,64 +263,181 @@ export default function DashboardOrders() {
                             </thead>
                             <tbody>
                                 {filteredRows.map(function (order) {
+                                    const isExpanded = expandedOrderId === order.id;
                                     return (
-                                        <tr key={order.id}>
-                                            <td>#{order.orderNumber}</td>
-                                            <td>{order.customerName || "-"}</td>
-                                            <td>R$ {formatPrice(order.total || 0)}</td>
-                                            <td>{getStatusLabel(order.status)}</td>
-                                            <td>
-                                                <select
-                                                    value={order.nextStatus}
-                                                    onChange={function handleStatusChange(event) {
-                                                        updateDraft(order.id, "nextStatus", event.target.value);
-                                                    }}
-                                                >
-                                                    {ORDER_STATUS_OPTIONS.map(function (statusOption) {
-                                                        return (
-                                                            <option key={statusOption.value} value={statusOption.value}>
-                                                                {statusOption.label}
-                                                            </option>
-                                                        );
-                                                    })}
-                                                </select>
-                                            </td>
-                                            <td>
-                                                <select
-                                                    value={order.paymentStatus}
-                                                    onChange={function handlePaymentChange(event) {
-                                                        updateDraft(order.id, "paymentStatus", event.target.value);
-                                                    }}
-                                                >
-                                                    {PAYMENT_STATUS_OPTIONS.map(function (paymentOption) {
-                                                        return (
-                                                            <option key={paymentOption.value || "keep"} value={paymentOption.value}>
-                                                                {paymentOption.label}
-                                                            </option>
-                                                        );
-                                                    })}
-                                                </select>
-                                            </td>
-                                            <td>
-                                                <input
-                                                    type="text"
-                                                    value={order.adminNotes}
-                                                    onChange={function handleNotesChange(event) {
-                                                        updateDraft(order.id, "adminNotes", event.target.value);
-                                                    }}
-                                                    placeholder="Observação interna"
-                                                />
-                                            </td>
-                                            <td>
-                                                <button
-                                                    type="button"
-                                                    onClick={function onSaveClick() { handleSaveStatus(order); }}
-                                                    disabled={savingOrderId === order.id}
-                                                >
-                                                    {savingOrderId === order.id ? "Salvando..." : "Salvar"}
-                                                </button>
-                                            </td>
-                                        </tr>
+                                        <Fragment key={order.id}>
+                                            <tr>
+                                                <td>
+                                                    <button
+                                                        type="button"
+                                                        className={`${styles.expandButton} ${isExpanded ? styles.expanded : ""}`}
+                                                        onClick={function () { toggleExpand(order.id); }}
+                                                        title="Ver detalhes do pedido"
+                                                    >
+                                                        {isExpanded ? "▼" : "▶"}
+                                                    </button>
+                                                </td>
+                                                <td>#{order.orderNumber}</td>
+                                                <td>{order.customerName || "-"}</td>
+                                                <td>R$ {formatPrice(order.total || 0)}</td>
+                                                <td>{getStatusLabel(order.status)}</td>
+                                                <td>
+                                                    <select
+                                                        value={order.nextStatus}
+                                                        onChange={function handleStatusChange(event) {
+                                                            updateDraft(order.id, "nextStatus", event.target.value);
+                                                        }}
+                                                    >
+                                                        {ORDER_STATUS_OPTIONS.map(function (statusOption) {
+                                                            return (
+                                                                <option key={statusOption.value} value={statusOption.value}>
+                                                                    {statusOption.label}
+                                                                </option>
+                                                            );
+                                                        })}
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <select
+                                                        value={order.paymentStatus}
+                                                        onChange={function handlePaymentChange(event) {
+                                                            updateDraft(order.id, "paymentStatus", event.target.value);
+                                                        }}
+                                                    >
+                                                        {PAYMENT_STATUS_OPTIONS.map(function (paymentOption) {
+                                                            return (
+                                                                <option key={paymentOption.value || "keep"} value={paymentOption.value}>
+                                                                    {paymentOption.label}
+                                                                </option>
+                                                            );
+                                                        })}
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <input
+                                                        type="text"
+                                                        value={order.adminNotes}
+                                                        onChange={function handleNotesChange(event) {
+                                                            updateDraft(order.id, "adminNotes", event.target.value);
+                                                        }}
+                                                        placeholder="Observação interna"
+                                                    />
+                                                </td>
+                                                <td>
+                                                    <button
+                                                        type="button"
+                                                        onClick={function onSaveClick() { handleSaveStatus(order); }}
+                                                        disabled={savingOrderId === order.id}
+                                                    >
+                                                        {savingOrderId === order.id ? "Salvando..." : "Salvar"}
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            {isExpanded && (
+                                                <tr className={styles.orderDetailRow}>
+                                                    <td colSpan={9}>
+                                                        <div className={styles.orderDetailPanel}>
+                                                            <div className={styles.detailSection}>
+                                                                <h4>Dados do comprador</h4>
+                                                                <div className={styles.detailField}>
+                                                                    <span className={styles.fieldLabel}>Nome</span>
+                                                                    <span className={styles.fieldValue}>{order.customerName || "-"}</span>
+                                                                </div>
+                                                                <div className={styles.detailField}>
+                                                                    <span className={styles.fieldLabel}>Email</span>
+                                                                    <span className={styles.fieldValue}>{order.customerEmail || "-"}</span>
+                                                                </div>
+                                                                <div className={styles.detailField}>
+                                                                    <span className={styles.fieldLabel}>Fone</span>
+                                                                    <span className={styles.fieldValue}>{order.customerPhone || "-"}</span>
+                                                                </div>
+                                                                {order.customerDocument && (
+                                                                    <div className={styles.detailField}>
+                                                                        <span className={styles.fieldLabel}>CPF</span>
+                                                                        <span className={styles.fieldValue}>{order.customerDocument}</span>
+                                                                    </div>
+                                                                )}
+                                                                <div className={styles.detailField}>
+                                                                    <span className={styles.fieldLabel}>Pedido em</span>
+                                                                    <span className={styles.fieldValue}>{formatDate(order.createdAt)}</span>
+                                                                </div>
+                                                            </div>
+
+                                                            <div className={styles.detailSection}>
+                                                                <h4>Endereço de entrega</h4>
+                                                                <p className={styles.addressText}>{formatAddress(order.shippingAddress)}</p>
+                                                            </div>
+
+                                                            <div className={styles.detailSection}>
+                                                                <h4>Resumo financeiro</h4>
+                                                                <div className={styles.financialSummary}>
+                                                                    {order.subtotal !== undefined && (
+                                                                        <div className={styles.summaryRow}>
+                                                                            <span>Subtotal</span>
+                                                                            <span>R$ {formatPrice(order.subtotal)}</span>
+                                                                        </div>
+                                                                    )}
+                                                                    {order.shipping !== undefined && (
+                                                                        <div className={styles.summaryRow}>
+                                                                            <span>Frete</span>
+                                                                            <span>R$ {formatPrice(order.shipping)}</span>
+                                                                        </div>
+                                                                    )}
+                                                                    <div className={styles.summaryTotal}>
+                                                                        <span>Total</span>
+                                                                        <span>R$ {formatPrice(order.total || 0)}</span>
+                                                                    </div>
+                                                                    {order.paymentMethod && (
+                                                                        <div className={`${styles.summaryRow} ${styles.paymentMethodRow}`}>
+                                                                            <span>Pagamento</span>
+                                                                            <span>{order.paymentMethod}</span>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+
+                                                            {order.notes && (
+                                                                <div className={styles.detailSection}>
+                                                                    <h4>Observações do comprador</h4>
+                                                                    <p className={styles.notesText}>"{order.notes}"</p>
+                                                                </div>
+                                                            )}
+
+                                                            {Array.isArray(order.items) && order.items.length > 0 && (
+                                                                <div className={`${styles.detailSection} ${styles.fullWidth}`}>
+                                                                    <h4>Itens do pedido</h4>
+                                                                    <div className={styles.itemsList}>
+                                                                        {order.items.map(function (item, idx) {
+                                                                            const imgSrc = item.imageUrl || item.image || null;
+                                                                            const itemSubtotal = (item.price || 0) * (item.quantity || 1);
+                                                                            return (
+                                                                                <div key={idx} className={styles.itemRow}>
+                                                                                    {imgSrc ? (
+                                                                                        <img src={imgSrc} alt={item.name} className={styles.itemImage} />
+                                                                                    ) : (
+                                                                                        <div className={styles.itemImagePlaceholder} />
+                                                                                    )}
+                                                                                    <div className={styles.itemDetails}>
+                                                                                        <div className={styles.itemName}>{item.name}</div>
+                                                                                        <div className={styles.itemMeta}>
+                                                                                            {item.size ? `${item.size} · ` : ""}
+                                                                                            {item.quantity}× · R$ {formatPrice(item.price || 0)} cada
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div className={styles.itemPrice}>
+                                                                                        R$ {formatPrice(itemSubtotal)}
+                                                                                    </div>
+                                                                                </div>
+                                                                            );
+                                                                        })}
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </Fragment>
                                     );
                                 })}
                             </tbody>

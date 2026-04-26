@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useMemo } from "react";
 import styles from "./DashboardLayout.module.scss";
-import { Outlet, useNavigate } from "react-router";
+import { Outlet, useNavigate, useLocation } from "react-router";
 import { PlusIcon, MagnifierIcon } from "../assets/icons";
 
 // Busca local ao dashboard (lista admin). A vitrine em /products não usa este contexto.
@@ -19,6 +19,10 @@ export default function DashboardLayout() {
     const [searchText, setSearchText] = useState("");
     const [searchCode, setSearchCode] = useState("");
     const navigate = useNavigate();
+    const location = useLocation();
+
+    const isOrders = location.pathname === "/dashboard/orders";
+    const showSearch = !isOrders;
 
     // Memoize the context to avoid unnecessary re-renders
     const searchContextValue = useMemo(
@@ -39,24 +43,26 @@ export default function DashboardLayout() {
                 <nav className={styles.dashboardNav}>
                     <div className={styles.navButtons}>
                         <button
-                            className={styles.addButton}
-                            onClick={function () {
-                                navigate("/dashboard/add");
-                            }}
+                            className={`${styles.feedButton} ${location.pathname === "/dashboard" ? styles.active : ""}`}
+                            onClick={function () { navigate("/dashboard"); }}
+                        >
+                            Produtos
+                        </button>
+                        <button
+                            className={`${styles.addButton} ${location.pathname.startsWith("/dashboard/add") || location.pathname.startsWith("/dashboard/edit") ? styles.active : ""}`}
+                            onClick={function () { navigate("/dashboard/add"); }}
                         >
                             <PlusIcon />
                             Adicionar Produto
                         </button>
                         <button
-                            className={styles.feedButton}
-                            onClick={function () {
-                                navigate("/dashboard/orders");
-                            }}
+                            className={`${styles.feedButton} ${isOrders ? styles.active : ""}`}
+                            onClick={function () { navigate("/dashboard/orders"); }}
                         >
                             Pedidos
                         </button>
                     </div>
-                    <div className={styles.searchFields}>
+                    {showSearch && <div className={styles.searchFields}>
                         <div className={styles.searchField}>
                             <MagnifierIcon className={styles.searchIcon} />
                             <input
@@ -107,7 +113,7 @@ export default function DashboardLayout() {
                                 </button>
                             )}
                         </div>
-                    </div>
+                    </div>}
                 </nav>
                 <Outlet />
             </section>

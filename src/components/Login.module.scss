@@ -60,6 +60,52 @@
                     text-align: center;
                 }
 
+                .forgotLink {
+                    align-self: flex-end;
+                    background: transparent;
+                    border: none;
+                    padding: 0;
+                    cursor: pointer;
+                    font-family: $defaultFont;
+                    font-size: $font-size-sm;
+                    color: $text-tertiary;
+                    text-decoration: underline;
+                    text-underline-offset: 2px;
+                    transition: color vars.$transition-fast vars.$ease-base;
+
+                    &:hover {
+                        color: $accent-brand-purple;
+                    }
+
+                    @include focus-visible-ring;
+                }
+
+                .forgotSubtitle {
+                    margin: 0;
+                    font-family: $defaultFont;
+                    font-size: $font-size-md;
+                    color: $text-tertiary;
+                    text-align: center;
+                    line-height: 1.5;
+                }
+
+                .successMessage {
+                    width: 100%;
+                    padding: vars.$spacing-sm vars.$spacing-md;
+                    background-color: $status-success-surface;
+                    border: vars.$border-width-thin solid $status-success-border;
+                    border-radius: vars.$radius-md;
+
+                    p {
+                        margin: 0;
+                        font-family: $defaultFont;
+                        font-size: $font-size-sm;
+                        color: $status-success-text;
+                        text-align: center;
+                        line-height: 1.4;
+                    }
+                }
+
                 .errorMessage {
                     width: 100%;
                     padding: vars.$spacing-sm vars.$spacing-md;
@@ -222,6 +268,43 @@
                     .googleIcon {
                         width: 20px;
                         height: 20px;
+                        flex-shrink: 0;
+                    }
+                }
+
+                .appleButton {
+                    width: 100%;
+                    height: 44px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: vars.$spacing-sm;
+                    background: #000;
+                    border: vars.$border-width-base solid #000;
+                    border-radius: vars.$radius-md;
+                    cursor: pointer;
+                    font-family: $defaultFont;
+                    font-size: $font-size-2xl;
+                    font-weight: $font-weight-medium;
+                    color: #fff;
+                    transition: background-color vars.$transition-base vars.$ease-base,
+                        border-color vars.$transition-base vars.$ease-base;
+
+                    &:hover:not(:disabled) {
+                        background: #1a1a1a;
+                        border-color: #1a1a1a;
+                    }
+
+                    &:disabled {
+                        opacity: 0.6;
+                        cursor: not-allowed;
+                    }
+
+                    @include focus-visible-ring;
+
+                    .appleIcon {
+                        width: 18px;
+                        height: 18px;
                         flex-shrink: 0;
                     }
                 }
@@ -440,7 +523,8 @@
 
                     .input,
                     .submitButton,
-                    .googleButton {
+                    .googleButton,
+                    .appleButton {
                         height: 44px;
                     }
                 }

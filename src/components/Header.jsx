@@ -188,6 +188,11 @@ function Header() {
                             </div>
                         </li>
                         <li>
+                            <NavLink to="products">
+                                Todos os Produtos
+                            </NavLink>
+                        </li>
+                        <li>
                             <NavLink to="products?category=Velas Aromaticas">
                                 Velas Aromaticas
                             </NavLink>

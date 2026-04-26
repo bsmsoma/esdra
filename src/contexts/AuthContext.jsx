@@ -1,5 +1,12 @@
 import { createContext, useContext, useState, useEffect, useMemo } from "react";
-import { auth, onAuthStateChanged, getCustomerByUid, createOrUpdateCustomer } from "../firebase";
+import { auth, onAuthStateChanged, signOut, getCustomerByUid, createOrUpdateCustomer } from "../firebase";
+
+const REMEMBER_ME_KEY = "esdra_remember_me_expiry";
+
+function isRememberMeExpired() {
+    const val = localStorage.getItem(REMEMBER_ME_KEY);
+    return val !== null && Date.now() > Number(val);
+}
 import { redirect } from "react-router";
 import Loading from "../components/Loading";
 
@@ -151,20 +158,19 @@ export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(function() {
-        const unsubscribe = onAuthStateChanged(auth, function(user) {
+        const unsubscribe = onAuthStateChanged(auth, async function(user) {
+            if (user && isRememberMeExpired()) {
+                localStorage.removeItem(REMEMBER_ME_KEY);
+                await signOut(auth);
+                return;
+            }
             setUser(user);
             try {
                 if (user) {
-                    // User is signed in, see docs for a list of available properties
-                    // https://firebase.google.com/docs/reference/js/auth.user
-                    const uid = user.uid;
                     localStorage.setItem("isLoggedIn", true);
-                    
                 } else {
-                    // User is signed out
                     setUser(null);
                     localStorage.removeItem("isLoggedIn");
-                    
                 }
             } catch (error) {
                 console.error("Erro ao processar autenticação:", error);

@@ -8,7 +8,7 @@ import {
     useSearchParams,
     useNavigate,
 } from "react-router";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaApple } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import {
     auth,
@@ -17,7 +17,22 @@ import {
     signInWithEmailAndPassword,
     signInWithPopup,
     googleProvider,
+    appleProvider,
+    setPersistence,
+    browserLocalPersistence,
+    browserSessionPersistence,
+    sendPasswordResetEmail,
 } from "../firebase";
+
+const REMEMBER_ME_KEY = "esdra_remember_me_expiry";
+
+function setRememberMeExpiry() {
+    localStorage.setItem(REMEMBER_ME_KEY, String(Date.now() + 7 * 86400000));
+}
+
+function clearRememberMeExpiry() {
+    localStorage.removeItem(REMEMBER_ME_KEY);
+}
 import { getAuthErrorMessage } from "../utils/authErrors";
 import { isUserAdmin, waitForAuth } from "../contexts/AuthContext";
 
@@ -36,10 +51,18 @@ export async function loginAction({ request }) {
     const formData = await request.formData();
     const user = formData.get("user");
     const password = formData.get("password");
+    const remember = formData.get("rememberpassword") === "on";
     const redirectTo = new URL(request.url).searchParams.get("redirectTo");
 
     try {
+        await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence);
         await signInWithEmailAndPassword(auth, user, password);
+
+        if (remember) {
+            setRememberMeExpiry();
+        } else {
+            clearRememberMeExpiry();
+        }
 
         const authenticatedUser = await waitForAuth();
         if (!authenticatedUser) {
@@ -137,6 +160,10 @@ export default function Login() {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [googleError, setGoogleError] = useState(null);
+    const [appleError, setAppleError] = useState(null);
+    const [isForgot, setIsForgot] = useState(false);
+    const [forgotEmail, setForgotEmail] = useState("");
+    const [forgotStatus, setForgotStatus] = useState(null);
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const message = searchParams.get("message");
@@ -166,12 +193,42 @@ export default function Login() {
 
     function showRegisterPanel() {
         setGoogleError(null);
+        setAppleError(null);
         setIsActive(true);
     }
 
     function showLoginPanel() {
         setGoogleError(null);
+        setAppleError(null);
+        setIsForgot(false);
+        setForgotStatus(null);
+        setForgotEmail("");
         setIsActive(false);
+    }
+
+    function showForgotPanel() {
+        setGoogleError(null);
+        setAppleError(null);
+        setForgotStatus(null);
+        setIsForgot(true);
+    }
+
+    async function handleForgotSubmit(event) {
+        event.preventDefault();
+        setForgotStatus(null);
+        setIsLoading(true);
+
+        try {
+            await sendPasswordResetEmail(auth, forgotEmail, {
+                url: window.location.origin + "/login",
+                handleCodeInApp: false,
+            });
+            setForgotStatus({ type: "success", message: "Link enviado! Verifique sua caixa de entrada (e a pasta de spam)." });
+        } catch (error) {
+            setForgotStatus({ type: "error", message: getAuthErrorMessage(error.code) });
+        } finally {
+            setIsLoading(false);
+        }
     }
 
     async function handleGoogleLogin(event) {
@@ -180,8 +237,10 @@ export default function Login() {
         setIsLoading(true);
 
         try {
+            await setPersistence(auth, browserLocalPersistence);
             const result = await signInWithPopup(auth, googleProvider);
             const userCredential = result.user;
+            setRememberMeExpiry();
 
             await waitForAuth();
             const admin = await isUserAdmin(userCredential);
@@ -190,6 +249,28 @@ export default function Login() {
         } catch (error) {
             const friendlyMessage = getAuthErrorMessage(error.code);
             setGoogleError(friendlyMessage);
+            setIsLoading(false);
+        }
+    }
+
+    async function handleAppleLogin(event) {
+        event.preventDefault();
+        setAppleError(null);
+        setIsLoading(true);
+
+        try {
+            await setPersistence(auth, browserLocalPersistence);
+            const result = await signInWithPopup(auth, appleProvider);
+            const userCredential = result.user;
+            setRememberMeExpiry();
+
+            await waitForAuth();
+            const admin = await isUserAdmin(userCredential);
+            const redirectTo = searchParams.get("redirectTo") || undefined;
+            navigate(getRedirectPathAfterLogin(admin, redirectTo));
+        } catch (error) {
+            const friendlyMessage = getAuthErrorMessage(error.code);
+            setAppleError(friendlyMessage);
             setIsLoading(false);
         }
     }
@@ -356,120 +437,193 @@ export default function Login() {
 
                 {/* Sign In */}
                 <div className={`${styles.formContainer} ${styles.signIn}`}>
-                    <loginFetcher.Form
-                        method="post"
-                        action="/login"
-                        ref={formRef}
-                        className={styles.form}
-                        onKeyDown={function handleEnterSubmitLogin(event) {
-                            if (event.key !== "Enter" || isLoading) return;
-                            if (
-                                formRef.current &&
-                                typeof formRef.current.requestSubmit ===
-                                    "function"
-                            ) {
-                                event.preventDefault();
-                                formRef.current.requestSubmit();
-                            }
-                        }}
-                    >
-                        <h1 className={styles.title}>Entrar</h1>
+                    {isForgot ? (
+                        <form
+                            onSubmit={handleForgotSubmit}
+                            className={styles.form}
+                        >
+                            <h1 className={styles.title}>Recuperar senha</h1>
 
-                        {(loginFetcher.data || googleError) && (
-                            <div className={styles.errorMessage} role="alert">
-                                <p>
-                                    {loginFetcher.data?.message || googleError}
-                                </p>
-                            </div>
-                        )}
-                        {message && !loginFetcher.data && !googleError && (
-                            <div className={styles.errorMessage} role="alert">
-                                <p>{message}</p>
-                            </div>
-                        )}
+                            <p className={styles.forgotSubtitle}>
+                                Informe seu e-mail e enviaremos um link para
+                                redefinir sua senha.
+                            </p>
 
-                        <input
-                            className={styles.input}
-                            type="text"
-                            placeholder="E-mail ou usuário"
-                            name="user"
-                            id="loginUser"
-                            aria-label="E-mail ou usuário"
-                            required
-                        />
-                        <div className={styles.passwordWrapper}>
+                            {forgotStatus?.type === "success" && (
+                                <div className={styles.successMessage} role="status">
+                                    <p>{forgotStatus.message}</p>
+                                </div>
+                            )}
+                            {forgotStatus?.type === "error" && (
+                                <div className={styles.errorMessage} role="alert">
+                                    <p>{forgotStatus.message}</p>
+                                </div>
+                            )}
+
                             <input
                                 className={styles.input}
-                                type={showPassword ? "text" : "password"}
-                                name="password"
-                                id="loginPassword"
-                                placeholder="Senha"
-                                aria-label="Senha"
+                                type="email"
+                                placeholder="E-mail"
+                                aria-label="E-mail para recuperação"
+                                value={forgotEmail}
+                                onChange={function (e) { setForgotEmail(e.target.value); }}
                                 required
+                                autoFocus
                             />
-                            <span
-                                className={styles.eyeIcon}
-                                onClick={function togglePassword() {
-                                    setShowPassword(!showPassword);
-                                }}
-                                role="button"
-                                tabIndex={0}
-                                aria-label={
-                                    showPassword
-                                        ? "Ocultar senha"
-                                        : "Mostrar senha"
-                                }
+
+                            <button
+                                type="submit"
+                                className={styles.submitButton}
+                                disabled={isLoading || forgotStatus?.type === "success"}
                             >
-                                {showPassword ? <FaEye /> : <FaEyeSlash />}
-                            </span>
-                        </div>
+                                {isLoading ? "Enviando..." : "Enviar link"}
+                            </button>
 
-                        <div className={styles.rememberRow}>
-                            <input
-                                className={styles.checkbox}
-                                type="checkbox"
-                                name="rememberpassword"
-                                id="rememberpassword"
-                                aria-label="Lembrar senha por 7 dias"
-                            />
-                            <label htmlFor="rememberpassword">
-                                Lembrar-me por 7 dias
-                            </label>
-                        </div>
-
-                        <button
-                            type="submit"
-                            className={styles.submitButton}
-                            aria-label="Entrar"
-                            disabled={isLoading}
-                        >
-                            {isLoading ? "Entrando..." : "Entrar"}
-                        </button>
-
-                        <span className={styles.dividerText}>ou</span>
-
-                        <button
-                            type="button"
-                            className={styles.googleButton}
-                            onClick={handleGoogleLogin}
-                            aria-label="Entrar com Google"
-                            disabled={isLoading}
-                        >
-                            <FcGoogle className={styles.googleIcon} />
-                            Continuar com Google
-                        </button>
-
-                        <p className={styles.registerPrompt}>
-                            Não tem conta?{" "}
                             <button
                                 type="button"
                                 className={styles.registerLinkButton}
-                                onClick={showRegisterPanel}
+                                onClick={showLoginPanel}
                             >
-                                Criar conta
+                                ← Voltar ao login
                             </button>
-                        </p>
-                    </loginFetcher.Form>
+                        </form>
+                    ) : (
+                        <loginFetcher.Form
+                            method="post"
+                            action="/login"
+                            ref={formRef}
+                            className={styles.form}
+                            onKeyDown={function handleEnterSubmitLogin(event) {
+                                if (event.key !== "Enter" || isLoading) return;
+                                if (
+                                    formRef.current &&
+                                    typeof formRef.current.requestSubmit ===
+                                        "function"
+                                ) {
+                                    event.preventDefault();
+                                    formRef.current.requestSubmit();
+                                }
+                            }}
+                        >
+                            <h1 className={styles.title}>Entrar</h1>
+
+                            {(loginFetcher.data || googleError || appleError) && (
+                                <div className={styles.errorMessage} role="alert">
+                                    <p>
+                                        {loginFetcher.data?.message || googleError || appleError}
+                                    </p>
+                                </div>
+                            )}
+                            {message && !loginFetcher.data && !googleError && (
+                                <div className={styles.errorMessage} role="alert">
+                                    <p>{message}</p>
+                                </div>
+                            )}
+
+                            <input
+                                className={styles.input}
+                                type="text"
+                                placeholder="E-mail ou usuário"
+                                name="user"
+                                id="loginUser"
+                                aria-label="E-mail ou usuário"
+                                required
+                            />
+                            <div className={styles.passwordWrapper}>
+                                <input
+                                    className={styles.input}
+                                    type={showPassword ? "text" : "password"}
+                                    name="password"
+                                    id="loginPassword"
+                                    placeholder="Senha"
+                                    aria-label="Senha"
+                                    required
+                                />
+                                <span
+                                    className={styles.eyeIcon}
+                                    onClick={function togglePassword() {
+                                        setShowPassword(!showPassword);
+                                    }}
+                                    role="button"
+                                    tabIndex={0}
+                                    aria-label={
+                                        showPassword
+                                            ? "Ocultar senha"
+                                            : "Mostrar senha"
+                                    }
+                                >
+                                    {showPassword ? <FaEye /> : <FaEyeSlash />}
+                                </span>
+                            </div>
+
+                            <button
+                                type="button"
+                                className={styles.forgotLink}
+                                onClick={showForgotPanel}
+                            >
+                                Esqueceu a senha?
+                            </button>
+
+                            <div className={styles.rememberRow}>
+                                <input
+                                    className={styles.checkbox}
+                                    type="checkbox"
+                                    name="rememberpassword"
+                                    id="rememberpassword"
+                                    aria-label="Lembrar senha por 7 dias"
+                                />
+                                <label htmlFor="rememberpassword">
+                                    Lembrar-me por 7 dias
+                                </label>
+                            </div>
+
+                            <button
+                                type="submit"
+                                className={styles.submitButton}
+                                aria-label="Entrar"
+                                disabled={isLoading}
+                            >
+                                {isLoading ? "Entrando..." : "Entrar"}
+                            </button>
+
+                            <span className={styles.dividerText}>ou</span>
+
+                            <button
+                                type="button"
+                                className={styles.googleButton}
+                                onClick={handleGoogleLogin}
+                                aria-label="Entrar com Google"
+                                disabled={isLoading}
+                            >
+                                <FcGoogle className={styles.googleIcon} />
+                                Continuar com Google
+                            </button>
+
+                            {/* Apple Sign-In — ativar após configurar provider no Firebase Console
+                            <button
+                                type="button"
+                                className={styles.appleButton}
+                                onClick={handleAppleLogin}
+                                aria-label="Entrar com Apple"
+                                disabled={isLoading}
+                            >
+                                <FaApple className={styles.appleIcon} />
+                                Continuar com Apple
+                            </button>
+                            */}
+
+                            <p className={styles.registerPrompt}>
+                                Não tem conta?{" "}
+                                <button
+                                    type="button"
+                                    className={styles.registerLinkButton}
+                                    onClick={showRegisterPanel}
+                                >
+                                    Criar conta
+                                </button>
+                            </p>
+                        </loginFetcher.Form>
+                    )}
                 </div>
 
                 {/* Toggle: decorative panel without image background */}

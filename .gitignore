@@ -11,7 +11,8 @@ playwright-report/
 .DS_Store
 
 # Claude Code
-.claude/settings.local.json
+.claude/
+skills-lock.json
 
 # Contas de serviço Firebase (NUNCA commitar — acesso total ao projeto)
 scripts/firebase-service-account.json
@@ -36,3 +37,5 @@ firebase-debug.log
 firebase-debug.*.log
 firestore-debug.log
 ui-debug.log
+# Local Netlify folder
+.netlify

@@ -104,6 +104,25 @@
                 align-items: center;
                 justify-content:center;
                 gap: 1rem;
+                position: relative;
+            }
+
+            .filterBadge {
+                position: absolute;
+                top: -6px;
+                right: -6px;
+                min-width: 18px;
+                height: 18px;
+                padding: 0 4px;
+                background: #e53935;
+                color: #fff;
+                font-size: 0.7rem;
+                font-weight: 700;
+                border-radius: 9px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                pointer-events: none;
             }
         }
         .mobileSidebarBackdrop {

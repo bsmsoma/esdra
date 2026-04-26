@@ -687,40 +687,42 @@ export default function ProductDetails() {
                             alt={currentProduct.name}
                         />
                     )}
-                    <div className={styles.miniContainer}>
-                        {hasVideo && (
-                            <div
-                                className={`${styles.videoMini} ${
-                                    isShowingVideo ? styles.selectedImage : ""
-                                }`}
-                                onClick={handleVideoClick}
-                            >
-                                <video
-                                    className={styles.videoMiniPlayer}
-                                    src={currentProduct.video}
-                                    muted
-                                />
-                                <div className={styles.videoMiniIcon}>
-                                    <VideoIcon />
+                    {totalMediaCount > 1 && (
+                        <div className={styles.miniContainer}>
+                            {hasVideo && (
+                                <div
+                                    className={`${styles.videoMini} ${
+                                        isShowingVideo ? styles.selectedImage : ""
+                                    }`}
+                                    onClick={handleVideoClick}
+                                >
+                                    <video
+                                        className={styles.videoMiniPlayer}
+                                        src={currentProduct.video}
+                                        muted
+                                    />
+                                    <div className={styles.videoMiniIcon}>
+                                        <VideoIcon />
+                                    </div>
                                 </div>
-                            </div>
-                        )}
-                        {currentProduct.images.map((imageUrl, index) => (
-                            <img
-                                key={index}
-                                className={`${styles.imageMini} ${
-                                    index === coverImage && !isShowingVideo
-                                        ? styles.selectedImage
-                                        : ""
-                                }`}
-                                src={imageUrl}
-                                alt={`${currentProduct.name} - Imagem ${
-                                    index + 1
-                                }`}
-                                onClick={() => handleImageClick(index)}
-                            />
-                        ))}
-                    </div>
+                            )}
+                            {currentProduct.images.map((imageUrl, index) => (
+                                <img
+                                    key={index}
+                                    className={`${styles.imageMini} ${
+                                        index === coverImage && !isShowingVideo
+                                            ? styles.selectedImage
+                                            : ""
+                                    }`}
+                                    src={imageUrl}
+                                    alt={`${currentProduct.name} - Imagem ${
+                                        index + 1
+                                    }`}
+                                    onClick={() => handleImageClick(index)}
+                                />
+                            ))}
+                        </div>
+                    )}
                     <div className={styles.buttonsContainer}>
                         <div className={styles.shareAndLikeContainer}>
                             <div className={styles.shareWrapper}>

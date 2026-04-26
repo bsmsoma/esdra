@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, createContext, useContext, useMemo } from "react";
 import styles from "./ProductsLayout.module.scss";
-import { Outlet, useLoaderData, useLocation } from "react-router";
+import { Outlet, useLoaderData, useLocation, useSearchParams } from "react-router";
 import SidebarContent from "../components/SidebarContent";
 import { FilterIcon } from "../assets/icons";
 import { getProductsCollection, getDocs, query, where, orderBy, limit, or } from "../firebase";
@@ -245,12 +245,18 @@ export async function productsLayoutLoader({ request }) {
             // Get collection display name from first product
             const collectionDisplayName = products.length > 0 && products[0].collection ? products[0].collection : null;
 
+            // Extract unique collections from all filtered products
+            const collections = [...new Set(
+                products.map(function (p) { return p.collection; }).filter(Boolean)
+            )].sort();
+
             return {
                 filteredMinPrice,
                 filteredMaxPrice,
                 filteredProductSizes,
                 filteredProductColors,
                 collectionDisplayName,
+                collections,
             };
         }
 
@@ -451,6 +457,7 @@ export async function productsLayoutLoader({ request }) {
             searchQuery: urlQuerySearch,
             collection: urlQueryCollection,
             collectionDisplayName: filterData.collectionDisplayName,
+            collections: filterData.collections,
             sizes: filterData.filteredProductSizes,
             colors: filterData.filteredProductColors,
             minPrice: filterData.filteredMinPrice,
@@ -472,6 +479,7 @@ export async function productsLayoutLoader({ request }) {
             searchQuery: null,
             collection: null,
             collectionDisplayName: null,
+            collections: [],
             sizes: [],
             colors: [],
             minPrice: null,
@@ -487,12 +495,16 @@ export async function productsLayoutLoader({ request }) {
 // this layout is used to handle the UI states for the products cards layout and the sidebar.
 export default function ProductsLayout() {
     // This data is coming from the loader function.
-    const { products, searchQuery, category, collection, collectionDisplayName, colors, minPrice, maxPrice, sizes, totalPages, currentPage, totalProducts } =
+    const { products, searchQuery, category, collection, collectionDisplayName, collections, colors, minPrice, maxPrice, sizes, totalPages, currentPage, totalProducts } =
         useLoaderData();
     const location = useLocation();
 
     // this state is used to handle the mobile filter open state.
     const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+    const [filterSearchParams] = useSearchParams();
+    const activeFilterCount = ["color", "size", "minPrice", "collection"].filter(
+        function (key) { return filterSearchParams.get(key); }
+    ).length;
     const touchStartX = useRef(0);
     const touchStartY = useRef(0);
     const mobileSidebarRef = useRef(null);
@@ -873,6 +885,7 @@ export default function ProductsLayout() {
                 category,
                 collection,
                 collectionDisplayName,
+                collections,
                 colors,
                 minPrice,
                 maxPrice,
@@ -882,7 +895,7 @@ export default function ProductsLayout() {
                 totalProducts,
             };
         },
-        [products, searchQuery, category, collection, collectionDisplayName, colors, minPrice, maxPrice, sizes, totalPages, currentPage, totalProducts]
+        [products, searchQuery, category, collection, collectionDisplayName, collections, colors, minPrice, maxPrice, sizes, totalPages, currentPage, totalProducts]
     );
     
     return (
@@ -898,6 +911,9 @@ export default function ProductsLayout() {
                         onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)}
                     >
                         <FilterIcon height={24} width={24} /> Filtros
+                        {activeFilterCount > 0 && (
+                            <span className={styles.filterBadge}>{activeFilterCount}</span>
+                        )}
                     </button>
                     <button
                         className={styles.resetFiltersMobileButton}

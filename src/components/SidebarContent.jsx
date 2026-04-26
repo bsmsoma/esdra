@@ -4,189 +4,181 @@ import PriceRangeFilter from "./PriceRangeFilter";
 import { colors as colorsUtils } from "../utils/colors";
 import { useSearchParams } from "react-router";
 import { useProducts } from "../pages/ProductsLayout";
-
-// This component is used to display the filters for the sidebar and the products cards layout
+import { formatSizeLabelForDisplay } from "../utils/productSizes";
 
 const SidebarContent = forwardRef(function SidebarContent({ isMobile, onClose }, ref) {
-    // Retrieves necessary data from the products context
-    const { minPrice, maxPrice, sizes, colors } = useProducts();
-    
+    const { minPrice, maxPrice, sizes, colors, collections } = useProducts();
+
     const [searchParams, setSearchParams] = useSearchParams();
 
     const [priceRange, setPriceRange] = useState([minPrice, maxPrice]);
     const [disablePriceUI, setDisablePriceUI] = useState(priceRange[0] === priceRange[1]);
-
     const [selectedColors, setSelectedColors] = useState([]);
     const [selectedSizes, setSelectedSizes] = useState([]);
+    const [selectedCollection, setSelectedCollection] = useState(null);
 
     const category = searchParams.get("category");
 
-    // Gets the colors from the context and filters them in colorsUtils to get the hex code,
-    // then we can use the hex code to display the color in the UI
-    // Sorts colors in ascending order by their hexadecimal value
     const filteredColors = colorsUtils
         .filter((color) => colors.includes(color.name))
         .sort(function (a, b) {
-            // Convert hex to number for numerical comparison
             const hexA = parseInt(a.hex.replace('#', ''), 16);
             const hexB = parseInt(b.hex.replace('#', ''), 16);
             return hexA - hexB;
         });
-    
-    // Filter and sort sizes to remove invalid values (NaN, undefined, null)
-    // Ensure sizes is always an array of valid numbers
+
+    // Numeric sizes only (volumes in ml for cosmetics)
     const validSizes = (Array.isArray(sizes) ? sizes : []).filter(function (size) {
-        // Filter out invalid values
         return size !== undefined && size !== null && !isNaN(size);
     }).map(function (size) {
-        // Convert strings to numbers if needed
         const numSize = typeof size === 'string' ? parseInt(size, 10) : size;
         return isNaN(numSize) ? null : numSize;
     }).filter(function (size) {
         return size !== null;
     }).sort(function (a, b) {
-        // Sort numerically
         return a - b;
     });
-    
-    // Sync states with changes in the URL and context data
-    useEffect(function() {
-        // Update price ranges when context data changes
+
+    const hasNumericSizes = validSizes.length > 0;
+    const showCollections = Array.isArray(collections) && collections.length > 1;
+
+    function formatVolumeLabel(size) {
+        return typeof size === 'number' ? `${size}ml` : formatSizeLabelForDisplay(size);
+    }
+
+    // Sync when context price/category changes
+    useEffect(function () {
         setPriceRange([minPrice, maxPrice]);
-
-        // Update disable states for price filters
         setDisablePriceUI(minPrice === maxPrice);
-
         setSelectedColors([]);
         setSelectedSizes([]);
+        setSelectedCollection(null);
     }, [minPrice, maxPrice, category]);
 
-    // Sync states with URL parameters
-    useEffect(function() {
-        // Sync selected colors with URL
+    // Sync with URL params
+    useEffect(function () {
         const urlColor = searchParams.get("color");
-        if (urlColor) {
-            // Separar múltiplas cores por vírgula
-            const colorsInUrl = urlColor.split(",").filter((c) => c.trim().length > 0);
-            setSelectedColors(colorsInUrl);
-        } else {
-            setSelectedColors([]);
-        }
+        setSelectedColors(urlColor
+            ? urlColor.split(",").filter((c) => c.trim().length > 0)
+            : []
+        );
 
-        // Sync selected size with URL
         const urlSize = searchParams.get("size");
-        if (urlSize) {
-            setSelectedSizes(urlSize.split(",").map(function(s) {
-                return parseInt(s.trim());
-            }));
-        } else {
-            setSelectedSizes([]);
-        }
+        setSelectedSizes(urlSize
+            ? urlSize.split(",").map(function (s) { return parseInt(s.trim(), 10); }).filter(function (n) { return !isNaN(n); })
+            : []
+        );
 
-        // Sync price ranges with URL
         const urlMinPrice = searchParams.get("minPrice");
         const urlMaxPrice = searchParams.get("maxPrice");
         if (urlMinPrice && urlMaxPrice) {
-            setPriceRange([parseInt(urlMinPrice), parseInt(urlMaxPrice)]);
+            setPriceRange([parseInt(urlMinPrice, 10), parseInt(urlMaxPrice, 10)]);
         } else {
             setPriceRange([minPrice, maxPrice]);
         }
+
+        const urlCollection = searchParams.get("collection");
+        setSelectedCollection(urlCollection || null);
     }, [searchParams, minPrice, maxPrice]);
 
     function handleColorChange(color) {
-        setSelectedColors((prev) => {
-            if (prev.includes(color)) {
-                return prev.filter((col) => col !== color);
-            }
-            return [...prev, color];
+        setSelectedColors(function (prev) {
+            return prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color];
         });
     }
 
     function handleSizeChange(size) {
-        setSelectedSizes((prev) => {
-            if (prev.includes(size)) {
-                return prev.filter((s) => s !== size);
-            }
-            return [...prev, size];
+        setSelectedSizes(function (prev) {
+            return prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size];
         });
     }
+
+    function handleCollectionChange(name) {
+        setSelectedCollection(function (prev) { return prev === name ? null : name; });
+    }
+
     function handlePriceChange(value) {
-        setPriceRange([parseInt(value[0]), parseInt(value[1])]);
+        setPriceRange([parseInt(value[0], 10), parseInt(value[1], 10)]);
     }
 
     function handleApplyFilters() {
         const params = new URLSearchParams();
 
-        // Keep existing parameters
         const currentCategory = searchParams.get("category");
         const currentQuery = searchParams.get("query");
         const currentPage = searchParams.get("page");
 
-        if (currentCategory) {
-            params.set("category", currentCategory);
-        }
-        if (currentQuery) {
-            params.set("query", currentQuery);
-        }
-        if (currentPage) {
-            params.set("page", currentPage);
-        }
+        if (currentCategory) params.set("category", currentCategory);
+        if (currentQuery) params.set("query", currentQuery);
+        if (currentPage) params.set("page", currentPage);
 
-        // Apply color filter (multiple colors)
-        if (selectedColors.length > 0) {
-            params.set("color", selectedColors.join(",")); // Join multiple colors separated by comma
-        }
-
-        // Apply size filter (multiple sizes)
-        if (selectedSizes.length > 0) {
-            params.set("size", selectedSizes.join(",")); // Join multiple sizes separated by comma
-        }
-
-        // Apply price filters
+        if (selectedColors.length > 0) params.set("color", selectedColors.join(","));
+        if (selectedSizes.length > 0) params.set("size", selectedSizes.join(","));
         if (priceRange[0] !== minPrice || priceRange[1] !== maxPrice) {
             params.set("minPrice", priceRange[0]);
             params.set("maxPrice", priceRange[1]);
         }
+        if (selectedCollection) params.set("collection", selectedCollection);
 
         setSearchParams(params);
 
-        if (isMobile && typeof onClose === "function") {
-            onClose();
-        }
+        if (isMobile && typeof onClose === "function") onClose();
     }
 
     function handleResetFilters() {
         setSelectedColors([]);
         setSelectedSizes([]);
+        setSelectedCollection(null);
         setPriceRange([minPrice, maxPrice]);
 
-        // Clear all filter parameters, keeping only the category if it exists
         const params = new URLSearchParams();
         const currentCategory = searchParams.get("category");
-        if (currentCategory) {
-            params.set("category", currentCategory);
-        }
+        if (currentCategory) params.set("category", currentCategory);
         setSearchParams(params);
 
-        if (isMobile && typeof onClose === "function") {
-            onClose();
-        }
+        if (isMobile && typeof onClose === "function") onClose();
     }
 
-    useImperativeHandle(ref, () => ({
-        resetFilters: handleResetFilters,
-    }));
+    useImperativeHandle(ref, function () {
+        return { resetFilters: handleResetFilters };
+    });
 
     return (
         <div className={`${styles.sidebarWrapper} ${isMobile ? styles.mobileWrapper : ""}`}>
             {!isMobile && <h2 className={styles.sidebarheader}>Filtros</h2>}
             <div className={`${styles.sidebarcontent} ${isMobile ? styles.mobileContent : ""}`}>
-                <div className={styles.filterSection}>
-                    <h3 className={styles.categoryTitle}>{category}</h3>
-                </div>
+
+                {/* Categoria ativa */}
+                {category && (
+                    <div className={styles.filterSection}>
+                        <h3 className={styles.categoryTitle}>{category}</h3>
+                    </div>
+                )}
+
+                {/* Coleções */}
+                {showCollections && (
+                    <div className={styles.filterSection}>
+                        <h3>Coleção</h3>
+                        <div className={styles.collectionFilters}>
+                            {collections.map(function (name) {
+                                return (
+                                    <button
+                                        key={name}
+                                        className={`${styles.collectionBtn} ${selectedCollection === name ? styles.active : ""}`}
+                                        onClick={function () { handleCollectionChange(name); }}
+                                    >
+                                        {name}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                {/* Faixa de preço */}
                 {!disablePriceUI && (
                     <div className={styles.filterSection}>
-                        <h3>Preco</h3>
+                        <h3>Faixa de Preço</h3>
                         <PriceRangeFilter
                             min={minPrice}
                             max={maxPrice}
@@ -196,45 +188,49 @@ const SidebarContent = forwardRef(function SidebarContent({ isMobile, onClose },
                     </div>
                 )}
 
-                <div className={styles.filterSection}>
-                    <h3>Cores</h3>
-                    <div className={styles.colorFilters}>
-                        {filteredColors.map(({ name, hex }) => (
-                            <button
-                                key={name}
-                                className={`${styles.colorBtn} ${selectedColors.includes(name) ? styles.active : ""}`}
-                                style={{ backgroundColor: hex }}
-                                onClick={() => handleColorChange(name)}
-                                title={name}
-                            />
-                        ))}
+                {/* Cores */}
+                {filteredColors.length > 0 && (
+                    <div className={styles.filterSection}>
+                        <h3>Cor</h3>
+                        <div className={styles.colorFilters}>
+                            {filteredColors.map(function ({ name, hex }) {
+                                return (
+                                    <button
+                                        key={name}
+                                        className={`${styles.colorBtn} ${selectedColors.includes(name) ? styles.active : ""}`}
+                                        style={{ backgroundColor: hex }}
+                                        onClick={function () { handleColorChange(name); }}
+                                        title={name}
+                                    />
+                                );
+                            })}
+                        </div>
                     </div>
-                </div>
+                )}
 
-                <div className={styles.filterSection}>
-                    <h3>Tamanhos</h3>
-                    <div className={styles.sizeFilters}>
-                        {validSizes.map(function (size) {
-                            return (
-                                <button
-                                    key={size}
-                                    className={`${styles.sizeBtn} ${selectedSizes.includes(size) ? styles.active : ""}`}
-                                    onClick={function () {
-                                        return handleSizeChange(size);
-                                    }}
-                                >
-                                    {size}
-                                </button>
-                            );
-                        })}
+                {/* Volume (ml) — oculto se não houver tamanhos numéricos */}
+                {hasNumericSizes && (
+                    <div className={styles.filterSection}>
+                        <h3>Volume</h3>
+                        <div className={styles.sizeFilters}>
+                            {validSizes.map(function (size) {
+                                return (
+                                    <button
+                                        key={size}
+                                        className={`${styles.sizeBtn} ${selectedSizes.includes(size) ? styles.active : ""}`}
+                                        onClick={function () { handleSizeChange(size); }}
+                                    >
+                                        {formatVolumeLabel(size)}
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
 
             <div className={`${styles.sidebarfooter} ${isMobile ? styles.mobileFooter : ""}`}>
-                <button onClick={handleApplyFilters}>
-                    Aplicar
-                </button>
+                <button onClick={handleApplyFilters}>Aplicar</button>
                 <button className={styles.resetButton} onClick={handleResetFilters}>
                     Limpar Filtros
                 </button>

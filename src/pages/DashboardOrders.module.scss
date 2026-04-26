@@ -195,3 +195,183 @@
     font-family: $defaultFont;
 }
 
+.expandButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.3rem 0.5rem;
+    color: $text-quinary;
+    font-size: 0.75rem;
+    transition: color 0.2s ease;
+    border-radius: vars.$radius-xs;
+
+    &:hover {
+        color: $text-primary;
+        background: $background-active;
+    }
+
+    &.expanded {
+        color: $accent-gold;
+    }
+}
+
+.orderDetailRow {
+    > td {
+        padding: 0 !important;
+        border-bottom: 2px solid $accent-gold;
+    }
+}
+
+.orderDetailPanel {
+    padding: 1.5rem 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    background: $background-even;
+    font-family: $defaultFont;
+}
+
+.detailSection {
+    min-width: 200px;
+    flex: 1 1 200px;
+
+    &.fullWidth {
+        flex: 1 1 100%;
+    }
+
+    h4 {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: $text-quinary;
+        margin: 0 0 0.75rem;
+        font-weight: $font-weight-semibold;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid $border-color;
+        font-family: $defaultFont;
+    }
+}
+
+.detailField {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+    font-size: 0.88rem;
+    line-height: 1.4;
+}
+
+.fieldLabel {
+    color: $text-quinary;
+    min-width: 70px;
+    flex-shrink: 0;
+}
+
+.fieldValue {
+    color: $text-primary;
+    font-weight: $font-weight-medium;
+    word-break: break-word;
+}
+
+.addressText {
+    font-size: 0.88rem;
+    color: $text-primary;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.notesText {
+    font-size: 0.88rem;
+    color: $text-primary;
+    margin: 0;
+    font-style: italic;
+    line-height: 1.5;
+}
+
+.financialSummary {
+    font-size: 0.88rem;
+}
+
+.summaryRow {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.35rem;
+    color: $text-quinary;
+}
+
+.paymentMethodRow {
+    margin-top: 0.35rem;
+    padding-top: 0.35rem;
+    border-top: 1px solid $border-color;
+}
+
+.summaryTotal {
+    display: flex;
+    justify-content: space-between;
+    font-weight: $font-weight-semibold;
+    color: $text-primary;
+    font-size: 0.95rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid $border-color;
+    margin-top: 0.35rem;
+}
+
+.itemsList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.itemRow {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.75rem;
+    background: $background-color;
+    border-radius: 8px;
+    border: 1px solid $border-color;
+}
+
+.itemImage {
+    width: 44px;
+    height: 44px;
+    object-fit: cover;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+.itemImagePlaceholder {
+    width: 44px;
+    height: 44px;
+    background: $background-active;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+.itemDetails {
+    flex: 1;
+    min-width: 0;
+}
+
+.itemName {
+    font-size: 0.9rem;
+    color: $text-primary;
+    font-weight: $font-weight-medium;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.itemMeta {
+    font-size: 0.8rem;
+    color: $text-quinary;
+    margin-top: 0.15rem;
+}
+
+.itemPrice {
+    font-size: 0.9rem;
+    color: $text-primary;
+    font-weight: $font-weight-semibold;
+    text-align: right;
+    white-space: nowrap;
+}
+
