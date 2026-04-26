@@ -50,6 +50,10 @@ export async function checkoutAction({ request }) {
             notes,
             idempotencyKey,
         });
+        // Checkout Pro: redirect to MercadoPago hosted page
+        if (orderResult.payment?.checkoutUrl) {
+            return { checkoutUrl: orderResult.payment.checkoutUrl, orderId: orderResult.orderId };
+        }
         return redirect(`/checkout/success?orderId=${orderResult.orderId}`);
     } catch (error) {
         console.error("Erro ao criar pedido:", error);
@@ -65,6 +69,12 @@ export default function Checkout() {
     const [customer, setCustomer] = useState(null);
     const [loading, setLoading] = useState(true);
     const [selectedAddressId, setSelectedAddressId] = useState(null);
+
+    useEffect(function redirectToMercadoPago() {
+        if (actionData?.checkoutUrl) {
+            window.location.href = actionData.checkoutUrl;
+        }
+    }, [actionData]);
 
     useEffect(function loadCustomer() {
         async function fetchCustomer() {
@@ -307,30 +317,11 @@ export default function Checkout() {
                         </div>
 
                         <div className={styles.section}>
-                            <h2 className={styles.sectionTitle}>Método de Pagamento</h2>
-                            <div className={styles.paymentMethods}>
-                                <label className={styles.paymentOption}>
-                                    <input
-                                        type="radio"
-                                        name="paymentMethod"
-                                        value="pix"
-                                        defaultChecked
-                                    />
-                                    <span>PIX</span>
-                                </label>
-                                <label className={styles.paymentOption}>
-                                    <input type="radio" name="paymentMethod" value="credit" />
-                                    <span>Cartão de Crédito</span>
-                                </label>
-                                <label className={styles.paymentOption}>
-                                    <input type="radio" name="paymentMethod" value="debit" />
-                                    <span>Cartão de Débito</span>
-                                </label>
-                                <label className={styles.paymentOption}>
-                                    <input type="radio" name="paymentMethod" value="boleto" />
-                                    <span>Boleto</span>
-                                </label>
+                            <h2 className={styles.sectionTitle}>Pagamento</h2>
+                            <div className={styles.checkoutProNotice}>
+                                <p>Você será redirecionado ao <strong>Mercado Pago</strong> para escolher sua forma de pagamento (PIX, cartão de crédito, boleto e mais).</p>
                             </div>
+                            <input type="hidden" name="paymentMethod" value="checkout_pro" />
                         </div>
 
                         <div className={styles.section}>
@@ -388,9 +379,11 @@ export default function Checkout() {
                             <button
                                 type="submit"
                                 className={styles.submitButton}
-                                disabled={missingCheckoutData.length > 0}
+                                disabled={missingCheckoutData.length > 0 || Boolean(actionData?.checkoutUrl)}
                             >
-                                Confirmar Pedido
+                                {actionData?.checkoutUrl
+                                    ? "Redirecionando para o Mercado Pago..."
+                                    : "Ir para o Pagamento"}
                             </button>
                         </div>
                     </div>

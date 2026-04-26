@@ -168,6 +168,20 @@
     @include focus-visible-ring;
 }
 
+.checkoutProNotice {
+    padding: vars.$padding-xl;
+    background: rgba(0, 160, 255, 0.06);
+    border: vars.$border-width-base solid rgba(0, 160, 255, 0.25);
+    border-radius: vars.$radius-md;
+    color: $text-secondary;
+    font-size: $font-size-sm;
+    line-height: 1.5;
+
+    strong {
+        color: $text-primary;
+    }
+}
+
 .paymentMethods {
     display: flex;
     flex-direction: column;

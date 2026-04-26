@@ -90,6 +90,63 @@
     color: $text-primary;
 }
 
+.statusPendente {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.statusPago {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.statusEnviado {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.statusEntregue {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.statusCancelado {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.errorState {
+    text-align: center;
+    padding: vars.$padding-4xl vars.$padding-3xl;
+    background: $status-error-surface;
+    border: vars.$border-width-thin solid $status-error-border;
+    border-radius: vars.$radius-md;
+
+    p {
+        font-size: $font-size-3xl;
+        font-family: $defaultFont;
+        color: $status-error-text;
+        margin-bottom: vars.$margin-4xl;
+    }
+}
+
+.retryButton {
+    display: inline-block;
+    padding: vars.$padding-lg vars.$padding-3xl;
+    background: $button-primary-bg;
+    color: $button-primary-text;
+    border: none;
+    border-radius: vars.$radius-xs;
+    font-family: $clashGroteskSemibold;
+    font-size: $font-size-2xl;
+    cursor: pointer;
+    transition: background vars.$transition-base vars.$ease-base;
+
+    &:hover {
+        background: $button-primary-hover;
+    }
+}
+
 .date,
 .total {
     font-family: $defaultFont;

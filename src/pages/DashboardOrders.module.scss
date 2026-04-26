@@ -26,6 +26,10 @@
 }
 
 .feedback {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: vars.$gap-xl;
     margin-bottom: vars.$margin-2xl;
     padding: vars.$padding-lg;
     border: vars.$border-width-thin solid $border-color;
@@ -33,6 +37,96 @@
     background: $background-even;
     color: $text-primary;
     font-family: $defaultFont;
+}
+
+.feedbackSuccess {
+    background: #d1fae5;
+    border-color: #6ee7b7;
+    color: #065f46;
+}
+
+.feedbackError {
+    background: $status-error-surface;
+    border-color: $status-error-border;
+    color: $status-error-text;
+}
+
+.retryButton {
+    flex-shrink: 0;
+    padding: vars.$padding-sm vars.$padding-lg;
+    background: $button-primary-bg;
+    color: $button-primary-text;
+    border: none;
+    border-radius: vars.$radius-xs;
+    font-family: $defaultFont;
+    font-size: $font-size-lg;
+    cursor: pointer;
+
+    &:hover {
+        background: $button-primary-hover;
+    }
+}
+
+.filters {
+    display: flex;
+    align-items: center;
+    gap: vars.$gap-xl;
+    margin-bottom: vars.$margin-3xl;
+    flex-wrap: wrap;
+}
+
+.filterLabel {
+    font-family: $defaultFont;
+    font-size: $font-size-2xl;
+    color: $text-primary;
+    font-weight: $font-weight-medium;
+    white-space: nowrap;
+}
+
+.filterSelect {
+    padding: vars.$padding-sm vars.$padding-lg;
+    border: vars.$border-width-thin solid $border-color;
+    border-radius: vars.$radius-xs;
+    font-family: $defaultFont;
+    font-size: $font-size-2xl;
+    color: $text-primary;
+    background: $background-color;
+    cursor: pointer;
+}
+
+.filterCount {
+    font-family: $defaultFont;
+    font-size: $font-size-lg;
+    color: $text-quinary;
+    margin-left: auto;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: vars.$margin-4xl;
+}
+
+.loadMoreButton {
+    padding: vars.$padding-lg vars.$padding-4xl;
+    background: $background-color;
+    color: $text-primary;
+    border: vars.$border-width-thin solid $border-color;
+    border-radius: vars.$radius-xs;
+    font-family: $defaultFont;
+    font-size: $font-size-2xl;
+    cursor: pointer;
+    transition: all vars.$transition-base vars.$ease-base;
+
+    &:hover:not(:disabled) {
+        border-color: $border-color-active;
+        background: $background-even;
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
 }
 
 .emptyState {

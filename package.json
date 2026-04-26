@@ -22,6 +22,7 @@
   "dependencies": {
     "browser-image-compression": "^2.0.2",
     "firebase": "^11.0.1",
+    "mercadopago": "^2.12.0",
     "prop-types": "^15.8.1",
     "qrcode.react": "^4.2.0",
     "react": "^18.3.1",

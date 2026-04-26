@@ -23,7 +23,7 @@ export function normalizeShippingAmount(value) {
 }
 
 export function normalizePaymentMethod(method) {
-  const allowed = new Set(["pix", "credit", "debit", "boleto"]);
+  const allowed = new Set(["pix", "credit", "debit", "boleto", "checkout_pro"]);
   if (!allowed.has(method)) {
     throw new HttpsError("invalid-argument", "Método de pagamento inválido.");
   }

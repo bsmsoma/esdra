@@ -5,14 +5,42 @@ import { getOrdersByCustomer } from "../firebase";
 import styles from "./OrdersList.module.scss";
 
 export async function ordersLoader() {
-    // Get user from auth - this will be handled by the parent route loader
     return null;
 }
+
+const STATUS_LABELS = {
+    pendente: "Pendente",
+    pago: "Pago",
+    enviado: "Enviado",
+    entregue: "Entregue",
+    cancelado: "Cancelado",
+    pending: "Pendente",
+    paid: "Pago",
+    shipped: "Enviado",
+    delivered: "Entregue",
+    cancelled: "Cancelado",
+    confirmed: "Pago",
+};
+
+const STATUS_STYLE = {
+    pendente: styles.statusPendente,
+    pago: styles.statusPago,
+    enviado: styles.statusEnviado,
+    entregue: styles.statusEntregue,
+    cancelado: styles.statusCancelado,
+    pending: styles.statusPendente,
+    paid: styles.statusPago,
+    shipped: styles.statusEnviado,
+    delivered: styles.statusEntregue,
+    cancelled: styles.statusCancelado,
+    confirmed: styles.statusPago,
+};
 
 export default function OrdersList() {
     const { user } = useAuth();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(function loadOrders() {
         async function fetchOrders() {
@@ -20,8 +48,9 @@ export default function OrdersList() {
                 try {
                     const ordersData = await getOrdersByCustomer(user.uid);
                     setOrders(ordersData || []);
-                } catch (error) {
-                    console.error("Erro ao carregar pedidos:", error);
+                } catch (err) {
+                    console.error("Erro ao carregar pedidos:", err);
+                    setError("Não foi possível carregar seus pedidos. Tente novamente.");
                     setOrders([]);
                 } finally {
                     setLoading(false);
@@ -37,19 +66,29 @@ export default function OrdersList() {
         return <div className={styles.loading}>Carregando...</div>;
     }
 
-    const statusLabels = {
-        pendente: "Pendente",
-        pago: "Pago",
-        enviado: "Enviado",
-        entregue: "Entregue",
-        cancelado: "Cancelado",
-        pending: "Pendente",
-        paid: "Pago",
-        shipped: "Enviado",
-        delivered: "Entregue",
-        cancelled: "Cancelado",
-        confirmed: "Pago",
-    };
+    if (error) {
+        return (
+            <div className={styles.ordersList}>
+                <h1 className={styles.title}>Meus Pedidos</h1>
+                <div className={styles.errorState}>
+                    <p>{error}</p>
+                    <button
+                        className={styles.retryButton}
+                        onClick={function () {
+                            setError(null);
+                            setLoading(true);
+                            getOrdersByCustomer(user.uid)
+                                .then(function (data) { setOrders(data || []); })
+                                .catch(function () { setError("Não foi possível carregar seus pedidos. Tente novamente."); })
+                                .finally(function () { setLoading(false); });
+                        }}
+                    >
+                        Tentar novamente
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className={styles.ordersList}>
@@ -73,8 +112,8 @@ export default function OrdersList() {
                             >
                                 <div className={styles.orderHeader}>
                                     <h3>Pedido #{order.orderNumber}</h3>
-                                    <span className={styles.status}>
-                                        {statusLabels[order.status] || order.status}
+                                    <span className={`${styles.status} ${STATUS_STYLE[order.status] || ""}`}>
+                                        {STATUS_LABELS[order.status] || order.status}
                                     </span>
                                 </div>
                                 <p className={styles.date}>

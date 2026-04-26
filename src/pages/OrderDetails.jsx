@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router";
-import { getOrderById } from "../firebase";
+import { getOrderById, cancelOrderByCustomer } from "../firebase";
 import { useEffect, useState } from "react";
 import { formatPrice } from "../utils/priceUtils";
 import styles from "./OrderDetails.module.scss";
@@ -22,10 +22,36 @@ export async function orderDetailsLoader({ params }) {
     }
 }
 
+const STATUS_LABELS = {
+    pendente: "Aguardando Pagamento",
+    pago: "Pago",
+    enviado: "Enviado",
+    entregue: "Entregue",
+    cancelado: "Cancelado",
+    pending: "Aguardando Pagamento",
+    confirmed: "Confirmado",
+    preparing: "Preparando",
+    shipped: "Enviado",
+    delivered: "Entregue",
+    cancelled: "Cancelado",
+};
+
+const STATUS_BADGE_STYLE = {
+    pendente: styles.statusPendente,
+    pago: styles.statusPago,
+    enviado: styles.statusEnviado,
+    entregue: styles.statusEntregue,
+    cancelado: styles.statusCancelado,
+};
+
 export default function OrderDetails() {
     const { orderId } = useParams();
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState(null);
+    const [cancelling, setCancelling] = useState(false);
+    const [cancelError, setCancelError] = useState(null);
+    const [showConfirm, setShowConfirm] = useState(false);
 
     useEffect(function loadOrder() {
         async function fetchOrder() {
@@ -34,6 +60,7 @@ export default function OrderDetails() {
                 setOrder(orderData);
             } catch (error) {
                 console.error("Erro ao carregar pedido:", error);
+                setLoadError("Não foi possível carregar os detalhes do pedido.");
             } finally {
                 setLoading(false);
             }
@@ -41,32 +68,34 @@ export default function OrderDetails() {
         fetchOrder();
     }, [orderId]);
 
+    async function handleCancel() {
+        setCancelling(true);
+        setCancelError(null);
+        try {
+            await cancelOrderByCustomer({ orderId });
+            setOrder(function (prev) { return { ...prev, status: "cancelado" }; });
+            setShowConfirm(false);
+        } catch (err) {
+            setCancelError(err?.message || "Não foi possível cancelar o pedido. Tente novamente.");
+        } finally {
+            setCancelling(false);
+        }
+    }
+
     if (loading) {
         return <div className={styles.loading}>Carregando...</div>;
     }
 
-    if (!order) {
+    if (loadError || !order) {
         return (
             <div className={styles.error}>
-                <p>Pedido não encontrado</p>
+                <p>{loadError || "Pedido não encontrado"}</p>
                 <Link to="/account/orders">Voltar para Meus Pedidos</Link>
             </div>
         );
     }
 
-    const statusLabels = {
-        pendente: "Aguardando Pagamento",
-        pago: "Pago",
-        enviado: "Enviado",
-        entregue: "Entregue",
-        cancelado: "Cancelado",
-        pending: "Aguardando Pagamento",
-        confirmed: "Confirmado",
-        preparing: "Preparando",
-        shipped: "Enviado",
-        delivered: "Entregue",
-        cancelled: "Cancelado",
-    };
+    const canCancel = order.status === "pendente";
 
     return (
         <div className={styles.orderDetails}>
@@ -95,9 +124,49 @@ export default function OrderDetails() {
                     </p>
                     <p className={styles.orderStatus}>
                         <strong>Status:</strong>{" "}
-                        <span className={styles.statusBadge}>{statusLabels[order.status] || order.status}</span>
+                        <span className={`${styles.statusBadge} ${STATUS_BADGE_STYLE[order.status] || ""}`}>
+                            {STATUS_LABELS[order.status] || order.status}
+                        </span>
                     </p>
                 </div>
+
+                {canCancel && (
+                    <div className={styles.cancelArea}>
+                        {!showConfirm ? (
+                            <button
+                                className={styles.cancelButton}
+                                onClick={function () { setShowConfirm(true); setCancelError(null); }}
+                            >
+                                Cancelar pedido
+                            </button>
+                        ) : (
+                            <div className={styles.confirmBox}>
+                                <p className={styles.confirmText}>
+                                    Tem certeza que deseja cancelar este pedido?
+                                </p>
+                                <div className={styles.confirmActions}>
+                                    <button
+                                        className={styles.confirmYes}
+                                        onClick={handleCancel}
+                                        disabled={cancelling}
+                                    >
+                                        {cancelling ? "Cancelando..." : "Sim, cancelar"}
+                                    </button>
+                                    <button
+                                        className={styles.confirmNo}
+                                        onClick={function () { setShowConfirm(false); setCancelError(null); }}
+                                        disabled={cancelling}
+                                    >
+                                        Voltar
+                                    </button>
+                                </div>
+                                {cancelError && (
+                                    <p className={styles.cancelError}>{cancelError}</p>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
 
             <div className={styles.section}>

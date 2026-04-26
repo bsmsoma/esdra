@@ -4,6 +4,7 @@ import {logger} from "firebase-functions/v2";
 import {initializeApp} from "firebase-admin/app";
 import {getFirestore, FieldValue} from "firebase-admin/firestore";
 import {getStorage} from "firebase-admin/storage";
+import {MercadoPagoConfig, Preference, Payment} from "mercadopago";
 import {
   normalizeWebhookPaymentStatus,
   mapPaymentStatusToOrderStatus,
@@ -122,71 +123,74 @@ function getMercadoPagoSandboxPayerConfig() {
   };
 }
 
-async function createMercadoPagoPaymentIntent({orderId, orderNumber, total, customer, paymentMethod}) {
+async function createCheckoutProPreference({orderId, orderNumber, items, shipping, customer}) {
   const accessToken = globalThis.process?.env?.MERCADOPAGO_ACCESS_TOKEN;
   if (!accessToken) {
     throw new HttpsError("failed-precondition", "MERCADOPAGO_ACCESS_TOKEN não configurado.");
   }
 
-  const idempotencyKey = `${orderId}-${Date.now()}`;
-  const notificationUrl = globalThis.process?.env?.PAYMENT_WEBHOOK_URL;
-  const [firstName, ...restName] = `${customer.firstName} ${customer.lastName}`.trim().split(" ");
-  const lastName = restName.join(" ").trim() || customer.lastName;
-  const normalizedMethod = paymentMethod === "pix" ? "pix" : "credit_card";
+  const appUrl = String(globalThis.process?.env?.APP_URL || "").trim().replace(/\/$/, "");
+  if (!appUrl) {
+    throw new HttpsError("failed-precondition", "APP_URL não configurado.");
+  }
 
-  const payload = {
-    transaction_amount: Number(total.toFixed(2)),
-    description: `Pedido ${orderNumber}`,
-    payment_method_id: normalizedMethod,
-    external_reference: orderId,
-    notification_url: notificationUrl,
+  const notificationUrl = globalThis.process?.env?.PAYMENT_WEBHOOK_URL;
+  const isSandbox = String(globalThis.process?.env?.MP_SANDBOX || "").trim().toLowerCase() === "true";
+  const sandboxPayerConfig = getMercadoPagoSandboxPayerConfig();
+
+  const client = new MercadoPagoConfig({accessToken});
+  const preferenceClient = new Preference(client);
+
+  const mpItems = items.map((item) => ({
+    id: String(item.productId || ""),
+    title: String(item.productName || "Produto"),
+    quantity: Number(item.quantity),
+    unit_price: Number(Number(item.unitPrice).toFixed(2)),
+    currency_id: "BRL",
+  }));
+
+  const preferenceBody = {
+    items: mpItems,
     payer: {
-      email: customer.email,
-      first_name: firstName || customer.firstName,
-      last_name: lastName || customer.lastName,
+      name: String(sandboxPayerConfig?.firstName || customer.firstName || ""),
+      surname: String(sandboxPayerConfig?.lastName || customer.lastName || ""),
+      email: String(sandboxPayerConfig?.email || customer.email || ""),
       identification: {
         type: "CPF",
-        number: customer.document.replace(/\D/g, ""),
+        number: String(sandboxPayerConfig?.document || customer.document || "").replace(/\D/g, ""),
       },
     },
-    metadata: {
-      orderId,
-      orderNumber,
+    back_urls: {
+      success: `${appUrl}/checkout/success?orderId=${orderId}`,
+      failure: `${appUrl}/checkout/success?orderId=${orderId}&mp_status=failure`,
+      pending: `${appUrl}/checkout/success?orderId=${orderId}&mp_status=pending`,
+    },
+    auto_return: "approved",
+    external_reference: orderId,
+    statement_descriptor: "Esdra Aromas",
+    shipments: {
+      cost: Number(Number(shipping).toFixed(2)),
+      mode: "not_specified",
     },
   };
 
-  const response = await fetch("https://api.mercadopago.com/v1/payments", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-      "X-Idempotency-Key": idempotencyKey,
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!response.ok) {
-    const errorBody = await response.text();
-    throw new HttpsError("internal", `Falha ao criar pagamento Mercado Pago: ${errorBody}`);
+  if (notificationUrl) {
+    preferenceBody.notification_url = notificationUrl;
   }
 
-  const body = await response.json();
-  const qrData = body?.point_of_interaction?.transaction_data || {};
-  const providerStatus = normalizeWebhookPaymentStatus(body.status);
+  const preference = await preferenceClient.create({body: preferenceBody});
+  const checkoutUrl = isSandbox ? preference.sandbox_init_point : preference.init_point;
+
+  logInfo("checkout_pro_preference_created", {orderId, orderNumber, preferenceId: preference.id, isSandbox});
 
   return {
     provider: "mercadopago",
-    providerPaymentId: String(body.id || ""),
-    providerStatus: body.status || "",
-    paymentStatus: providerStatus,
-    pixQrCode: qrData.qr_code || "",
-    pixQrCodeBase64: qrData.qr_code_base64 || "",
-    paymentUrl: qrData.ticket_url || "",
-    rawPayload: {
-      id: body.id,
-      status: body.status,
-      status_detail: body.status_detail,
-    },
+    preferenceId: String(preference.id || ""),
+    providerPaymentId: "",
+    providerStatus: "pending",
+    paymentStatus: "pending",
+    checkoutUrl: checkoutUrl || "",
+    rawPayload: {id: preference.id},
   };
 }
 
@@ -202,9 +206,9 @@ function createManualPaymentIntent({orderId, paymentMethod}) {
   };
 }
 
-async function createPaymentIntent({orderId, orderNumber, total, customer, paymentMethod}) {
+async function createPaymentIntent({orderId, orderNumber, items, shipping, customer, paymentMethod}) {
   if (PAYMENT_PROVIDER === "mercadopago") {
-    return createMercadoPagoPaymentIntent({orderId, orderNumber, total, customer, paymentMethod});
+    return createCheckoutProPreference({orderId, orderNumber, items, shipping, customer});
   }
   return createManualPaymentIntent({orderId, paymentMethod});
 }
@@ -501,14 +505,15 @@ export const createOrder = onCall(FUNCTION_CONFIG, async (request) => {
       throw new HttpsError("internal", "Pedido não encontrado após criação.");
     }
     const orderData = orderSnap.data();
-    const shouldCreatePaymentIntent = !orderData?.payment?.providerPaymentId || !result.reused;
+    const shouldCreatePaymentIntent = !result.reused || !orderData?.payment?.preferenceId;
 
     let paymentIntentData = orderData?.payment || null;
     if (shouldCreatePaymentIntent) {
       paymentIntentData = await createPaymentIntent({
         orderId: result.orderId,
         orderNumber: result.orderNumber,
-        total: Number(orderData.total || result.total || 0),
+        items: orderData.items || [],
+        shipping: Number(orderData.shipping || 0),
         customer: result.customer || {
           firstName: String(orderData.customerName || "").split(" ")[0] || "",
           lastName: String(orderData.customerName || "").split(" ").slice(1).join(" "),
@@ -524,11 +529,10 @@ export const createOrder = onCall(FUNCTION_CONFIG, async (request) => {
         status: mapPaymentStatusToOrderStatus(paymentIntentData.paymentStatus, orderData.status),
         payment: {
           provider: paymentIntentData.provider,
-          providerPaymentId: paymentIntentData.providerPaymentId,
+          preferenceId: paymentIntentData.preferenceId || "",
+          providerPaymentId: paymentIntentData.providerPaymentId || "",
           providerStatus: paymentIntentData.providerStatus,
-          paymentUrl: paymentIntentData.paymentUrl || "",
-          pixQrCode: paymentIntentData.pixQrCode || "",
-          pixQrCodeBase64: paymentIntentData.pixQrCodeBase64 || "",
+          checkoutUrl: paymentIntentData.checkoutUrl || "",
           rawPayload: paymentIntentData.rawPayload || {},
           updatedAt: FieldValue.serverTimestamp(),
         },
@@ -583,6 +587,81 @@ export const createOrder = onCall(FUNCTION_CONFIG, async (request) => {
   }
 });
 
+async function updateOrderFromPayment({storeId, orderId, providerPaymentId, paymentStatus, rawPayload}) {
+  const orderRef = db.doc(`lojas/${storeId}/orders/${orderId}`);
+  const orderSnap = await orderRef.get();
+  if (!orderSnap.exists) {
+    return;
+  }
+
+  const orderData = orderSnap.data() || {};
+  const nextStatus = mapPaymentStatusToOrderStatus(paymentStatus, orderData.status);
+
+  await orderRef.set({
+    paymentStatus,
+    status: nextStatus,
+    payment: {
+      provider: orderData.payment?.provider || PAYMENT_PROVIDER,
+      preferenceId: orderData.payment?.preferenceId || "",
+      providerPaymentId: providerPaymentId || orderData.payment?.providerPaymentId || "",
+      providerStatus: String(rawPayload?.status || ""),
+      rawPayload,
+      updatedAt: FieldValue.serverTimestamp(),
+    },
+    updatedAt: FieldValue.serverTimestamp(),
+  }, {merge: true});
+
+  if (paymentStatus === "paid" && orderData.paymentStatus !== "paid") {
+    await queueTransactionalEmail({
+      lojaId: storeId,
+      orderId,
+      orderNumber: orderData.orderNumber || "",
+      type: "payment_approved",
+      to: orderData.customerEmail || "",
+      customerName: orderData.customerName || "",
+      payload: {
+        total: orderData.total,
+        paymentMethod: orderData.paymentMethod,
+      },
+    });
+  }
+}
+
+async function handleMercadoPagoNotification(mpPaymentId) {
+  const accessToken = globalThis.process?.env?.MERCADOPAGO_ACCESS_TOKEN;
+  if (!accessToken) {
+    return;
+  }
+
+  const client = new MercadoPagoConfig({accessToken});
+  const paymentClient = new Payment(client);
+  const paymentData = await paymentClient.get({id: mpPaymentId});
+
+  const orderId = String(paymentData.external_reference || "").trim();
+  if (!orderId) {
+    return;
+  }
+
+  const storeId = getStoreId({});
+  const paymentStatus = normalizeWebhookPaymentStatus(paymentData.status);
+
+  await updateOrderFromPayment({
+    storeId,
+    orderId,
+    providerPaymentId: String(paymentData.id || ""),
+    paymentStatus,
+    rawPayload: {
+      id: paymentData.id,
+      status: paymentData.status,
+      status_detail: paymentData.status_detail,
+      payment_method_id: paymentData.payment_method_id,
+      payment_type_id: paymentData.payment_type_id,
+    },
+  });
+
+  logInfo("mercadopago_notification_processed", {mpPaymentId, orderId, paymentStatus});
+}
+
 export const paymentWebhook = onRequest(FUNCTION_CONFIG, async (request, response) => {
   if (request.method === "GET" || request.method === "HEAD") {
     response.status(200).json({ok: true, message: "paymentWebhook online"});
@@ -595,6 +674,26 @@ export const paymentWebhook = onRequest(FUNCTION_CONFIG, async (request, respons
   }
 
   try {
+    const payload = request.body || {};
+
+    // Detect MercadoPago IPN (query params) or Webhooks (body) format
+    const queryTopic = String(request.query?.topic || "").trim().toLowerCase();
+    const queryId = String(request.query?.id || "").trim();
+    const isMpIpn = queryTopic === "payment" && Boolean(queryId);
+    const isMpWebhook = payload.type === "payment" && Boolean(payload.data?.id);
+
+    if (isMpIpn || isMpWebhook) {
+      const mpPaymentId = isMpIpn ? queryId : String(payload.data.id);
+      try {
+        await handleMercadoPagoNotification(mpPaymentId);
+      } catch (mpError) {
+        logger.error("mercadopago_notification_error", {structuredData: true, message: mpError.message, mpPaymentId});
+      }
+      response.status(200).json({ok: true});
+      return;
+    }
+
+    // Manual webhook — validate custom secret
     const expectedSecret = globalThis.process?.env?.PAYMENT_WEBHOOK_SECRET || "";
     if (expectedSecret) {
       const receivedSecret = String(request.headers["x-webhook-secret"] || "");
@@ -604,7 +703,6 @@ export const paymentWebhook = onRequest(FUNCTION_CONFIG, async (request, respons
       }
     }
 
-    const payload = request.body || {};
     const orderId = String(
       payload?.external_reference ||
       payload?.metadata?.orderId ||
@@ -619,43 +717,7 @@ export const paymentWebhook = onRequest(FUNCTION_CONFIG, async (request, respons
 
     const providerPaymentId = String(payload?.id || payload?.data?.id || "").trim();
     const paymentStatus = normalizeWebhookPaymentStatus(payload?.status || payload?.data?.status);
-    const orderRef = db.doc(`lojas/${storeId}/orders/${orderId}`);
-    const orderSnap = await orderRef.get();
-    if (!orderSnap.exists) {
-      response.status(404).json({error: "order not found"});
-      return;
-    }
-
-    const orderData = orderSnap.data() || {};
-    const nextStatus = mapPaymentStatusToOrderStatus(paymentStatus, orderData.status);
-
-    await orderRef.set({
-      paymentStatus,
-      status: nextStatus,
-      payment: {
-        provider: orderData.payment?.provider || PAYMENT_PROVIDER,
-        providerPaymentId: providerPaymentId || orderData.payment?.providerPaymentId || "",
-        providerStatus: String(payload?.status || ""),
-        rawPayload: payload,
-        updatedAt: FieldValue.serverTimestamp(),
-      },
-      updatedAt: FieldValue.serverTimestamp(),
-    }, {merge: true});
-
-    if (paymentStatus === "paid") {
-      await queueTransactionalEmail({
-        lojaId: storeId,
-        orderId,
-        orderNumber: orderData.orderNumber || "",
-        type: "payment_approved",
-        to: orderData.customerEmail || "",
-        customerName: orderData.customerName || "",
-        payload: {
-          total: orderData.total,
-          paymentMethod: orderData.paymentMethod,
-        },
-      });
-    }
+    await updateOrderFromPayment({storeId, orderId, providerPaymentId, paymentStatus, rawPayload: payload});
 
     response.status(200).json({ok: true});
   } catch (error) {
@@ -724,6 +786,60 @@ export const updateOrderStatusByAdmin = onCall(FUNCTION_CONFIG, async (request) 
       },
     });
   }
+
+  return {ok: true};
+});
+
+export const cancelOrderByCustomer = onCall(FUNCTION_CONFIG, async (request) => {
+  requireAuth(request);
+  const uid = request.auth.uid;
+  const lojaId = getStoreId(request.data);
+  const orderId = String(request.data?.orderId || "").trim();
+
+  if (!orderId) {
+    throw new HttpsError("invalid-argument", "orderId é obrigatório.");
+  }
+
+  const orderRef = db.doc(`lojas/${lojaId}/orders/${orderId}`);
+
+  await db.runTransaction(async (transaction) => {
+    const orderSnap = await transaction.get(orderRef);
+    if (!orderSnap.exists) {
+      throw new HttpsError("not-found", "Pedido não encontrado.");
+    }
+
+    const order = orderSnap.data();
+
+    if (order.customerId !== uid) {
+      throw new HttpsError("permission-denied", "Acesso negado.");
+    }
+
+    if (order.status !== "pendente") {
+      throw new HttpsError("failed-precondition", "Apenas pedidos pendentes podem ser cancelados pelo cliente.");
+    }
+
+    const items = order.items || [];
+    const inventoryRefs = items.map((item) =>
+      db.doc(`lojas/${lojaId}/products/${item.productId}/inventory/${item.size}`)
+    );
+    const inventorySnaps = await Promise.all(inventoryRefs.map((ref) => transaction.get(ref)));
+
+    transaction.update(orderRef, {
+      status: "cancelado",
+      cancelledAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+
+    inventorySnaps.forEach((snap, i) => {
+      if (!snap.exists) return;
+      const data = snap.data();
+      transaction.update(inventoryRefs[i], {
+        quantity: Number(data.quantity || 0) + items[i].quantity,
+        sold: Math.max(0, Number(data.sold || 0) - items[i].quantity),
+        lastUpdated: FieldValue.serverTimestamp(),
+      });
+    });
+  });
 
   return {ok: true};
 });

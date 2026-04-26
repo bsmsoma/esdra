@@ -8,6 +8,11 @@ import styles from "./CheckoutSuccess.module.scss";
 export default function CheckoutSuccess() {
     const [searchParams] = useSearchParams();
     const orderId = searchParams.get("orderId");
+    // MercadoPago Checkout Pro return params
+    const mpStatus = searchParams.get("mp_status") || searchParams.get("collection_status") || searchParams.get("status");
+    const mpPaymentId = searchParams.get("payment_id") || searchParams.get("collection_id");
+    const isFailure = mpStatus === "failure" || mpStatus === "rejected";
+    const isPending = mpStatus === "pending" || mpStatus === "in_process";
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -84,6 +89,50 @@ export default function CheckoutSuccess() {
         confirmed: "Pago",
     };
 
+    if (isFailure) {
+        return (
+            <div className={styles.success}>
+                <div className={styles.successIcon} style={{color: "var(--color-error, #e53e3e)"}}>✕</div>
+                <h1 className={styles.title}>Pagamento não concluído</h1>
+                <p className={styles.message}>
+                    O pagamento não foi processado. Nenhuma cobrança foi realizada.
+                    {order && ` Seu pedido ${order.orderNumber} está aguardando pagamento.`}
+                </p>
+                <div className={styles.actions}>
+                    <Link to="/account/orders" className={styles.primaryButton}>
+                        Ver Meus Pedidos
+                    </Link>
+                    <Link to="/cart" className={styles.secondaryButton}>
+                        Voltar ao Carrinho
+                    </Link>
+                </div>
+            </div>
+        );
+    }
+
+    if (isPending) {
+        return (
+            <div className={styles.success}>
+                <div className={styles.successIcon} style={{color: "var(--color-warning, #d69e2e)"}}>⏳</div>
+                <h1 className={styles.title}>Pagamento em análise</h1>
+                <p className={styles.message}>
+                    Seu pagamento está sendo processado pelo Mercado Pago.
+                    {order && ` Pedido ${order.orderNumber}.`}
+                    {" "}Você receberá uma confirmação assim que for aprovado.
+                    {mpPaymentId && <><br /><small>ID do pagamento: {mpPaymentId}</small></>}
+                </p>
+                <div className={styles.actions}>
+                    <Link to="/account/orders" className={styles.primaryButton}>
+                        Acompanhar Pedido
+                    </Link>
+                    <Link to="/products" className={styles.secondaryButton}>
+                        Continuar Comprando
+                    </Link>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className={styles.success}>
             <div className={styles.successIcon}>✓</div>
@@ -106,6 +155,11 @@ export default function CheckoutSuccess() {
                 <p className={styles.orderTotal}>
                     <strong>Total:</strong> R$ {formatPrice(order.total)}
                 </p>
+                {mpPaymentId && (
+                    <p className={styles.orderNumber}>
+                        <strong>ID do Pagamento:</strong> {mpPaymentId}
+                    </p>
+                )}
             </div>
 
             <div className={styles.actions}>

@@ -30,11 +30,19 @@
 }
 
 .orderHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: vars.$gap-3xl;
     background: $background-color;
     padding: vars.$padding-3xl;
     border-radius: vars.$radius-md;
     border: vars.$border-width-thin solid $border-color;
     margin-bottom: vars.$margin-5xl;
+
+    @media (max-width: 600px) {
+        flex-direction: column;
+    }
 }
 
 .orderInfo {
@@ -61,6 +69,110 @@
     text-transform: capitalize;
     font-weight: $font-weight-medium;
     color: $text-primary;
+}
+
+.statusPendente {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.statusPago {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.statusEnviado {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.statusEntregue {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.statusCancelado {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.cancelArea {
+    margin-top: vars.$margin-3xl;
+}
+
+.cancelButton {
+    padding: vars.$padding-lg vars.$padding-3xl;
+    background: transparent;
+    color: $status-error-text;
+    border: vars.$border-width-thin solid $status-error-border;
+    border-radius: vars.$radius-xs;
+    font-family: $defaultFont;
+    font-size: $font-size-2xl;
+    cursor: pointer;
+    transition: all vars.$transition-base vars.$ease-base;
+
+    &:hover {
+        background: $status-error-surface;
+    }
+}
+
+.confirmBox {
+    background: $status-error-surface;
+    border: vars.$border-width-thin solid $status-error-border;
+    border-radius: vars.$radius-md;
+    padding: vars.$padding-3xl;
+}
+
+.confirmText {
+    font-family: $defaultFont;
+    font-size: $font-size-3xl;
+    color: $status-error-text;
+    margin-bottom: vars.$margin-3xl;
+}
+
+.confirmActions {
+    display: flex;
+    gap: vars.$gap-xl;
+}
+
+.confirmYes {
+    padding: vars.$padding-lg vars.$padding-3xl;
+    background: $button-error;
+    color: #fff;
+    border: none;
+    border-radius: vars.$radius-xs;
+    font-family: $defaultFont;
+    font-size: $font-size-2xl;
+    cursor: pointer;
+    transition: opacity vars.$transition-base vars.$ease-base;
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+}
+
+.confirmNo {
+    padding: vars.$padding-lg vars.$padding-3xl;
+    background: $background-color;
+    color: $text-primary;
+    border: vars.$border-width-thin solid $border-color;
+    border-radius: vars.$radius-xs;
+    font-family: $defaultFont;
+    font-size: $font-size-2xl;
+    cursor: pointer;
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+}
+
+.cancelError {
+    margin-top: vars.$margin-xl;
+    font-family: $defaultFont;
+    font-size: $font-size-2xl;
+    color: $status-error-text;
 }
 
 .section {

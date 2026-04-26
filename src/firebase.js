@@ -553,6 +553,23 @@ export async function getAllOrders() {
     });
 }
 
+// Obter pedidos paginados para o painel admin
+export async function getAllOrdersPaginated({ pageSize = 20, lastDoc = null }) {
+    const ordersRef = getOrdersCollection();
+    const constraints = [orderBy("createdAt", "desc"), limit(pageSize)];
+    if (lastDoc) {
+        constraints.push(startAfter(lastDoc));
+    }
+    const q = query(ordersRef, ...constraints);
+    const snapshot = await getDocs(q);
+    const lastVisible = snapshot.docs[snapshot.docs.length - 1] || null;
+    return {
+        orders: snapshot.docs.map(function (d) { return { id: d.id, ...d.data() }; }),
+        lastDoc: lastVisible,
+        hasMore: snapshot.docs.length === pageSize,
+    };
+}
+
 // Obter pedido por ID
 export async function getOrderById(orderId) {
     const orderRef = getOrderDocRef(orderId);
@@ -661,6 +678,12 @@ export async function updateOrderStatusByAdmin({
         adminNotes,
         storeId,
     });
+    return response.data;
+}
+
+export async function cancelOrderByCustomer({ orderId, storeId = getStoreId() }) {
+    const callable = httpsCallable(functions, "cancelOrderByCustomer");
+    const response = await callable({ orderId, storeId });
     return response.data;
 }
 
