@@ -39,7 +39,7 @@ function Footer() {
                         </p>
                         <div className={styles.socialLinks}>
                             <a
-                                href="https://instagram.com"
+                                href="https://www.instagram.com/esdrasaromas/"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className={styles.socialIcon}

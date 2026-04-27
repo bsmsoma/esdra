@@ -558,114 +558,109 @@ export default function ProductDetails() {
                 </p>
             </Link>
             <div className={styles.productDetailsContainer}>
-                <div className={styles.imageContainer}>
+                <div className={`${styles.imageContainer} ${totalMediaCount <= 1 ? styles.noPreview : ''}`}>
                     {isModalOpen && (
-                        <div className={styles.modal}>
-                            <p className={styles.modalImageLength}>{`${
-                                modalCurrentIndex + 1
-                            } / ${modalImageLength}`}</p>
-                            <Swiper
-                                ref={swiperRef}
-                                className={styles.modalSwiper}
-                                spaceBetween={30}
-                                hashNavigation={{
-                                    watchState: true,
-                                }}
-                                pagination={{
-                                    clickable: true,
-                                }}
-                                navigation={true}
-                                modules={[
-                                    Pagination,
-                                    Navigation,
-                                    HashNavigation,
-                                ]}
-                                initialSlide={
-                                    isShowingVideo && hasVideo
-                                        ? 0
-                                        : hasVideo
-                                        ? coverImage + 1
-                                        : coverImage
-                                }
-                                onSlideChange={(swiper) => {
-                                    const activeIndex = swiper.activeIndex;
-                                    setModalCurrentIndex(activeIndex);
-
-                                    // Controlar reprodução do vídeo apenas quando estiver no slide do vídeo
-                                    if (videoRef.current) {
-                                        if (hasVideo && activeIndex === 0) {
-                                            // Vídeo está ativo, tocar
-                                            videoRef.current
-                                                .play()
-                                                .catch(function (error) {
-                                                    console.error(
-                                                        "Erro ao reproduzir vídeo:",
-                                                        error
-                                                    );
-                                                });
-                                            setIsShowingVideo(true);
-                                            setCoverImage(-1);
-                                        } else {
-                                            // Vídeo não está ativo, pausar
-                                            videoRef.current.pause();
-                                            setIsShowingVideo(false);
-                                            setCoverImage(hasVideo ? activeIndex - 1 : activeIndex);
-                                        }
-                                    } else {
-                                        if (hasVideo && activeIndex === 0) {
-                                            setIsShowingVideo(true);
-                                            setCoverImage(-1);
-                                        } else {
-                                            setIsShowingVideo(false);
-                                            setCoverImage(hasVideo ? activeIndex - 1 : activeIndex);
-                                        }
-                                    }
-                                }}
+                        <div className={styles.modal} onClick={handleCloseModal}>
+                            <p className={styles.modalImageLength}>
+                                {modalCurrentIndex + 1} / {modalImageLength}
+                            </p>
+                            <button
+                                className={styles.closeModalButton}
+                                onClick={handleCloseModal}
+                                aria-label="Fechar"
                             >
-                                {hasVideo && (
-                                    <SwiperSlide
-                                        className={styles.modalImageContainer}
-                                    >
-                                        <video
-                                            ref={videoRef}
-                                            className={styles.modalVideo}
-                                            src={currentProduct.video}
-                                            controls
-                                            playsInline
-                                        />
-                                        <button
-                                            className={styles.closeModalButton}
-                                            onClick={handleCloseModal}
-                                        >
-                                            X
-                                        </button>
-                                    </SwiperSlide>
-                                )}
-                                {currentProduct.images.map(
-                                    (imageUrl, index) => (
-                                        <SwiperSlide
-                                            className={
-                                                styles.modalImageContainer
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                    <path d="M2 2L14 14M14 2L2 14" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                                </svg>
+                            </button>
+                            <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+                                <Swiper
+                                    ref={swiperRef}
+                                    className={styles.modalSwiper}
+                                    spaceBetween={30}
+                                    hashNavigation={{
+                                        watchState: true,
+                                    }}
+                                    pagination={{
+                                        clickable: true,
+                                    }}
+                                    navigation={true}
+                                    modules={[
+                                        Pagination,
+                                        Navigation,
+                                        HashNavigation,
+                                    ]}
+                                    initialSlide={
+                                        isShowingVideo && hasVideo
+                                            ? 0
+                                            : hasVideo
+                                            ? coverImage + 1
+                                            : coverImage
+                                    }
+                                    onSlideChange={(swiper) => {
+                                        const activeIndex = swiper.activeIndex;
+                                        setModalCurrentIndex(activeIndex);
+
+                                        // Controlar reprodução do vídeo apenas quando estiver no slide do vídeo
+                                        if (videoRef.current) {
+                                            if (hasVideo && activeIndex === 0) {
+                                                // Vídeo está ativo, tocar
+                                                videoRef.current
+                                                    .play()
+                                                    .catch(function (error) {
+                                                        console.error(
+                                                            "Erro ao reproduzir vídeo:",
+                                                            error
+                                                        );
+                                                    });
+                                                setIsShowingVideo(true);
+                                                setCoverImage(-1);
+                                            } else {
+                                                // Vídeo não está ativo, pausar
+                                                videoRef.current.pause();
+                                                setIsShowingVideo(false);
+                                                setCoverImage(hasVideo ? activeIndex - 1 : activeIndex);
                                             }
-                                            key={index}
+                                        } else {
+                                            if (hasVideo && activeIndex === 0) {
+                                                setIsShowingVideo(true);
+                                                setCoverImage(-1);
+                                            } else {
+                                                setIsShowingVideo(false);
+                                                setCoverImage(hasVideo ? activeIndex - 1 : activeIndex);
+                                            }
+                                        }
+                                    }}
+                                >
+                                    {hasVideo && (
+                                        <SwiperSlide
+                                            className={styles.modalImageContainer}
                                         >
-                                            <img
-                                                className={styles.modalImage}
-                                                src={imageUrl}
-                                                alt={currentProduct.name}
+                                            <video
+                                                ref={videoRef}
+                                                className={styles.modalVideo}
+                                                src={currentProduct.video}
+                                                controls
+                                                playsInline
                                             />
-                                            <button
-                                                className={
-                                                    styles.closeModalButton
-                                                }
-                                                onClick={handleCloseModal}
-                                            >
-                                                X
-                                            </button>
                                         </SwiperSlide>
-                                    )
-                                )}
-                            </Swiper>
+                                    )}
+                                    {currentProduct.images.map(
+                                        (imageUrl, index) => (
+                                            <SwiperSlide
+                                                className={styles.modalImageContainer}
+                                                key={index}
+                                            >
+                                                <img
+                                                    className={styles.modalImage}
+                                                    src={imageUrl}
+                                                    alt={currentProduct.name}
+                                                />
+                                            </SwiperSlide>
+                                        )
+                                    )}
+                                </Swiper>
+                            </div>
                         </div>
                     )}
                     {isShowingVideo && hasVideo ? (
@@ -757,42 +752,44 @@ export default function ProductDetails() {
                                 </button>
                             </div>
                         </div>
-                        <div className={styles.controlsContainer}>
-                            <svg
-                                className={styles.leftButton}
-                                onClick={() => handleLeftClick()}
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                style={{ transform: "rotate(180deg)" }}
-                            >
-                                <path
-                                    d="M6 12H18M18 12L13 7M18 12L13 17"
-                                    stroke="#000000"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                />
-                            </svg>
-                            <svg
-                                className={styles.rightButton}
-                                onClick={() => handleRightClick()}
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <path
-                                    d="M6 12H18M18 12L13 7M18 12L13 17"
-                                    stroke="#000000"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                />
-                            </svg>
-                        </div>
+                        {totalMediaCount > 1 && (
+                            <div className={styles.controlsContainer}>
+                                <svg
+                                    className={styles.leftButton}
+                                    onClick={() => handleLeftClick()}
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    style={{ transform: "rotate(180deg)" }}
+                                >
+                                    <path
+                                        d="M6 12H18M18 12L13 7M18 12L13 17"
+                                        stroke="#000000"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    />
+                                </svg>
+                                <svg
+                                    className={styles.rightButton}
+                                    onClick={() => handleRightClick()}
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path
+                                        d="M6 12H18M18 12L13 7M18 12L13 17"
+                                        stroke="#000000"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    />
+                                </svg>
+                            </div>
+                        )}
                     </div>
                 </div>
                 <div className={styles.productInfoContainer}>

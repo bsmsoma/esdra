@@ -1,12 +1,6 @@
 @use "../App.scss" as *;
 @use "../styles/variables" as vars;
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
 header {
     color: $text-primary;
     font-family: $clashGroteskMedium;

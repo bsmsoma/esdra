@@ -233,7 +233,7 @@
 }
 
 // Responsive design for tablets
-@media only screen and (max-width: 768px) {
+@include responsiveTablet {
     .footer {
         .footerContainer {
             grid-template-columns: repeat(2, 1fr);
@@ -252,7 +252,7 @@
 }
 
 // Responsive design for mobile devices
-@media only screen and (max-width: 480px) {
+@include responsiveMobile {
     .footer {
         padding: 2rem 0 0;
 

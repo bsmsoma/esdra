@@ -15,9 +15,7 @@
     z-index: 1001;
     position: relative;
 
-    &:focus {
-        outline: none;
-    }
+    @include focus-visible-ring;
 
     .line {
         width: 100%;

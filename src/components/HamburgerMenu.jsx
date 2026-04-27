@@ -4,10 +4,8 @@ import { FaUser } from "react-icons/fa";
 import { useAuth, useIsAdmin } from "../contexts/AuthContext";
 import styles from './HamburgerMenu.module.scss';
 import {
-    PhoneIcon,
+    PlaceholderIcon,
     UserIcon,
-    SuitIcon,
-    DressIcon,
     LogoutIcon,
 } from "../assets/icons";
 
@@ -69,31 +67,31 @@ function HamburgerMenu(props) {
                 <ul>
                     <li>
                         <NavLink to="products?category=Velas Aromaticas" onClick={function() { setIsOpen(false); }}>
-                            <DressIcon />
+                            <PlaceholderIcon />
                             Velas Aromaticas
                         </NavLink>
                     </li>
                     <li>
                         <NavLink to="products?category=Sabonetes Artesanais" onClick={function() { setIsOpen(false); }}>
-                            <DressIcon />
+                            <PlaceholderIcon />
                             Sabonetes Artesanais
                         </NavLink>
                     </li>
                     <li>
                         <NavLink to="products?category=Difusores" onClick={function() { setIsOpen(false); }}>
-                            <SuitIcon />
+                            <PlaceholderIcon />
                             Difusores
                         </NavLink>
                     </li>
                     <li>
                         <NavLink to="products?category=Kits de Autocuidado" onClick={function() { setIsOpen(false); }}>
-                            <SuitIcon />
+                            <PlaceholderIcon />
                             Kits de Autocuidado
                         </NavLink>
                     </li>
                     <li>
                         <NavLink to="about" onClick={function() { setIsOpen(false); }}>
-                            <PhoneIcon />
+                            <PlaceholderIcon />
                             Sobre Nós
                         </NavLink>
                     </li>

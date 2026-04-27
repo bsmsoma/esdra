@@ -30,7 +30,8 @@
     background: none;
     border: none;
     transition: all 0.3s ease;
-    outline: none;
+
+    @include focus-visible-ring;
 
     &.closed {
         position: fixed;
