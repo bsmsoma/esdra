@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import ProductCard from "./ProductCard";
 import styles from "./ProductsCardsLayout.module.scss";
@@ -13,6 +13,18 @@ export default function ProductsCardsLayout() {
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
     const { addToCart } = useCart();
+    const [justAddedIds, setJustAddedIds] = useState(new Set());
+
+    function markJustAdded(productId) {
+        setJustAddedIds((prev) => new Set(prev).add(productId));
+        setTimeout(() => {
+            setJustAddedIds((prev) => {
+                const next = new Set(prev);
+                next.delete(productId);
+                return next;
+            });
+        }, 2000);
+    }
 
     // Parâmetros que não são considerados filtros aplicados
     const nonFilterParams = ["category", "page"];
@@ -166,7 +178,7 @@ export default function ProductsCardsLayout() {
                     type: "sale",
                 });
 
-                toast.success("Produto adicionado ao carrinho!");
+                markJustAdded(product.id);
             } catch (error) {
                 toast.error(error.message || "Erro ao adicionar ao carrinho.");
             }
@@ -184,6 +196,7 @@ export default function ProductsCardsLayout() {
                 price={productPrice}
                 installment=""
                 onAddToCart={handleAddCardToCart}
+                isJustAdded={justAddedIds.has(product.id)}
             />
         );
     });

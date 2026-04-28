@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styles from "./Header.module.scss";
 import { NavLink, Link, useNavigate, redirect } from "react-router";
 import { auth, signOut, getCustomerByUid } from "../firebase";
@@ -39,6 +39,8 @@ function Header() {
     const [hasText, setHasText] = useState(false); // If there is text in the searchbar, it will not close and will stop the animation
     const [searchText, setSearchText] = useState("");
     const [displayFirstName, setDisplayFirstName] = useState("");
+    const [cartBouncing, setCartBouncing] = useState(false);
+    const prevItemCountRef = useRef(itemCount);
 
     // Load customer to show first name (customer doc, or Google displayName/email as fallback)
     useEffect(function loadDisplayName() {
@@ -107,6 +109,16 @@ function Header() {
             document.removeEventListener("click", handleMobileClickOutside);
         };
     }, [searchState, hasText]);
+
+    useEffect(function triggerCartBounce() {
+        if (itemCount > prevItemCountRef.current) {
+            setCartBouncing(true);
+            const timer = setTimeout(() => setCartBouncing(false), 700);
+            prevItemCountRef.current = itemCount;
+            return () => clearTimeout(timer);
+        }
+        prevItemCountRef.current = itemCount;
+    }, [itemCount]);
 
     // Function area
     function handleSearch() {
@@ -206,9 +218,12 @@ function Header() {
                             <NavLink to="about">Sobre Nós</NavLink>
                         </li>
                         <li>
-                            <NavLink to="cart" className={styles.cartIcon}>
+                            <NavLink
+                                to="cart"
+                                className={`${styles.cartIcon}${cartBouncing ? ` ${styles.cartIconBouncing}` : ""}`}
+                            >
                                 <CartIcon />
-                                <span className={styles.cartItemCount}>{itemCount}</span>
+                                <span className={`${styles.cartItemCount}${cartBouncing ? ` ${styles.badgePulse}` : ""}`}>{itemCount}</span>
                             </NavLink>
                         </li>
                         <li>

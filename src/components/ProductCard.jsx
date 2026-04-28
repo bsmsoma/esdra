@@ -21,6 +21,7 @@ export function ProductCard({
     price,
     installment,
     onAddToCart,
+    isJustAdded,
 }) {
     const cardLink = productLink || (productId ? `${productId}` : null);
     const fallbackAlt = imageAlt || name || "Produto";
@@ -54,10 +55,11 @@ export function ProductCard({
 
             <button
                 type="button"
-                className={styles.productCardButton}
+                className={isJustAdded ? styles.productCardButtonAdded : styles.productCardButton}
                 onClick={onAddToCart}
+                disabled={isJustAdded}
             >
-                Adicionar ao carrinho
+                {isJustAdded ? "✓ Adicionado!" : "Adicionar ao carrinho"}
             </button>
         </article>
     );
@@ -74,6 +76,7 @@ ProductCard.propTypes = {
     price: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     installment: PropTypes.string,
     onAddToCart: PropTypes.func,
+    isJustAdded: PropTypes.bool,
 };
 
 export default ProductCard;

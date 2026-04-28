@@ -84,4 +84,20 @@
     font-size: $font-size-2xl;
     font-weight: $font-weight-semibold;
     cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.productCardButtonAdded {
+    margin-top: vars.$spacing-sm;
+    min-height: 44px;
+    border: none;
+    border-radius: vars.$radius-md;
+    background-color: var(--color-success);
+    color: #ffffff;
+    font-family: $defaultFont;
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-semibold;
+    cursor: default;
+    opacity: 0.9;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }

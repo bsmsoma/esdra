@@ -38,8 +38,9 @@ import { AuthProvider, requireAdminAuth } from "./contexts/AuthContext";
 import { CartProvider } from "./contexts/CartContext";
 import ErrorBoundary from "./components/ErrorBoundary";
 import "./App.scss";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, Slide } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import "./styles/toastify.scss";
 
 // Wrapper component to provide context to all routes
 function RootLayout() {
@@ -47,7 +48,15 @@ function RootLayout() {
         <ErrorBoundary>
             <AuthProvider>
                 <CartProvider>
-                    <ToastContainer />
+                    <ToastContainer
+                        position="bottom-right"
+                        autoClose={2500}
+                        hideProgressBar={false}
+                        closeOnClick
+                        pauseOnHover
+                        transition={Slide}
+                        theme="light"
+                    />
                     <Layout />
                 </CartProvider>
             </AuthProvider>

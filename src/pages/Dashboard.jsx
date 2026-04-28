@@ -65,23 +65,9 @@ export default function Dashboard() {
 
             if (message) {
                 if (type === "success") {
-                    toast.success(message, {
-                        position: "top-right",
-                        autoClose: 3000,
-                        hideProgressBar: false,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                    });
+                    toast.success(message);
                 } else if (type === "error") {
-                    toast.error(message, {
-                        position: "top-right",
-                        autoClose: 5000,
-                        hideProgressBar: false,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                    });
+                    toast.error(message);
                 }
 
                 // Limpar os parâmetros da URL após mostrar a mensagem
@@ -99,14 +85,7 @@ export default function Dashboard() {
                 const productDoc = await getDoc(getProductDocRef(id));
 
                 if (!productDoc.exists()) {
-                    toast.error("Produto não encontrado!", {
-                        position: "top-right",
-                        autoClose: 5000,
-                        hideProgressBar: false,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                    });
+                    toast.error("Produto não encontrado!");
                     return;
                 }
 
@@ -136,27 +115,13 @@ export default function Dashboard() {
                 invalidateCache("home");
                 invalidateCache("productDetails");
 
-                toast.success("Produto excluído com sucesso!", {
-                    position: "top-right",
-                    autoClose: 3000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                });
+                toast.success("Produto excluído com sucesso!");
 
                 // Navegar para forçar revalidação dos dados sem refresh completo
                 navigate("/dashboard", { replace: true });
             } catch (error) {
                 console.error("Erro ao excluir produto:", error);
-                toast.error("Erro ao excluir produto!", {
-                    position: "top-right",
-                    autoClose: 5000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                });
+                toast.error("Erro ao excluir produto!");
             }
         },
         [navigate]

@@ -1,0 +1,134 @@
+// =============================================
+// ESDRA — Premium Toast Overrides
+// Estética: Warm Atelier
+// Vidro fosco quente + acento lateral + ClashGrotesk
+// =============================================
+
+// Variáveis de cor reutilizadas nos overrides
+$_success: #2e6f4e;
+$_error:   #8f3e3e;
+$_warn:    #8a6520;
+$_info:    #395e7a;
+$_text:    #2a221d;
+$_muted:   #74685d;
+$_border:  rgba(184, 160, 126, 0.18);
+$_bg:      rgba(255, 253, 249, 0.97);
+$_shadow:
+  0 1px 2px  rgba(42, 34, 29, 0.04),
+  0 4px 16px rgba(42, 34, 29, 0.09),
+  0 16px 40px rgba(42, 34, 29, 0.06);
+
+// CSS custom props do react-toastify
+:root {
+  --toastify-toast-width:      340px;
+  --toastify-toast-bd-radius:  8px;
+  --toastify-font-family:      "ClashGrotesk-Medium", "Montserrat", sans-serif;
+  --toastify-z-index:          9999;
+  --toastify-text-color-light: #{$_text};
+  --toastify-toast-min-height: unset;
+
+  --toastify-icon-color-success: #{$_success};
+  --toastify-icon-color-error:   #{$_error};
+  --toastify-icon-color-warning: #{$_warn};
+  --toastify-icon-color-info:    #{$_info};
+
+  --toastify-color-progress-success: #{$_success};
+  --toastify-color-progress-error:   #{$_error};
+  --toastify-color-progress-warning: #{$_warn};
+  --toastify-color-progress-info:    #{$_info};
+  --toastify-color-progress-bgo:     0.18;
+}
+
+// Container
+.Toastify__toast-container {
+  padding: 0 !important;
+}
+
+.Toastify__toast-container--bottom-right {
+  bottom: 1.5rem !important;
+  right:  1.5rem !important;
+}
+
+// Toast base
+.Toastify__toast {
+  background:             $_bg !important;
+  backdrop-filter:        blur(18px) saturate(1.4) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(1.4) !important;
+  border:                 1px solid $_border !important;
+  border-radius:          8px !important;
+  box-shadow:             $_shadow !important;
+  padding:                0 !important;
+  min-height:             unset !important;
+  overflow:               hidden !important;
+  margin-bottom:          0.5rem !important;
+  cursor:                 default !important;
+}
+
+// Acento lateral colorido por tipo
+.Toastify__toast--success { border-left: 3px solid $_success !important; }
+.Toastify__toast--error   { border-left: 3px solid $_error   !important; }
+.Toastify__toast--warning { border-left: 3px solid $_warn    !important; }
+.Toastify__toast--info    { border-left: 3px solid $_info    !important; }
+
+// Body
+.Toastify__toast-body {
+  padding:     0.875rem 0.75rem 0.875rem 1rem !important;
+  margin:      0 !important;
+  gap:         0.6rem !important;
+  align-items: center !important;
+}
+
+// Ícone
+.Toastify__toast-icon {
+  width:     20px !important;
+  min-width: 20px !important;
+  margin:    0 !important;
+
+  svg {
+    width:  18px !important;
+    height: 18px !important;
+  }
+}
+
+// Texto da mensagem
+.Toastify__toast-body > div:last-child {
+  font-family:     "ClashGrotesk-Medium", "Montserrat", sans-serif !important;
+  font-size:       0.82rem !important;
+  line-height:     1.45 !important;
+  color:           $_text !important;
+  font-weight:     500 !important;
+  letter-spacing:  0.01em !important;
+}
+
+// Progress bar — 2px ultra-fino
+.Toastify__progress-bar {
+  height:  2px !important;
+  opacity: 0.45 !important;
+}
+
+.Toastify__progress-bar--success { background: $_success !important; }
+.Toastify__progress-bar--error   { background: $_error   !important; }
+.Toastify__progress-bar--warning { background: $_warn    !important; }
+.Toastify__progress-bar--info    { background: $_info    !important; }
+
+.Toastify__progress-bar-theme--light {
+  background: rgba(184, 160, 126, 0.12) !important;
+}
+
+// Botão fechar
+.Toastify__close-button {
+  color:       $_muted !important;
+  opacity:     0.45 !important;
+  padding:     0.5rem 0.5rem 0 0 !important;
+  align-self:  flex-start !important;
+
+  &:hover {
+    opacity: 0.9 !important;
+    color:   $_text !important;
+  }
+
+  svg {
+    width:  12px !important;
+    height: 12px !important;
+  }
+}
