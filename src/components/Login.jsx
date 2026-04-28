@@ -16,6 +16,8 @@ import {
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     signInWithPopup,
+    signInWithRedirect,
+    getRedirectResult,
     googleProvider,
     appleProvider,
     setPersistence,
@@ -23,6 +25,10 @@ import {
     browserSessionPersistence,
     sendPasswordResetEmail,
 } from "../firebase";
+
+function isMobileBrowser() {
+    return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+}
 
 const REMEMBER_ME_KEY = "esdra_remember_me_expiry";
 
@@ -191,6 +197,27 @@ export default function Login() {
         setIsLoading(false);
     }, [loginFetcher.state, registerFetcher.state, isActive]);
 
+    useEffect(function handleRedirectResult() {
+        if (!isMobileBrowser()) return;
+        setIsLoading(true);
+        getRedirectResult(auth)
+            .then(async (result) => {
+                if (!result) return;
+                setRememberMeExpiry();
+                await waitForAuth();
+                const admin = await isUserAdmin(result.user);
+                const redirectTo = searchParams.get("redirectTo") || undefined;
+                navigate(getRedirectPathAfterLogin(admin, redirectTo));
+            })
+            .catch((error) => {
+                if (error.code !== "auth/no-auth-event") {
+                    setGoogleError(getAuthErrorMessage(error.code));
+                }
+            })
+            .finally(() => setIsLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     function showRegisterPanel() {
         setGoogleError(null);
         setAppleError(null);
@@ -238,6 +265,12 @@ export default function Login() {
 
         try {
             await setPersistence(auth, browserLocalPersistence);
+
+            if (isMobileBrowser()) {
+                await signInWithRedirect(auth, googleProvider);
+                return; // page will reload; result handled in useEffect above
+            }
+
             const result = await signInWithPopup(auth, googleProvider);
             const userCredential = result.user;
             setRememberMeExpiry();
@@ -260,6 +293,12 @@ export default function Login() {
 
         try {
             await setPersistence(auth, browserLocalPersistence);
+
+            if (isMobileBrowser()) {
+                await signInWithRedirect(auth, appleProvider);
+                return;
+            }
+
             const result = await signInWithPopup(auth, appleProvider);
             const userCredential = result.user;
             setRememberMeExpiry();
