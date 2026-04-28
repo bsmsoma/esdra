@@ -2,6 +2,12 @@
   command = "npm run build"
   publish = "dist"
 
+# Permite que signInWithPopup do Firebase funcione corretamente
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cross-Origin-Opener-Policy = "same-origin-allow-popups"
+
 # SPA: redireciona todas as rotas para o index.html
 [[redirects]]
   from = "/*"
