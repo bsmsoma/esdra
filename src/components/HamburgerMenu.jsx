@@ -1,13 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, Link, useNavigate, useLocation } from "react-router";
-import { FaUser } from "react-icons/fa";
 import { useAuth, useIsAdmin } from "../contexts/AuthContext";
 import styles from './HamburgerMenu.module.scss';
-import {
-    PlaceholderIcon,
-    UserIcon,
-    LogoutIcon,
-} from "../assets/icons";
+import { LogoutIcon } from "../assets/icons";
 
 function HamburgerMenu(props) {
     const [isOpen, setIsOpen] = useState(false);
@@ -67,31 +62,26 @@ function HamburgerMenu(props) {
                 <ul>
                     <li>
                         <NavLink to="products?category=Velas Aromaticas" onClick={function() { setIsOpen(false); }}>
-                            <PlaceholderIcon />
                             Velas Aromaticas
                         </NavLink>
                     </li>
                     <li>
                         <NavLink to="products?category=Sabonetes Artesanais" onClick={function() { setIsOpen(false); }}>
-                            <PlaceholderIcon />
                             Sabonetes Artesanais
                         </NavLink>
                     </li>
                     <li>
                         <NavLink to="products?category=Difusores" onClick={function() { setIsOpen(false); }}>
-                            <PlaceholderIcon />
                             Difusores
                         </NavLink>
                     </li>
                     <li>
                         <NavLink to="products?category=Kits de Autocuidado" onClick={function() { setIsOpen(false); }}>
-                            <PlaceholderIcon />
                             Kits de Autocuidado
                         </NavLink>
                     </li>
                     <li>
                         <NavLink to="about" onClick={function() { setIsOpen(false); }}>
-                            <PlaceholderIcon />
                             Sobre Nós
                         </NavLink>
                     </li>
@@ -99,14 +89,12 @@ function HamburgerMenu(props) {
                         <>
                             <li>
                                 <NavLink to="/account" onClick={function() { setIsOpen(false); }}>
-                                    <UserIcon />
                                     Minha Conta
                                 </NavLink>
                             </li>
                             {isAdmin && (
                                 <li>
                                     <NavLink to="/dashboard" onClick={function() { setIsOpen(false); }}>
-                                        <UserIcon />
                                         Dashboard
                                     </NavLink>
                                 </li>
@@ -117,15 +105,14 @@ function HamburgerMenu(props) {
                                     setIsOpen(false);
                                     navigate("/login");
                                 }} className={styles.logoutButton}>
-                                    <LogoutIcon />
                                     Sair
+                                    <LogoutIcon />
                                 </button>
                             </li>
                         </>
                     ) : (
                         <li>
                             <NavLink to="login" onClick={function() { setIsOpen(false); }}>
-                                <FaUser className={styles.userIcon} />
                                 Entrar
                             </NavLink>
                         </li>

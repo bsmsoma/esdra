@@ -367,6 +367,90 @@ function Home() {
                     })}
                 </div>
             </section>
+
+            {recentProducts.length > 0 && (
+                <section
+                    className={styles.sectionBandReleases}
+                    aria-label="Lançamentos"
+                >
+                    <div className={styles.sectionInner}>
+                        <div className={styles.releasesHeader}>
+                            <h2 className={styles.recentProductsTitle}>
+                                Lançamentos
+                            </h2>
+                            <Link to="/products" className={styles.releasesViewAll}>
+                                Ver todos
+                            </Link>
+                        </div>
+                        <div className={styles.recentProductsGrid}>
+                            {recentProducts.map(renderProductCard)}
+                        </div>
+                        <div className={styles.recentProductsSwiper}>
+                            <Swiper
+                                className={styles.recentProductsSwiperContainer}
+                                spaceBetween={12}
+                                slidesPerView={1.2}
+                                breakpoints={{
+                                    450: { slidesPerView: 1.5 },
+                                }}
+                            >
+                                {recentProducts.map(function (product, index) {
+                                    return (
+                                        <SwiperSlide
+                                            key={product.id || `product-slide-${index}`}
+                                            className={styles.recentProductSlide}
+                                        >
+                                            {renderProductCard(product)}
+                                        </SwiperSlide>
+                                    );
+                                })}
+                            </Swiper>
+                        </div>
+                    </div>
+                </section>
+            )}
+
+            <section className={styles.manifestoSection} aria-label="Nossa essência">
+                <div className={styles.manifestoGrid}>
+                    <div className={styles.manifestoImagePanel}>
+                        {recentProducts[0] && getProductImage(recentProducts[0]) ? (
+                            <img
+                                src={getProductImage(recentProducts[0])}
+                                alt="Produto ESDRA"
+                                className={styles.manifestoImg}
+                                loading="lazy"
+                            />
+                        ) : (
+                            <div className={styles.manifestoImgFallback} />
+                        )}
+                        <div className={styles.manifestoImgOverlay} />
+                        <span className={styles.manifestoSideLabel} aria-hidden="true">
+                            RITUAL
+                        </span>
+                    </div>
+                    <div className={styles.manifestoContent}>
+                        <span className={styles.manifestoEyebrow}>
+                            ESDRA · Artesanal
+                        </span>
+                        <div className={styles.manifestoAccentLine} aria-hidden="true" />
+                        <h2 className={styles.manifestoHeadline}>
+                            Para quem<br />
+                            transforma<br />
+                            o cuidado<br />
+                            em <em>ritual.</em>
+                        </h2>
+                        <p className={styles.manifestoBody}>
+                            Cada produto ESDRA é feito à mão, com ingredientes
+                            que você reconhece e aromas que ficam na memória.
+                            Não é rotina — é a pausa que você merece.
+                        </p>
+                        <Link to="/products" className={styles.manifestoCta}>
+                            Conhecer a coleção
+                            <span className={styles.manifestoCtaArrow} aria-hidden="true">→</span>
+                        </Link>
+                    </div>
+                </div>
+            </section>
         </div>
     );
 }

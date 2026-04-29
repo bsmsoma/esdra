@@ -13,21 +13,20 @@
 
 // --- Hero ---
 .heroSection {
-    width: 90%;
-    max-width: 1400px;
-    margin: 0 auto vars.$spacing-2xl;
+    width: 100%;
+    margin: 0 0 vars.$spacing-2xl;
 
     &BannerOnly {
-        max-width: 1400px;
+        // no extra constraints needed
     }
 }
 
 .topGridSection {
     display: grid;
     grid-template-columns: minmax(220px, 1fr) minmax(0, 2.6fr);
-    gap: vars.$gap-3xl;
+    gap: 0;
     align-items: stretch;
-    min-height: clamp(280px, 52vh, 640px);
+    min-height: clamp(460px, 85vh, 900px);
 
     @media (max-width: $breakpoint-tablet) {
         grid-template-columns: 1fr;
@@ -41,7 +40,7 @@
 
 .portraitVideoContainer {
     position: relative;
-    border-radius: $radius-lg;
+    border-radius: 0;
     overflow: hidden;
     background-color: $surface-video;
     height: 100%;
@@ -50,10 +49,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    max-width: 380px;
-    margin: 0 auto;
-    border: $border-width-thin solid $border-color-accent;
-    box-shadow: $shadow-accent;
+    max-width: none;
+    margin: 0;
+    border: none;
+    box-shadow: none;
 
     @media (max-width: $breakpoint-tablet) {
         max-width: 100%;
@@ -102,7 +101,7 @@
 
 .promotionBanner {
     position: relative;
-    border-radius: $radius-lg;
+    border-radius: 0;
     overflow: hidden;
     height: 100%;
     min-height: 280px;
@@ -139,7 +138,6 @@
         rgba(0, 0, 0, 0.55) 100%
     );
     z-index: 1;
-    border-radius: $radius-lg;
 }
 
 .promotionContent {
@@ -343,111 +341,195 @@
     }
 }
 
-// --- Categories ---
-.sectionBandCategories {
-    background-color: $background-color;
-    padding: vars.$spacing-2xl 0;
+// --- Manifesto ---
+.manifestoSection {
+    width: 100%;
+    overflow: hidden;
 }
 
-.sectionInner {
-    width: 90%;
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-.sectionHeading {
-    font-family: $defaultFont;
-    font-size: 2.5rem;
-    text-align: center;
-    margin: 0 0 vars.$spacing-2xl 0;
-    color: $text-primary;
-
-    @media (max-width: $breakpoint-mobile) {
-        font-size: 1.85rem;
-    }
-}
-
-.categoriesGrid {
+.manifestoGrid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: vars.$gap-2xl;
+    grid-template-columns: 55fr 45fr;
+    min-height: clamp(520px, 75vh, 860px);
 
-    @media (max-width: $breakpoint-desktop) {
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    @media (max-width: $breakpoint-tablet) {
+        grid-template-columns: 1fr;
+        min-height: 0;
     }
 }
 
-.categoryCardLink {
-    display: block;
-    text-decoration: none;
-    color: inherit;
-    border-radius: $radius-lg;
-    transition: transform $transition-base $ease-base;
-
-    &:focus-visible {
-        outline: 2px solid $border-color-accent;
-        outline-offset: 4px;
-    }
-
-    &:hover .categoryCard {
-        box-shadow: $shadow-accent-hover;
-        transform: translateY(-6px);
-    }
-}
-
-.categoryCard {
-    border-radius: $radius-lg;
-    overflow: hidden;
-    box-shadow: $shadow-lg;
-    transition:
-        box-shadow $transition-base $ease-base,
-        transform $transition-base $ease-base;
-}
-
-.categoryCardMedia {
+.manifestoImagePanel {
     position: relative;
-    aspect-ratio: 4 / 5;
     overflow: hidden;
+    background: linear-gradient(155deg, #c9a66b 0%, #5c3320 100%);
 
+    @media (max-width: $breakpoint-tablet) {
+        aspect-ratio: 16 / 9;
+        min-height: 260px;
+    }
 }
 
-.categoryMediaPlaceholder {
+.manifestoImg {
     width: 100%;
     height: 100%;
+    object-fit: cover;
     display: block;
-    background: linear-gradient(155deg, #e8ddd0 0%, #cdb9a4 100%);
-    transition: transform $transition-slow $ease-base;
+    transition: transform 7s ease;
+
+    .manifestoSection:hover & {
+        transform: scale(1.04);
+    }
 }
 
-.categoryCardLink:hover .categoryMediaPlaceholder {
-    transform: scale(1.05);
+.manifestoImgFallback {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(155deg, #c9a66b 0%, #5c3320 100%);
 }
 
-.categoryCardOverlay {
+.manifestoImgOverlay {
     position: absolute;
     inset: 0;
     background: linear-gradient(
-        to top,
-        rgba(0, 0, 0, 0.75) 0%,
-        rgba(0, 0, 0, 0.2) 45%,
-        transparent 100%
+        135deg,
+        rgba(0, 0, 0, 0.18) 0%,
+        rgba(0, 0, 0, 0) 55%,
+        rgba(0, 0, 0, 0.22) 100%
     );
     pointer-events: none;
 }
 
-.categoryCardTitle {
+.manifestoSideLabel {
     position: absolute;
     left: 0;
-    right: 0;
-    bottom: 0;
-    margin: 0;
-    padding: vars.$spacing-lg vars.$spacing-md;
+    top: 50%;
+    transform: translateY(-50%) rotate(-90deg) translateX(-50%);
+    transform-origin: center center;
     font-family: $defaultFont;
-    font-size: 1.5rem;
+    font-size: 0.68rem;
     font-weight: 700;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.55);
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+
+    @media (max-width: $breakpoint-tablet) {
+        display: none;
+    }
+}
+
+.manifestoContent {
+    background-color: $background-color;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: clamp(2.5rem, 5vw, 5rem) clamp(2rem, 4vw, 4.5rem);
+
+    @media (max-width: $breakpoint-tablet) {
+        padding: vars.$spacing-2xl vars.$spacing-xl;
+    }
+}
+
+.manifestoEyebrow {
+    display: block;
+    font-family: $defaultFont;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: $accent-gold;
+    margin-bottom: vars.$spacing-lg;
+}
+
+.manifestoAccentLine {
+    width: 40px;
+    height: 2px;
+    background-color: $accent-gold;
+    margin-bottom: vars.$spacing-xl;
+    border-radius: 1px;
+}
+
+.manifestoHeadline {
+    font-family: $defaultFont;
+    font-size: clamp(2.4rem, 3.8vw, 3.8rem);
+    font-weight: 800;
+    line-height: 1.05;
+    color: $text-primary;
+    margin: 0 0 vars.$spacing-xl 0;
+    letter-spacing: -0.02em;
+
+    em {
+        font-style: italic;
+        color: $accent-gold;
+        font-weight: 800;
+    }
+
+    @media (max-width: $breakpoint-mobile) {
+        font-size: 2.2rem;
+    }
+}
+
+.manifestoBody {
+    font-family: $defaultFont;
+    font-size: 1.05rem;
+    line-height: 1.8;
     color: $text-secondary;
-    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
-    z-index: 1;
+    max-width: 420px;
+    margin: 0 0 vars.$spacing-2xl 0;
+
+    @media (max-width: $breakpoint-mobile) {
+        font-size: 0.95rem;
+    }
+}
+
+.manifestoCta {
+    display: inline-flex;
+    align-items: center;
+    gap: vars.$gap-sm;
+    align-self: flex-start;
+    font-family: $defaultFont;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: $text-primary;
+    text-decoration: none;
+    border-bottom: 2px solid $accent-gold;
+    padding-bottom: 3px;
+    transition:
+        color $transition-base $ease-base,
+        border-color $transition-base $ease-base,
+        gap $transition-base $ease-base;
+
+    &:hover {
+        color: $accent-gold;
+        border-color: transparent;
+        gap: vars.$gap-md;
+    }
+
+    &:focus-visible {
+        outline: 2px solid $border-color-accent;
+        outline-offset: 4px;
+        border-radius: 2px;
+    }
+}
+
+.manifestoCtaArrow {
+    font-size: 1.1rem;
+    line-height: 1;
+    transition: transform $transition-base $ease-base;
+
+    .manifestoCta:hover & {
+        transform: translateX(4px);
+    }
+}
+
+// --- Shared inner layout ---
+.sectionInner {
+    width: 90%;
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
 // --- Releases ---
