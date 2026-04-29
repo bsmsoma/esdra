@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo } from "react";
 import styles from "./Home.module.scss";
+import editorialImg from "../assets/image/editorial-ingredients.jpeg";
 import { Link, useNavigate, useLoaderData, useLocation } from "react-router";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination } from "swiper/modules";
@@ -14,6 +15,7 @@ import {
 } from "../firebase";
 import { generateCacheKey, getCachedData, setCachedData } from "../utils/cache";
 import ProductCard from "../components/ProductCard";
+import ScrambleWord from "../components/ScrambleWord";
 
 const HERO_LOOP_VIDEO_URL =
     "https://firebasestorage.googleapis.com/v0/b/esdra-ba71d.firebasestorage.app/o/lojas%2Fesdra-aromas%2Fassets%2FloopHeroVideoWeb.webm?alt=media";
@@ -385,27 +387,29 @@ function Home() {
                         <div className={styles.recentProductsGrid}>
                             {recentProducts.map(renderProductCard)}
                         </div>
-                        <div className={styles.recentProductsSwiper}>
-                            <Swiper
-                                className={styles.recentProductsSwiperContainer}
-                                spaceBetween={12}
-                                slidesPerView={1.2}
-                                breakpoints={{
-                                    450: { slidesPerView: 1.5 },
-                                }}
-                            >
-                                {recentProducts.map(function (product, index) {
-                                    return (
-                                        <SwiperSlide
-                                            key={product.id || `product-slide-${index}`}
-                                            className={styles.recentProductSlide}
-                                        >
-                                            {renderProductCard(product)}
-                                        </SwiperSlide>
-                                    );
-                                })}
-                            </Swiper>
-                        </div>
+                    </div>
+                    <div className={styles.recentProductsSwiper}>
+                        <Swiper
+                            className={styles.recentProductsSwiperContainer}
+                            spaceBetween={12}
+                            slidesPerView={1.2}
+                            slidesOffsetBefore={20}
+                            slidesOffsetAfter={20}
+                            breakpoints={{
+                                450: { slidesPerView: 1.6 },
+                            }}
+                        >
+                            {recentProducts.map(function (product, index) {
+                                return (
+                                    <SwiperSlide
+                                        key={product.id || `product-slide-${index}`}
+                                        className={styles.recentProductSlide}
+                                    >
+                                        {renderProductCard(product)}
+                                    </SwiperSlide>
+                                );
+                            })}
+                        </Swiper>
                     </div>
                 </section>
             )}
@@ -413,16 +417,12 @@ function Home() {
             <section className={styles.manifestoSection} aria-label="Nossa essência">
                 <div className={styles.manifestoGrid}>
                     <div className={styles.manifestoImagePanel}>
-                        {recentProducts[0] && getProductImage(recentProducts[0]) ? (
-                            <img
-                                src={getProductImage(recentProducts[0])}
-                                alt="Produto ESDRA"
-                                className={styles.manifestoImg}
-                                loading="lazy"
-                            />
-                        ) : (
-                            <div className={styles.manifestoImgFallback} />
-                        )}
+                        <img
+                            src={editorialImg}
+                            alt="Ingredientes artesanais ESDRA"
+                            className={styles.manifestoImg}
+                            loading="lazy"
+                        />
                         <div className={styles.manifestoImgOverlay} />
                         <span className={styles.manifestoSideLabel} aria-hidden="true">
                             RITUAL
@@ -437,7 +437,7 @@ function Home() {
                             Para quem<br />
                             transforma<br />
                             o cuidado<br />
-                            em <em>ritual.</em>
+                            em <ScrambleWord className={styles.manifestoScrambleWord} />
                         </h2>
                         <p className={styles.manifestoBody}>
                             Cada produto ESDRA é feito à mão, com ingredientes
