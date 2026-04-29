@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import styles from "./Header.module.scss";
 import { NavLink, Link, useNavigate, redirect } from "react-router";
+import { toast } from "react-toastify";
 import { auth, signOut, getCustomerByUid } from "../firebase";
 import { useAuth, useIsAdmin } from "../contexts/AuthContext";
 import { useCart } from "../contexts/CartContext";
@@ -130,14 +131,15 @@ function Header() {
             );
         }
     }
-    // TODO: implement a toast when the user is logged out
     function handleLogout() {
         signOut(auth)
             .then(() => {
+                toast.success("Até logo!");
                 navigate("/login");
             })
             .catch((error) => {
                 console.error(error);
+                toast.error("Erro ao sair. Tente novamente.");
             });
     }
 

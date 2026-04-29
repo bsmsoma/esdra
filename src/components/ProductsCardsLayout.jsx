@@ -117,9 +117,6 @@ export default function ProductsCardsLayout() {
         return `${count} ${produto} ${encontrado}`;
     }
 
-    // TODO: a function to handle the filter of the products cards.
-    // TODO: a function to handle the sort of the products cards.
-
     const productsCards = products.map((product) => {
         const coverImageIndex = product.coverIndex || 0;
         const imageSrc =

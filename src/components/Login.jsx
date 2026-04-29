@@ -237,7 +237,7 @@ export default function Login() {
         setIsLoading(true);
 
         try {
-            await setPersistence(auth, browserLocalPersistence);
+            setPersistence(auth, browserLocalPersistence);
             const result = await signInWithPopup(auth, googleProvider);
             const userCredential = result.user;
             setRememberMeExpiry();
@@ -259,7 +259,7 @@ export default function Login() {
         setIsLoading(true);
 
         try {
-            await setPersistence(auth, browserLocalPersistence);
+            setPersistence(auth, browserLocalPersistence);
             const result = await signInWithPopup(auth, appleProvider);
             const userCredential = result.user;
             setRememberMeExpiry();
