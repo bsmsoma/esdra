@@ -12,7 +12,6 @@ const navigationLinks = [
 ];
 
 const supportLinks = [
-    { to: "/checkout", label: "Finalizar compra" },
     { to: "/politica-de-privacidade", label: "Política de Privacidade" },
     { to: "/termos-de-uso", label: "Termos de Uso" },
 ];

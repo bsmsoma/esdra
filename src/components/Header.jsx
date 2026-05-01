@@ -283,7 +283,17 @@ function Header() {
                         </li>
                     </ul>
                 </nav>
-                <div className={styles.hamburgerButton}>
+                <div className={styles.mobileActions}>
+                    <Link
+                        to="/cart"
+                        className={styles.mobileCartButton}
+                        aria-label={`Carrinho, ${itemCount} ${itemCount === 1 ? "item" : "itens"}`}
+                    >
+                        <CartIcon />
+                        {itemCount > 0 && (
+                            <span className={styles.mobileCartBadge}>{itemCount}</span>
+                        )}
+                    </Link>
                     <HamburgerMenu handleLogout={handleLogout} />
                 </div>
             </header>

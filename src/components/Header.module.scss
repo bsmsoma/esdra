@@ -364,7 +364,7 @@ header {
             }
         }
     }
-    .hamburgerButton {
+    .mobileActions {
         display: none;
     }
 }
@@ -405,10 +405,49 @@ header {
             display: none;
         }
 
-        .hamburgerButton {
-            display: block;
+        .mobileActions {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
             position: relative;
             z-index: 1000;
+
+            .mobileCartButton {
+                position: relative;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: $text-primary;
+                text-decoration: none;
+                padding: 0.2rem;
+
+                svg {
+                    width: 24px;
+                    height: 24px;
+                    display: block;
+                }
+
+                .mobileCartBadge {
+                    position: absolute;
+                    top: -6px;
+                    right: -8px;
+                    background-color: $quaternary-color;
+                    color: $primary-color;
+                    border-radius: 50%;
+                    min-width: 18px;
+                    height: 18px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 0.72rem;
+                    font-weight: 600;
+                    padding: 0 3px;
+                    border: 1.5px solid $primary-color;
+                    z-index: 10;
+                    font-family: $clashGroteskMedium;
+                    line-height: 1;
+                }
+            }
         }
         .logo {
             position: relative;
@@ -513,6 +552,7 @@ header {
 
     .pagedivider {
         @include divider;
+        margin-top: 1rem;
     }
 }
 
@@ -536,7 +576,7 @@ header {
 @media print {
     // Ocultar todos os elementos de navegação e o logo
     .menu,
-    .hamburgerButton,
+    .mobileActions,
     .searchBarMobile,
     .searchbar,
     .dropdown,

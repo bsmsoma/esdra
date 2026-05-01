@@ -38,6 +38,12 @@
     font-weight: $font-weight-semibold;
 }
 
+.productCardTitleLink {
+    all: unset;
+    cursor: pointer;
+    display: block;
+}
+
 .productCardTitle {
     margin: 0;
     color: var(--color-title);

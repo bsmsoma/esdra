@@ -1,10 +1,12 @@
 import crypto from "node:crypto";
 import {onCall, onRequest, HttpsError} from "firebase-functions/v2/https";
+import {onDocumentCreated} from "firebase-functions/v2/firestore";
 import {logger} from "firebase-functions/v2";
 import {initializeApp} from "firebase-admin/app";
 import {getFirestore, FieldValue} from "firebase-admin/firestore";
 import {getStorage} from "firebase-admin/storage";
 import {MercadoPagoConfig, Preference, Payment} from "mercadopago";
+import {Resend} from "resend";
 import {
   normalizeWebhookPaymentStatus,
   mapPaymentStatusToOrderStatus,
@@ -14,6 +16,7 @@ import {
   validateCustomerSnapshot,
   normalizeOrderItems,
 } from "./src/payment-utils.js";
+import {buildEmail} from "./src/email-templates.js";
 
 initializeApp();
 
@@ -1156,3 +1159,109 @@ export const deleteMedia = onCall(FUNCTION_CONFIG, async (request) => {
 
   return {deletedCount};
 });
+
+export const processEmailQueue = onDocumentCreated(
+  {
+    document: "lojas/{lojaId}/emailQueue/{docId}",
+    region: "southamerica-east1",
+    timeoutSeconds: 30,
+    memory: "256MiB",
+  },
+  async (event) => {
+    const lojaId = event.params.lojaId;
+    const docId = event.params.docId;
+    const snap = event.data;
+    if (!snap) return;
+
+    const data = snap.data();
+    const docRef = snap.ref;
+
+    if (!data || data.status !== "queued") return;
+
+    const apiKey = globalThis.process?.env?.RESEND_API_KEY;
+    if (!apiKey) {
+      logError("processEmailQueue_no_api_key", {lojaId, docId});
+      await docRef.update({
+        status: "failed",
+        errorMessage: "RESEND_API_KEY não configurado nas variáveis de ambiente.",
+        failedAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+      return;
+    }
+
+    const {type, to, customerName, orderNumber, payload} = data;
+
+    if (!to || !type || !orderNumber) {
+      await docRef.update({
+        status: "failed",
+        errorMessage: "Dados insuficientes: to, type ou orderNumber ausente.",
+        failedAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+      return;
+    }
+
+    // Marca como processing para evitar reprocessamento em retry da Cloud Function
+    await docRef.update({
+      status: "processing",
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+
+    try {
+      const appUrl = String(globalThis.process?.env?.APP_URL || "").trim();
+      const emailContent = buildEmail({
+        type,
+        customerName: String(customerName || ""),
+        orderNumber: String(orderNumber || ""),
+        total: payload?.total,
+        paymentMethod: payload?.paymentMethod,
+        appUrl,
+      });
+
+      if (!emailContent) {
+        throw new Error(`Tipo de email desconhecido: "${type}"`);
+      }
+
+      const fromEmail = String(
+        globalThis.process?.env?.EMAIL_FROM || "ESDRA Aromas <noreply@esdra.com.br>",
+      ).trim();
+
+      const resend = new Resend(apiKey);
+      const {data: sendData, error} = await resend.emails.send({
+        from: fromEmail,
+        to: [to],
+        subject: emailContent.subject,
+        html: emailContent.html,
+      });
+
+      if (error) {
+        throw new Error(String(error.message || "Resend API error"));
+      }
+
+      await docRef.update({
+        status: "sent",
+        provider: "resend",
+        providerMessageId: String(sendData?.id || ""),
+        sentAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+
+      logInfo("processEmailQueue_sent", {lojaId, docId, orderNumber, type, to});
+    } catch (err) {
+      logError("processEmailQueue_error", {
+        lojaId,
+        docId,
+        orderNumber,
+        type,
+        message: err.message,
+      });
+      await docRef.update({
+        status: "failed",
+        errorMessage: String(err.message || "Erro desconhecido").slice(0, 500),
+        failedAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+    }
+  },
+);

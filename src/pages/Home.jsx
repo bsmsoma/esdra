@@ -189,7 +189,7 @@ function Home() {
     const mainHeroVideos = loaderData.videos || [];
     const location = useLocation();
 
-    const validHeroVideos = useMemo(function () {
+const validHeroVideos = useMemo(function () {
         return mainHeroVideos.filter(function (video) {
             return video && video.videoUrl;
         });
@@ -223,7 +223,6 @@ function Home() {
         navigate("/products?query=sabonete%20artesanal");
     }
 
-    // Helper function to render ProductCard
     function renderProductCard(product) {
         const productImage = getProductImage(product);
         const productPrice = getProductPrice(product);
@@ -241,7 +240,6 @@ function Home() {
                 description={shortDescription}
                 price={productPrice}
                 installment=""
-                onAddToCart={function () {}}
             />
         );
     }
@@ -313,18 +311,16 @@ function Home() {
                             Seu navegador nao suporta videos.
                         </video>
                         <div className={styles.promotionContent}>
+                            <span className={styles.promotionEyebrow}>
+                                ESDRA · Aromas
+                            </span>
+                            <div className={styles.promotionRule} aria-hidden="true" />
                             <h2 className={styles.promotionTitle}>
-                                Velas Artesanais Premium
+                                Ritual<br />
+                                <em>de Presença</em>
                             </h2>
-                            <p className={styles.promotionEyebrow}>
-                                Luxo artesanal
-                            </p>
                             <p className={styles.promotionSubtitle}>
-                                A chama que transforma o ambiente em um ritual de presenca.
-                            </p>
-                            <p className={styles.promotionDescription}>
-                                Velas artesanais com fragrancias autorais, acabamento impecavel e
-                                uma experiencia sensorial sofisticada para casa ou presente.
+                                Feito à mão.<br />Sentido em cada detalhe.
                             </p>
                             <div className={styles.promotionActions}>
                                 <button
@@ -332,13 +328,14 @@ function Home() {
                                     className={styles.promotionButton}
                                     onClick={handlePromotionClick}
                                 >
-                                    Comprar agora
+                                    Explorar
+                                    <span className={styles.promotionButtonArrow} aria-hidden="true">→</span>
                                 </button>
                                 <Link
                                     to="/products"
                                     className={styles.promotionButtonSecondary}
                                 >
-                                    Ver catalogo completo
+                                    Ver coleção
                                 </Link>
                             </div>
                         </div>

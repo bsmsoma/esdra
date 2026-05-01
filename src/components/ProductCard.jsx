@@ -41,7 +41,13 @@ export function ProductCard({
 
             {badge ? <span className={styles.productCardBadge}>{badge}</span> : null}
 
-            <h3 className={styles.productCardTitle}>{name}</h3>
+            {cardLink ? (
+                <Link to={cardLink} className={styles.productCardTitleLink}>
+                    <h3 className={styles.productCardTitle}>{name}</h3>
+                </Link>
+            ) : (
+                <h3 className={styles.productCardTitle}>{name}</h3>
+            )}
             <p className={styles.productCardDescription}>{description}</p>
 
             <div className={styles.productCardFooter}>
@@ -53,14 +59,16 @@ export function ProductCard({
                 </div>
             </div>
 
-            <button
-                type="button"
-                className={isJustAdded ? styles.productCardButtonAdded : styles.productCardButton}
-                onClick={onAddToCart}
-                disabled={isJustAdded}
-            >
-                {isJustAdded ? "✓ Adicionado!" : "Adicionar ao carrinho"}
-            </button>
+            {onAddToCart ? (
+                <button
+                    type="button"
+                    className={isJustAdded ? styles.productCardButtonAdded : styles.productCardButton}
+                    onClick={onAddToCart}
+                    disabled={isJustAdded}
+                >
+                    {isJustAdded ? "✓ Adicionado!" : "Adicionar ao carrinho"}
+                </button>
+            ) : null}
         </article>
     );
 }

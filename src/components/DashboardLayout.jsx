@@ -45,12 +45,14 @@ export default function DashboardLayout() {
                         <button
                             className={`${styles.feedButton} ${location.pathname === "/dashboard" ? styles.active : ""}`}
                             onClick={function () { navigate("/dashboard"); }}
+                            aria-current={location.pathname === "/dashboard" ? "page" : undefined}
                         >
                             Produtos
                         </button>
                         <button
                             className={`${styles.addButton} ${location.pathname.startsWith("/dashboard/add") || location.pathname.startsWith("/dashboard/edit") ? styles.active : ""}`}
                             onClick={function () { navigate("/dashboard/add"); }}
+                            aria-current={location.pathname.startsWith("/dashboard/add") || location.pathname.startsWith("/dashboard/edit") ? "page" : undefined}
                         >
                             <PlusIcon />
                             Adicionar Produto
@@ -58,6 +60,7 @@ export default function DashboardLayout() {
                         <button
                             className={`${styles.feedButton} ${isOrders ? styles.active : ""}`}
                             onClick={function () { navigate("/dashboard/orders"); }}
+                            aria-current={isOrders ? "page" : undefined}
                         >
                             Pedidos
                         </button>
