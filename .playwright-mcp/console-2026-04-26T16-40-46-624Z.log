@@ -1,0 +1,9 @@
+[    1439ms] FirebaseError: Firebase: Error (auth/invalid-api-key).
+    at xo (https://esdra.netlify.app/assets/firebase-Dw81ad5d.js:22:27833)
+    at M (https://esdra.netlify.app/assets/firebase-Dw81ad5d.js:22:27881)
+    at Tt.instanceFactory (https://esdra.netlify.app/assets/firebase-Dw81ad5d.js:22:104263)
+    at qd.getOrInitializeService (https://esdra.netlify.app/assets/firebase-Dw81ad5d.js:1:12925)
+    at qd.initialize (https://esdra.netlify.app/assets/firebase-Dw81ad5d.js:1:12282)
+    at F_ (https://esdra.netlify.app/assets/firebase-Dw81ad5d.js:22:66029)
+    at OE (https://esdra.netlify.app/assets/firebase-Dw81ad5d.js:22:105247)
+    at https://esdra.netlify.app/assets/index-B0SpWzHu.js:1:10846
