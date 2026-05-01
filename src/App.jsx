@@ -37,6 +37,7 @@ import { RouterProvider } from "react-router/dom";
 import { AuthProvider, requireAdminAuth } from "./contexts/AuthContext";
 import { CartProvider } from "./contexts/CartContext";
 import ErrorBoundary from "./components/ErrorBoundary";
+import HydrateFallback from "./components/HydrateFallback";
 import "./App.scss";
 import { ToastContainer, Slide } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -64,20 +65,12 @@ function RootLayout() {
     );
 }
 
-function RouterHydrateFallback() {
-    return (
-        <div className="app-loading-state" role="status" aria-live="polite">
-            Carregando...
-        </div>
-    );
-}
-
 const router = createBrowserRouter(
     createRoutesFromElements(
         <Route
             path="/"
             element={<RootLayout />}
-            HydrateFallback={RouterHydrateFallback}
+            HydrateFallback={HydrateFallback}
         > {/* Layout is the main layout of the app */}
             <Route index element={<Home />} loader={homeLoader} />
             <Route path="about" element={<About />} />
