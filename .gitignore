@@ -6,6 +6,7 @@ functions/node_modules/
 # Resultados de testes
 test-results/
 playwright-report/
+.playwright-mcp/
 
 # macOS
 .DS_Store

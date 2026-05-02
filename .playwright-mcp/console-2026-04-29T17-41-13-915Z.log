@@ -1,9 +1,0 @@
-[     168ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/chunk-C2ARXLYN.js?v=0ba3c7cc:21608
-[   47227ms] TypeError: Cannot read properties of undefined (reading 'pageX')
-    at _Swiper.onTouchStart (http://localhost:5173/node_modules/.vite/deps/swiper_react.js?v=0ba3c7cc:2104:52)
-    at fire (eval at <anonymous> (eval at evaluate (:302:30)), <anonymous>:9:12)
-    at eval (eval at <anonymous> (eval at evaluate (:302:30)), <anonymous>:12:3)
-    at eval (eval at evaluate (:302:30), <anonymous>:4:50)
-    at UtilityScript.evaluate (<anonymous>:304:16)
-    at UtilityScript.<anonymous> (<anonymous>:1:44)
-[  135351ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/chunk-C2ARXLYN.js?v=0ba3c7cc:21608
