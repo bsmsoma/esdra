@@ -61,7 +61,7 @@ $_shadow:
   min-height:             unset !important;
   overflow:               hidden !important;
   margin-bottom:          0.5rem !important;
-  cursor:                 default !important;
+  cursor:                 pointer !important;
 }
 
 // Acento lateral colorido por tipo
@@ -111,16 +111,13 @@ $_shadow:
 .Toastify__progress-bar--warning { background: $_warn    !important; }
 .Toastify__progress-bar--info    { background: $_info    !important; }
 
-.Toastify__progress-bar-theme--light {
-  background: rgba(184, 160, 126, 0.12) !important;
-}
-
 // Botão fechar
 .Toastify__close-button {
   color:       $_muted !important;
   opacity:     0.45 !important;
   padding:     0.5rem 0.5rem 0 0 !important;
   align-self:  flex-start !important;
+  transition:  opacity 150ms ease, color 150ms ease !important;
 
   &:hover {
     opacity: 0.9 !important;
@@ -131,4 +128,59 @@ $_shadow:
     width:  12px !important;
     height: 12px !important;
   }
+}
+
+// Animações — entrada vertical (bottom-right emerge de baixo), timing correto
+// Sobrescreve os keyframes do react-toastify: slide horizontal → slide vertical + fade
+@keyframes Toastify__slideInRight {
+  from {
+    transform:  translateY(calc(100% + 2rem));
+    opacity:    0;
+  }
+  to {
+    transform:  translateY(0);
+    opacity:    1;
+  }
+}
+
+@keyframes Toastify__slideOutRight {
+  from {
+    transform:  translateY(0);
+    opacity:    1;
+  }
+  to {
+    transform:  translateY(calc(100% + 2rem));
+    opacity:    0;
+  }
+}
+
+// Ícone: parte de scale(0.92) — nada aparece do nada
+@keyframes Toastify__zoomIn {
+  from {
+    opacity:   0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity:   1;
+    transform: scale(1);
+  }
+}
+
+// Duração e easing — entrada 220ms ease-out forte, saída assimétrica 160ms
+.Toastify--animate {
+  animation-fill-mode:       both !important;
+  animation-duration:        220ms !important;
+  animation-timing-function: cubic-bezier(0.23, 1, 0.32, 1) !important;
+}
+
+.Toastify--slide-exit {
+  animation-duration:        160ms !important;
+  animation-timing-function: cubic-bezier(0.23, 1, 0.32, 1) !important;
+}
+
+// Ícone entra com pequeno stagger em relação ao toast
+.Toastify--animate-icon {
+  animation-duration:        280ms !important;
+  animation-delay:           60ms !important;
+  animation-timing-function: cubic-bezier(0.23, 1, 0.32, 1) !important;
 }
