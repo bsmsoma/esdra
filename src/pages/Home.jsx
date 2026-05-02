@@ -188,6 +188,27 @@ function Home() {
     const recentProducts = loaderData.products || [];
     const mainHeroVideos = loaderData.videos || [];
     const location = useLocation();
+    const trustStripRef = React.useRef(null);
+    const productsGridRef = React.useRef(null);
+
+    React.useEffect(function observeRevealSections() {
+        const observer = new IntersectionObserver(
+            function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        entry.target.setAttribute("data-visible", "true");
+                        observer.unobserve(entry.target);
+                    }
+                });
+            },
+            { threshold: 0.1 }
+        );
+
+        if (trustStripRef.current) observer.observe(trustStripRef.current);
+        if (productsGridRef.current) observer.observe(productsGridRef.current);
+
+        return function() { observer.disconnect(); };
+    }, []);
 
 const validHeroVideos = useMemo(function () {
         return mainHeroVideos.filter(function (video) {
@@ -347,7 +368,7 @@ const validHeroVideos = useMemo(function () {
                 className={`${styles.sectionBand} ${styles.sectionBandTrust}`}
                 aria-label="Diferenciais da loja"
             >
-                <div className={styles.trustStrip}>
+                <div className={styles.trustStrip} ref={trustStripRef}>
                     {TRUST_ITEMS.map(function (item) {
                         return (
                             <div key={item.id} className={styles.trustItem}>
@@ -381,8 +402,14 @@ const validHeroVideos = useMemo(function () {
                                 Ver todos
                             </Link>
                         </div>
-                        <div className={styles.recentProductsGrid}>
-                            {recentProducts.map(renderProductCard)}
+                        <div className={styles.recentProductsGrid} ref={productsGridRef}>
+                            {recentProducts.map(function(product) {
+                                return (
+                                    <div key={product.id} className={styles.revealCard}>
+                                        {renderProductCard(product)}
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                     <div className={styles.recentProductsSwiper}>

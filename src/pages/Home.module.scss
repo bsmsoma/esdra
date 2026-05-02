@@ -253,16 +253,19 @@
     padding-bottom: 3px;
     cursor: pointer;
     transition:
-        border-color 0.3s ease,
-        letter-spacing 0.3s ease;
+        border-color 200ms ease,
+        transform 160ms ease-out;
 
     &:hover {
         border-color: $accent-gold;
-        letter-spacing: 0.24em;
 
         .promotionButtonArrow {
             transform: translateX(5px);
         }
+    }
+
+    &:active {
+        transform: scale(0.97);
     }
 
     &:focus-visible {
@@ -274,7 +277,7 @@
 
 .promotionButtonArrow {
     display: inline-block;
-    transition: transform 0.3s ease;
+    transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1);
     font-size: 0.85rem;
 }
 
@@ -289,6 +292,10 @@
 
     &:hover {
         color: rgba(255, 255, 255, 0.85);
+    }
+
+    &:active {
+        opacity: 0.6;
     }
 
     &:focus-visible {
@@ -537,14 +544,16 @@
     border-bottom: 2px solid $accent-gold;
     padding-bottom: 3px;
     transition:
-        color $transition-base $ease-base,
-        border-color $transition-base $ease-base,
-        gap $transition-base $ease-base;
+        color 220ms ease,
+        border-color 220ms ease;
 
     &:hover {
         color: $accent-gold;
         border-color: transparent;
-        gap: vars.$gap-md;
+    }
+
+    &:active {
+        opacity: 0.7;
     }
 
     &:focus-visible {
@@ -557,10 +566,10 @@
 .manifestoCtaArrow {
     font-size: 1.1rem;
     line-height: 1;
-    transition: transform $transition-base $ease-base;
+    transition: transform 220ms cubic-bezier(0.23, 1, 0.32, 1);
 
     .manifestoCta:hover & {
-        transform: translateX(4px);
+        transform: translateX(6px);
     }
 }
 
@@ -712,4 +721,46 @@
     height: auto;
     display: flex;
     justify-content: center;
+}
+
+// --- Scroll reveals ---
+@keyframes revealUp {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+// Trust items — stagger on scroll (data-visible set via IntersectionObserver)
+.trustStrip[data-visible] .trustItem {
+    animation: revealUp 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.trustStrip[data-visible] .trustItem:nth-child(1) { animation-delay: 0ms; }
+.trustStrip[data-visible] .trustItem:nth-child(2) { animation-delay: 80ms; }
+.trustStrip[data-visible] .trustItem:nth-child(3) { animation-delay: 160ms; }
+
+// Product cards — wrapper .revealCard recebe stagger via nth-child
+.revealCard {
+    .recentProductsGrid[data-visible] &:nth-child(1) { animation-delay: 0ms; }
+    .recentProductsGrid[data-visible] &:nth-child(2) { animation-delay: 60ms; }
+    .recentProductsGrid[data-visible] &:nth-child(3) { animation-delay: 120ms; }
+    .recentProductsGrid[data-visible] &:nth-child(4) { animation-delay: 180ms; }
+
+    .recentProductsGrid[data-visible] & {
+        animation: revealUp 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .trustStrip[data-visible] .trustItem,
+    .recentProductsGrid[data-visible] .revealCard {
+        animation: none;
+        opacity: 1;
+        transform: none;
+    }
 }
