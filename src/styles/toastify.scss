@@ -1,9 +1,8 @@
 // =============================================
-// ESDRA — Toast Overrides
+// ESDRA — Toast Overrides (react-toastify v11)
 // Warm cream + acento lateral + ClashGrotesk
 // =============================================
 
-// Variáveis de cor reutilizadas nos overrides
 $_success: #2e6f4e;
 $_error:   #8f3e3e;
 $_warn:    #8a6520;
@@ -22,8 +21,12 @@ $_shadow:
   --toastify-toast-bd-radius:  12px;
   --toastify-font-family:      "ClashGrotesk-Medium", "Montserrat", sans-serif;
   --toastify-z-index:          9999;
-  --toastify-text-color-light: #{$_text};
   --toastify-toast-min-height: unset;
+  --toastify-toast-padding:    0.75rem 2.5rem 0.75rem 1rem;
+
+  // Sobrescreve fundo branco (#fff) e texto cinza (#757575) do tema light
+  --toastify-color-light:      #{$_bg};
+  --toastify-text-color-light: #{$_text};
 
   --toastify-icon-color-success: #{$_success};
   --toastify-icon-color-error:   #{$_error};
@@ -34,7 +37,9 @@ $_shadow:
   --toastify-color-progress-error:   #{$_error};
   --toastify-color-progress-warning: #{$_warn};
   --toastify-color-progress-info:    #{$_info};
-  --toastify-color-progress-bgo:     0.18;
+  // Sobrescreve o gradiente arco-íris padrão do tema light
+  --toastify-color-progress-light:   #{$_muted};
+  --toastify-color-progress-bgo:     0.15;
 }
 
 // Container
@@ -47,17 +52,22 @@ $_shadow:
   right:  1.5rem !important;
 }
 
-// Toast base
+// Toast base — v11: toast é o flex container diretamente
 .Toastify__toast {
-  background:    $_bg !important;
-  border:        1.5px solid $_border !important;
-  border-radius: 12px !important;
-  box-shadow:    $_shadow !important;
-  padding:       0 !important;
-  min-height:    unset !important;
-  overflow:      hidden !important;
-  margin-bottom: 0.5rem !important;
-  cursor:        pointer !important;
+  background:     $_bg !important;
+  border:         1.5px solid $_border !important;
+  border-radius:  12px !important;
+  box-shadow:     $_shadow !important;
+  min-height:     unset !important;
+  overflow:       hidden !important;
+  margin-bottom:  0.5rem !important;
+  // Tipografia — texto é nó direto no v11 (sem Toastify__toast-body)
+  font-family:    "ClashGrotesk-Medium", "Montserrat", sans-serif !important;
+  font-size:      0.82rem !important;
+  line-height:    1.45 !important;
+  color:          $_text !important;
+  font-weight:    500 !important;
+  letter-spacing: 0.01em !important;
 }
 
 // Acento lateral colorido por tipo
@@ -66,19 +76,11 @@ $_shadow:
 .Toastify__toast--warning { border-left: 3px solid $_warn    !important; }
 .Toastify__toast--info    { border-left: 3px solid $_info    !important; }
 
-// Body
-.Toastify__toast-body {
-  padding:     0.875rem 0.75rem 0.875rem 1rem !important;
-  margin:      0 !important;
-  gap:         0.6rem !important;
-  align-items: center !important;
-}
-
 // Ícone
 .Toastify__toast-icon {
-  width:     20px !important;
-  min-width: 20px !important;
-  margin:    0 !important;
+  width:              20px !important;
+  min-width:          20px !important;
+  margin-inline-end:  0.6rem !important;
 
   svg {
     width:  18px !important;
@@ -86,20 +88,22 @@ $_shadow:
   }
 }
 
-// Texto da mensagem
-.Toastify__toast-body > div:last-child {
-  font-family:     "ClashGrotesk-Medium", "Montserrat", sans-serif !important;
-  font-size:       0.82rem !important;
-  line-height:     1.45 !important;
-  color:           $_text !important;
-  font-weight:     500 !important;
-  letter-spacing:  0.01em !important;
+// Progress bar wrapper — controla a altura visível no v11
+.Toastify__progress-bar--wrp {
+  height: 2px !important;
 }
 
-// Progress bar — 2px ultra-fino
+// Background track do progress bar
+.Toastify__progress-bar--bg {
+  &.Toastify__progress-bar--success { background: $_success !important; }
+  &.Toastify__progress-bar--error   { background: $_error   !important; }
+  &.Toastify__progress-bar--warning { background: $_warn    !important; }
+  &.Toastify__progress-bar--info    { background: $_info    !important; }
+}
+
+// Fill do progress bar
 .Toastify__progress-bar {
-  height:  2px !important;
-  opacity: 0.45 !important;
+  opacity: 0.5 !important;
 }
 
 .Toastify__progress-bar--success { background: $_success !important; }
@@ -107,15 +111,15 @@ $_shadow:
 .Toastify__progress-bar--warning { background: $_warn    !important; }
 .Toastify__progress-bar--info    { background: $_info    !important; }
 
-// Botão fechar
-.Toastify__close-button {
-  color:       $_muted !important;
-  opacity:     0.6 !important;
-  padding:     0.5rem 0.5rem 0 0 !important;
-  align-self:  flex-start !important;
-  transition:  opacity 150ms ease, color 150ms ease !important;
+// Botão fechar — v11 tem posição absoluta e classe extra --light
+.Toastify__close-button,
+.Toastify__close-button--light {
+  color:      $_muted !important;
+  opacity:    0.5 !important;
+  transition: opacity 150ms ease, color 150ms ease !important;
 
-  &:hover {
+  &:hover,
+  &:focus {
     opacity: 0.9 !important;
     color:   $_text !important;
   }
@@ -126,31 +130,29 @@ $_shadow:
   }
 }
 
-// Animações — entrada vertical (bottom-right emerge de baixo), timing correto
-// Sobrescreve os keyframes do react-toastify: slide horizontal → slide vertical + fade
+// Animações — entrada vertical (bottom-right emerge de baixo)
 @keyframes Toastify__slideInRight {
   from {
-    transform:  translateY(calc(100% + 2rem));
-    opacity:    0;
+    transform: translateY(calc(100% + 2rem));
+    opacity:   0;
   }
   to {
-    transform:  translateY(0);
-    opacity:    1;
+    transform: translateY(0);
+    opacity:   1;
   }
 }
 
 @keyframes Toastify__slideOutRight {
   from {
-    transform:  translateY(0);
-    opacity:    1;
+    transform: translateY(0);
+    opacity:   1;
   }
   to {
-    transform:  translateY(calc(100% + 2rem));
-    opacity:    0;
+    transform: translateY(calc(100% + 2rem));
+    opacity:   0;
   }
 }
 
-// Ícone: parte de scale(0.92) — nada aparece do nada
 @keyframes Toastify__zoomIn {
   from {
     opacity:   0;
@@ -162,7 +164,7 @@ $_shadow:
   }
 }
 
-// Duração e easing — entrada 220ms ease-out forte, saída assimétrica 160ms
+// Duração — entrada 220ms, saída assimétrica 160ms
 .Toastify--animate {
   animation-fill-mode:       both !important;
   animation-duration:        220ms !important;
@@ -174,7 +176,6 @@ $_shadow:
   animation-timing-function: cubic-bezier(0.23, 1, 0.32, 1) !important;
 }
 
-// Ícone entra com pequeno stagger em relação ao toast
 .Toastify--animate-icon {
   animation-duration:        280ms !important;
   animation-delay:           60ms !important;

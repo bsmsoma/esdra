@@ -27,6 +27,7 @@ import CheckoutSuccess from "./pages/CheckoutSuccess";
 import OrderDetails, { orderDetailsLoader } from "./pages/OrderDetails";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfUse from "./pages/TermsOfUse";
+import Preview from "./pages/Preview";
 
 import {
     Route,
@@ -121,6 +122,9 @@ const router = createBrowserRouter(
                 <Route path="add" element={<ProductFormAdd />} action={productFormAddAction} />
                 <Route path="edit" element={<ProductFormEdit />} loader={productFormEditLoader} action={productFormEditAction} />
             </Route>
+            {/* Component sandbox — dev only */}
+            <Route path="preview" element={<Preview />} />
+
             {/* Renders the not found page */}
             <Route path="*" element={<NotFound />} />
             

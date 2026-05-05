@@ -30,6 +30,7 @@ function getDisplayFirstName(customer, firebaseUser) {
     return "Olá";
 }
 
+
 function Header() {
     const { user } = useAuth(); // Verify if the user is logged in; if not, the dropdown will not be shown
     const { isAdmin } = useIsAdmin(); // Check if user is admin
@@ -146,9 +147,12 @@ function Header() {
     return (
         <>
             <header>
-                <Link to="/" className={styles.logo} aria-label="Ir para página inicial da ESDRA">
-                    <LogoEsdras aria-hidden="true" focusable="false" />
-                </Link>
+                <div className={styles.logoGroup}>
+                    <Link to="/" className={styles.logo} aria-label="Ir para página inicial da ESDRA">
+                        <LogoEsdras aria-hidden="true" focusable="false" />
+                    </Link>
+                    <span className={styles.logoSubtitle} aria-hidden="true">Aromas</span>
+                </div>
                 <nav className={styles.menu}>
                     <ul>
                         <li>
