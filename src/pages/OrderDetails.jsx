@@ -226,6 +226,26 @@ export default function OrderDetails() {
                 )}
             </div>
 
+            {order.trackingCode && (order.status === "enviado" || order.status === "entregue") && (
+                <div className={styles.section}>
+                    <h2 className={styles.sectionTitle}>Rastreamento</h2>
+                    <div className={styles.trackingCard}>
+                        <div className={styles.trackingMeta}>
+                            <span className={styles.trackingLabel}>Código de rastreio</span>
+                            <span className={styles.trackingCode}>{order.trackingCode}</span>
+                        </div>
+                        <a
+                            href={`https://rastreamento.correios.com.br/app/index.php?objetos=${order.trackingCode}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={styles.trackingLink}
+                        >
+                            Rastrear nos Correios →
+                        </a>
+                    </div>
+                </div>
+            )}
+
             <div className={styles.section}>
                 <h2 className={styles.sectionTitle}>Resumo Financeiro</h2>
                 <div className={styles.summary}>

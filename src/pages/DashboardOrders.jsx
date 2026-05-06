@@ -126,9 +126,11 @@ export default function DashboardOrders() {
                 const draft = orderDrafts[order.id] || {};
                 return {
                     ...order,
+                    rawPaymentStatus: order.paymentStatus,
                     nextStatus: draft.nextStatus || order.status || "pendente",
                     paymentStatus: draft.paymentStatus || "",
                     adminNotes: draft.adminNotes || "",
+                    trackingCode: draft.trackingCode !== undefined ? draft.trackingCode : (order.trackingCode || ""),
                 };
             });
         },
@@ -144,6 +146,7 @@ export default function DashboardOrders() {
                 status: order.nextStatus,
                 paymentStatus: order.paymentStatus,
                 adminNotes: order.adminNotes,
+                trackingCode: order.trackingCode,
             });
 
             setOrders(function updateOrders(previous) {
@@ -154,6 +157,7 @@ export default function DashboardOrders() {
                         status: order.nextStatus,
                         paymentStatus: order.paymentStatus || currentOrder.paymentStatus || "pending",
                         adminNotes: order.adminNotes || currentOrder.adminNotes || "",
+                        trackingCode: order.trackingCode || currentOrder.trackingCode || "",
                     };
                 });
             });
@@ -283,11 +287,8 @@ export default function DashboardOrders() {
                                     <th>Pedido</th>
                                     <th>Cliente</th>
                                     <th>Total</th>
-                                    <th>Status atual</th>
-                                    <th>Novo status</th>
-                                    <th>Pagamento</th>
-                                    <th>Notas</th>
-                                    <th>Ação</th>
+                                    <th>Status</th>
+                                    <th>Pgto</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -303,68 +304,20 @@ export default function DashboardOrders() {
                                                         onClick={function () { toggleExpand(order.id); }}
                                                         title="Ver detalhes do pedido"
                                                     >
-                                                        {isExpanded ? "▼" : "▶"}
+                                                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                                                            <path d="M4 2L8 6L4 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                                        </svg>
                                                     </button>
                                                 </td>
                                                 <td>#{order.orderNumber}</td>
                                                 <td>{order.customerName || "-"}</td>
                                                 <td>R$ {formatPrice(order.total || 0)}</td>
                                                 <td>{getStatusLabel(order.status)}</td>
-                                                <td>
-                                                    <select
-                                                        value={order.nextStatus}
-                                                        onChange={function handleStatusChange(event) {
-                                                            updateDraft(order.id, "nextStatus", event.target.value);
-                                                        }}
-                                                    >
-                                                        {ORDER_STATUS_OPTIONS.map(function (statusOption) {
-                                                            return (
-                                                                <option key={statusOption.value} value={statusOption.value}>
-                                                                    {statusOption.label}
-                                                                </option>
-                                                            );
-                                                        })}
-                                                    </select>
-                                                </td>
-                                                <td>
-                                                    <select
-                                                        value={order.paymentStatus}
-                                                        onChange={function handlePaymentChange(event) {
-                                                            updateDraft(order.id, "paymentStatus", event.target.value);
-                                                        }}
-                                                    >
-                                                        {PAYMENT_STATUS_OPTIONS.map(function (paymentOption) {
-                                                            return (
-                                                                <option key={paymentOption.value || "keep"} value={paymentOption.value}>
-                                                                    {paymentOption.label}
-                                                                </option>
-                                                            );
-                                                        })}
-                                                    </select>
-                                                </td>
-                                                <td>
-                                                    <input
-                                                        type="text"
-                                                        value={order.adminNotes}
-                                                        onChange={function handleNotesChange(event) {
-                                                            updateDraft(order.id, "adminNotes", event.target.value);
-                                                        }}
-                                                        placeholder="Observação interna"
-                                                    />
-                                                </td>
-                                                <td>
-                                                    <button
-                                                        type="button"
-                                                        onClick={function onSaveClick() { handleSaveStatus(order); }}
-                                                        disabled={savingOrderId === order.id}
-                                                    >
-                                                        {savingOrderId === order.id ? "Salvando..." : "Salvar"}
-                                                    </button>
-                                                </td>
+                                                <td>{getStatusLabel(order.rawPaymentStatus) || "-"}</td>
                                             </tr>
                                             {isExpanded && (
                                                 <tr className={styles.orderDetailRow}>
-                                                    <td colSpan={9}>
+                                                    <td colSpan={6}>
                                                         <div className={styles.orderDetailPanel}>
                                                             <div className={styles.detailSection}>
                                                                 <h4>Dados do comprador</h4>
@@ -462,6 +415,70 @@ export default function DashboardOrders() {
                                                                     </div>
                                                                 </div>
                                                             )}
+
+                                                            <div className={styles.detailSection}>
+                                                                <h4>Gerenciar pedido</h4>
+                                                                <div className={styles.orderActions}>
+                                                                    <div>
+                                                                        <label htmlFor={`status-${order.id}`}>Status do pedido</label>
+                                                                        <select
+                                                                            id={`status-${order.id}`}
+                                                                            value={order.nextStatus}
+                                                                            onChange={function (e) { updateDraft(order.id, "nextStatus", e.target.value); }}
+                                                                        >
+                                                                            {ORDER_STATUS_OPTIONS.map(function (opt) {
+                                                                                return (
+                                                                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                                                                );
+                                                                            })}
+                                                                        </select>
+                                                                    </div>
+                                                                    <div>
+                                                                        <label htmlFor={`payment-${order.id}`}>Status de pagamento</label>
+                                                                        <select
+                                                                            id={`payment-${order.id}`}
+                                                                            value={order.paymentStatus}
+                                                                            onChange={function (e) { updateDraft(order.id, "paymentStatus", e.target.value); }}
+                                                                        >
+                                                                            {PAYMENT_STATUS_OPTIONS.map(function (opt) {
+                                                                                return (
+                                                                                    <option key={opt.value || "keep"} value={opt.value}>{opt.label}</option>
+                                                                                );
+                                                                            })}
+                                                                        </select>
+                                                                    </div>
+                                                                    <div>
+                                                                        <label htmlFor={`notes-${order.id}`}>Notas internas</label>
+                                                                        <input
+                                                                            id={`notes-${order.id}`}
+                                                                            type="text"
+                                                                            value={order.adminNotes}
+                                                                            onChange={function (e) { updateDraft(order.id, "adminNotes", e.target.value); }}
+                                                                            placeholder="Observação interna do admin"
+                                                                        />
+                                                                    </div>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={function () { handleSaveStatus(order); }}
+                                                                        disabled={savingOrderId === order.id}
+                                                                    >
+                                                                        {savingOrderId === order.id ? "Salvando..." : "Salvar"}
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+
+                                                            <div className={styles.detailSection}>
+                                                                <h4>Código de rastreio</h4>
+                                                                <input
+                                                                    type="text"
+                                                                    className={styles.trackingInput}
+                                                                    value={order.trackingCode}
+                                                                    onChange={function (e) { updateDraft(order.id, "trackingCode", e.target.value); }}
+                                                                    placeholder="Ex: BR123456789BR"
+                                                                    spellCheck={false}
+                                                                />
+                                                                <p className={styles.trackingHint}>Salve para atualizar o cliente.</p>
+                                                            </div>
 
                                                             <div className={`${styles.detailSection} ${styles.fullWidth} ${styles.printActions}`}>
                                                                 <button

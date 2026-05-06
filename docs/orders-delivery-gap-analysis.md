@@ -134,51 +134,52 @@ EMAIL_FROM=ESDRA Aromas <noreply@esdra.com.br>
 
 ---
 
-### 2. ❌ Impressão de pedido (admin)
+### 2. ✅ Impressão de pedido (admin)
 
-**Problema:** Admin não tem como imprimir o slip do pedido para separação/envio. `/dashboard/orders` exibe os dados mas não tem botão de impressão.
+**Problema:** Admin não tinha como imprimir o slip do pedido para separação/envio.
 
-**Solução:** Botão "Imprimir" por pedido em `DashboardOrders.jsx` que chama `window.print()` com CSS `@media print` ocultando nav, filtros, tabela completa e exibindo apenas o painel expandido do pedido específico.
+**Solução implementada:** Botão "Imprimir pedido" no painel expandido de cada pedido. Ao clicar, `handlePrint` copia os dados persistidos para `printingOrder` (state), aciona `window.print()` e restaura o estado no evento `afterprint`. Um `<div class="printSlip">` oculto na UI normal fica visível durante a impressão via `@media print`, exibindo comprador, endereço, tabela de itens e resumo financeiro em layout limpo preto-e-branco.
 
-**Arquivos a modificar:**
-- `src/pages/DashboardOrders.jsx` — adicionar botão + lógica de print por `orderId`
-- `src/pages/DashboardOrders.module.scss` — adicionar `.printOnly`, `@media print` ocultando UI
+**Arquivos modificados:**
+- `src/pages/DashboardOrders.jsx`
+- `src/pages/DashboardOrders.module.scss`
 
-**Status:** ⏳ Pendente
-
----
-
-### 3. ❌ Busca de pedidos no admin
-
-**Problema:** `DashboardOrders` só tem filtro por status. Admin com 200+ pedidos não consegue localizar um pedido específico sem scrollar tudo.
-
-**Solução:** Campo de busca por número do pedido (ex: `ESD-2025-001`) ou email/nome do cliente. O filtro seria client-side sobre os dados já carregados (`orders` state). Para pedidos históricos fora da página atual, pode ser necessário busca server-side futura.
-
-**Arquivos a modificar:**
-- `src/pages/DashboardOrders.jsx` — state `searchQuery`, filtro no `useMemo`
-- `src/pages/DashboardOrders.module.scss` — input de busca estilizado
-
-**Status:** ⏳ Pendente
+**Status:** ✅ Implementado em 2026-04-30
 
 ---
 
-### 4. ❌ Campo de código de rastreio
+### 3. ✅ Busca de pedidos no admin
 
-**Problema:** Não há campo `trackingCode` nem no modelo de dados nem na UI. Admin não registra o código dos Correios, cliente não vê o rastreio no `OrderDetails`.
+**Problema:** `DashboardOrders` só tinha filtro por status.
 
-**Solução:**
-- `DashboardOrders.jsx`: Campo de input para `trackingCode` junto ao painel de edição do pedido
-- `updateOrderStatusByAdmin` (Cloud Function): aceitar e salvar `trackingCode` no documento
-- `OrderDetails.jsx`: exibir `trackingCode` quando `status === "enviado"`
-- Modelo Firestore: adicionar campo `trackingCode: string` ao pedido
+**Solução implementada:** Campo de busca por número do pedido, nome ou email do cliente. Filtro client-side no `useMemo` usando `normalizeString` (já existia em `src/firebase.js`) para busca sem acento. Limitação conhecida: só filtra pedidos já carregados na página atual (20/lote) — pedidos históricos ainda não carregados não aparecem nos resultados.
 
-**Arquivos a modificar:**
+**Arquivos modificados:**
+- `src/pages/DashboardOrders.jsx`
+- `src/pages/DashboardOrders.module.scss`
+
+**Status:** ✅ Implementado em 2026-04-30
+
+---
+
+### 4. ✅ Campo de código de rastreio
+
+**Problema:** Não havia campo `trackingCode` no modelo de dados nem na UI.
+
+**Solução implementada:**
+- `updateOrderStatusByAdmin` aceita e salva `trackingCode` condicionalmente no Firestore (mesmo padrão de `adminNotes`)
+- Painel expandido do admin tem input monospace "Código de rastreio" — salvo pelo botão "Salvar" da seção "Gerenciar pedido"
+- `OrderDetails.jsx` exibe cartão azul com código e link direto para rastreamento nos Correios quando `trackingCode` existe E `status` é `"enviado"` ou `"entregue"`
+- `trackingCode` flui pelo `orderDrafts` existente sem estado extra
+
+**Arquivos modificados:**
 - `functions/index.js` → `updateOrderStatusByAdmin`
 - `src/pages/DashboardOrders.jsx`
+- `src/pages/DashboardOrders.module.scss`
 - `src/pages/OrderDetails.jsx`
 - `src/pages/OrderDetails.module.scss`
 
-**Status:** ⏳ Pendente
+**Status:** ✅ Implementado em 2026-05-06
 
 ---
 
@@ -243,29 +244,21 @@ APP_URL=https://esdra.com.br  # já deve existir
 | # | Gap | Status |
 |---|---|---|
 | 1 | Email transacional | ✅ Implementado 2026-04-29 |
-| 2 | Impressão de pedido (admin) | ⏳ Pendente |
-| 3 | Busca de pedidos no admin | ⏳ Pendente |
-| 4 | Campo de código de rastreio | ⏳ Pendente |
+| 2 | Impressão de pedido (admin) | ✅ Implementado 2026-04-30 |
+| 3 | Busca de pedidos no admin | ✅ Implementado 2026-04-30 |
+| 4 | Campo de código de rastreio | ✅ Implementado 2026-05-06 |
 
+**Todos os gaps de entrega mínima estão implementados.**
 
-  Gaps para entrega mínima — o produto não funciona sem isso   
-                                                                                                                                  
-  1. Email nunca chega (o mais crítico)
-  A emailQueue no Firestore é populada corretamente em toda ação relevante (confirmação de pedido, pagamento aprovado), mas não   
-  existe nenhuma Cloud Function que processe essa fila e efetivamente envie o email. O cliente finaliza a compra e não recebe     
-  nada. Precisa de uma Cloud Function com trigger onDocumentCreated na collection emailQueue integrada a um serviço de envio      
-  (SendGrid, Resend, etc.).                                                                                                       
-                                                                                                                                
-  2. Impressão de pedido no admin (o que você perguntou)                                                                          
-  Não existe. O admin não tem como imprimir o slip para separação e envio. Implementação: botão "Imprimir" por pedido em
-  DashboardOrders que abre a visão de impressão daquele pedido específico via window.print() com @media print CSS limpando a UI e 
-  mostrando só os dados do pedido.                             
-                                                                                                                                  
-  3. Sem busca de pedido — só filtro por status                
-  Admin com 200 pedidos não tem como localizar um pedido específico. Com statusFilter já existindo, falta apenas um campo de busca
-   por número do pedido (#ESD-2025-001) ou nome/email do cliente.                                                                 
-   
-  4. Campo de código de rastreio não existe                                                                                       
-  Não há campo trackingCode nem no modelo de dados (Firestore) nem na UI do admin. O admin não tem como registrar o código dos
-  Correios, e o cliente não tem como ver o rastreio em /account/orders/:orderId. Precisa de um campo no painel do admin e exibição
-   no detalhe do cliente.
+---
+
+## Próximos passos operacionais (não são código)
+
+1. **Deploy das Cloud Functions** — `processEmailQueue` e `updateOrderStatusByAdmin` (com `trackingCode`) precisam de deploy:
+   ```bash
+   cd functions && firebase deploy --only functions
+   ```
+
+2. **Deploy do frontend** — mudanças em `DashboardOrders` e `OrderDetails` precisam de build e deploy do hosting.
+
+3. **Verificar domínio no Resend** — `esdraaromas.com.br` precisa de registros DNS (SPF/DKIM) verificados em https://resend.com/domains para emails saírem em produção. Sem isso, `processEmailQueue` vai retornar erro 403 do Resend mesmo com API key válida.

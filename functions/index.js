@@ -742,6 +742,7 @@ export const updateOrderStatusByAdmin = onCall(FUNCTION_CONFIG, async (request) 
   const nextStatus = String(request.data?.status || "").trim().toLowerCase();
   const paymentStatus = String(request.data?.paymentStatus || "").trim().toLowerCase();
   const adminNotes = String(request.data?.adminNotes || "").trim();
+  const trackingCode = String(request.data?.trackingCode || "").trim();
 
   if (!orderId) {
     throw new HttpsError("invalid-argument", "orderId é obrigatório.");
@@ -770,6 +771,9 @@ export const updateOrderStatusByAdmin = onCall(FUNCTION_CONFIG, async (request) 
   }
   if (adminNotes) {
     updateData.adminNotes = adminNotes;
+  }
+  if (trackingCode) {
+    updateData.trackingCode = trackingCode;
   }
 
   await orderRef.set(updateData, {merge: true});
@@ -1224,7 +1228,7 @@ export const processEmailQueue = onDocumentCreated(
       }
 
       const fromEmail = String(
-        globalThis.process?.env?.EMAIL_FROM || "ESDRA Aromas <noreply@esdra.com.br>",
+        globalThis.process?.env?.EMAIL_FROM || "ESDRA Aromas <noreply@esdraaromas.com.br>",
       ).trim();
 
       const resend = new Resend(apiKey);

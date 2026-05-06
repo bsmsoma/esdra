@@ -322,3 +322,57 @@
         text-decoration: underline;
     }
 }
+
+.trackingCard {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: vars.$gap-xl;
+    padding: vars.$padding-xl vars.$padding-3xl;
+    background: #dbeafe;
+    border-radius: vars.$radius-md;
+    flex-wrap: wrap;
+}
+
+.trackingMeta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.trackingLabel {
+    font-size: $font-size-lg;
+    color: #1e40af;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: $font-weight-semibold;
+    font-family: $defaultFont;
+    opacity: 0.8;
+}
+
+.trackingCode {
+    font-family: "Courier New", Courier, monospace;
+    font-size: $font-size-4xl;
+    font-weight: $font-weight-semibold;
+    color: #1e3a8a;
+    letter-spacing: 0.12em;
+}
+
+.trackingLink {
+    display: inline-flex;
+    align-items: center;
+    padding: vars.$padding-sm vars.$padding-xl;
+    background: #1e40af;
+    color: #fff;
+    border-radius: vars.$radius-xs;
+    font-family: $defaultFont;
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-medium;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background vars.$transition-base vars.$ease-base;
+
+    &:hover {
+        background: #1e3a8a;
+    }
+}
