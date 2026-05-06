@@ -168,7 +168,6 @@ async function createCheckoutProPreference({orderId, orderNumber, items, shippin
       failure: `${appUrl}/checkout/success?orderId=${orderId}&mp_status=failure`,
       pending: `${appUrl}/checkout/success?orderId=${orderId}&mp_status=pending`,
     },
-    auto_return: "approved",
     external_reference: orderId,
     statement_descriptor: "Esdra Aromas",
     shipments: {
