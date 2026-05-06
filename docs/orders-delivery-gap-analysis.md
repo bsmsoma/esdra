@@ -254,10 +254,7 @@ APP_URL=https://esdra.com.br  # já deve existir
 
 ## Próximos passos operacionais (não são código)
 
-1. **Deploy das Cloud Functions** — `processEmailQueue` e `updateOrderStatusByAdmin` (com `trackingCode`) precisam de deploy:
-   ```bash
-   cd functions && firebase deploy --only functions
-   ```
+1. **Deploy das Cloud Functions** — ✅ Feito em 2026-05-06. Todas as 8 functions deployadas para `southamerica-east1`.
 
 2. **Deploy do frontend** — mudanças em `DashboardOrders` e `OrderDetails` precisam de build e deploy do hosting.
 
