@@ -1284,7 +1284,6 @@ export const cleanupExpiredCarts = onSchedule(
   },
   async () => {
     const lojaId = globalThis.process?.env?.DEFAULT_STORE_ID || "esdra-aromas";
-    const now = getFirestore().Timestamp ? getFirestore().Timestamp.now() : FieldValue.serverTimestamp();
     const cartsRef = db.collection(`lojas/${lojaId}/carts`);
 
     let expiredCarts;
