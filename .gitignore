@@ -40,3 +40,5 @@ firestore-debug.log
 ui-debug.log
 # Local Netlify folder
 .netlify
+# Added by code-review-graph
+.code-review-graph/
