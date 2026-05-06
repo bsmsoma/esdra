@@ -81,6 +81,7 @@ export default function DashboardOrders() {
     const [feedbackType, setFeedbackType] = useState("success");
     const [orderDrafts, setOrderDrafts] = useState({});
     const [expandedOrderId, setExpandedOrderId] = useState(null);
+    const [printingOrder, setPrintingOrder] = useState(null);
 
     const fetchOrders = useCallback(async function ({ append = false, currentLastDoc = null } = {}) {
         try {
@@ -176,6 +177,16 @@ export default function DashboardOrders() {
                     [key]: value,
                 },
             };
+        });
+    }
+
+    function handlePrint(orderId) {
+        const target = orders.find(function (o) { return o.id === orderId; });
+        if (!target) return;
+        setPrintingOrder(target);
+        requestAnimationFrame(function () {
+            window.print();
+            window.addEventListener("afterprint", function () { setPrintingOrder(null); }, { once: true });
         });
     }
 
@@ -433,6 +444,16 @@ export default function DashboardOrders() {
                                                                     </div>
                                                                 </div>
                                                             )}
+
+                                                            <div className={`${styles.detailSection} ${styles.fullWidth} ${styles.printActions}`}>
+                                                                <button
+                                                                    type="button"
+                                                                    className={styles.printButton}
+                                                                    onClick={function () { handlePrint(order.id); }}
+                                                                >
+                                                                    Imprimir pedido
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -457,6 +478,87 @@ export default function DashboardOrders() {
                     )}
                 </>
             )}
+            <div className={styles.printSlip} aria-hidden="true">
+                {printingOrder && (
+                    <>
+                        <div className={styles.printHeader}>
+                            <span className={styles.printBrand}>ESDRA Aromas</span>
+                            <span className={styles.printOrderNumber}>#{printingOrder.orderNumber}</span>
+                            <span className={styles.printDate}>Impresso em {new Date().toLocaleString("pt-BR")}</span>
+                        </div>
+
+                        <section className={styles.printSection}>
+                            <h3>Dados do comprador</h3>
+                            <p>{printingOrder.customerName || "-"}</p>
+                            <p>{printingOrder.customerEmail || "-"}</p>
+                            <p>{printingOrder.customerPhone || "-"}</p>
+                            {printingOrder.customerDocument && <p>CPF: {printingOrder.customerDocument}</p>}
+                            <p>Pedido em: {formatDate(printingOrder.createdAt)}</p>
+                        </section>
+
+                        <section className={styles.printSection}>
+                            <h3>Endereço de entrega</h3>
+                            <p>{formatAddress(printingOrder.shippingAddress)}</p>
+                        </section>
+
+                        {Array.isArray(printingOrder.items) && printingOrder.items.length > 0 && (
+                            <section className={styles.printSection}>
+                                <h3>Itens do pedido</h3>
+                                <table className={styles.printTable}>
+                                    <thead>
+                                        <tr>
+                                            <th>Produto</th>
+                                            <th>Tam.</th>
+                                            <th>Qtd.</th>
+                                            <th>Unitário</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {printingOrder.items.map(function (item, i) {
+                                            const unitPrice = item.price || item.unitPrice || 0;
+                                            const qty = item.quantity || 1;
+                                            const lineTotal = item.lineTotal || unitPrice * qty;
+                                            return (
+                                                <tr key={i}>
+                                                    <td>{item.name || item.productName || "-"}</td>
+                                                    <td>{item.size || "-"}</td>
+                                                    <td>{qty}</td>
+                                                    <td>R$ {formatPrice(unitPrice)}</td>
+                                                    <td>R$ {formatPrice(lineTotal)}</td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </section>
+                        )}
+
+                        <section className={styles.printSection}>
+                            <h3>Resumo financeiro</h3>
+                            {printingOrder.subtotal != null && <p>Subtotal: R$ {formatPrice(printingOrder.subtotal)}</p>}
+                            {printingOrder.shipping != null && <p>Frete: R$ {formatPrice(printingOrder.shipping)}</p>}
+                            <p><strong>Total: R$ {formatPrice(printingOrder.total || 0)}</strong></p>
+                            {printingOrder.paymentMethod && <p>Pagamento: {printingOrder.paymentMethod}</p>}
+                            <p>Status: {getStatusLabel(printingOrder.status)}</p>
+                        </section>
+
+                        {printingOrder.notes && (
+                            <section className={styles.printSection}>
+                                <h3>Observações do comprador</h3>
+                                <p>{printingOrder.notes}</p>
+                            </section>
+                        )}
+
+                        {printingOrder.adminNotes && (
+                            <section className={styles.printSection}>
+                                <h3>Notas internas</h3>
+                                <p>{printingOrder.adminNotes}</p>
+                            </section>
+                        )}
+                    </>
+                )}
+            </div>
         </section>
     );
 }

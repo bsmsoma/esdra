@@ -39,9 +39,9 @@ function baseLayout(bodyContent) {
 
           <!-- Header -->
           <tr>
-            <td style="background-color:#fffdf9;border-radius:6px 6px 0 0;padding:32px 40px 24px;border-bottom:2px solid #b8a07e;">
-              <p style="margin:0;font-size:18px;font-weight:700;letter-spacing:7px;color:#2a221d;text-transform:uppercase;font-family:Georgia,'Times New Roman',serif;">ESDRA</p>
-              <p style="margin:4px 0 0;font-size:9px;letter-spacing:4px;color:#74685d;text-transform:uppercase;font-family:Arial,Helvetica,sans-serif;">AROMAS</p>
+            <td style="background-color:#fffdf9;border-radius:6px 6px 0 0;padding:32px 40px 24px;border-bottom:2px solid #b8a07e;text-align:center;">
+              <img src="https://firebasestorage.googleapis.com/v0/b/esdra-ba71d.firebasestorage.app/o/lojas%2Fesdra-aromas%2Fassets%2FlogoEsdrasv2.png?alt=media" width="180" alt="ESDRA" style="display:block;margin:0 auto;border:0;outline:none;text-decoration:none;">
+              <p style="margin:4px 0 0;font-size:10px;letter-spacing:0.28em;color:#2a221d;text-transform:uppercase;opacity:0.7;font-family:Arial,Helvetica,sans-serif;line-height:1;">Aromas</p>
             </td>
           </tr>
 
