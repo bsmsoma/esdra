@@ -535,6 +535,15 @@
 }
 
 @media print {
+    // Constrain document height to 1 page — prevents blank extra pages
+    // caused by body content still occupying layout space (visibility:hidden
+    // hides but doesn't collapse). position:fixed slip renders from viewport,
+    // not from document flow, so it still shows correctly.
+    html {
+        height: 100vh;
+        overflow: hidden;
+    }
+
     body * {
         visibility: hidden;
     }

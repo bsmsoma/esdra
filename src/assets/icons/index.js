@@ -12,6 +12,7 @@ export { default as LogoBrunno } from './LogoBrunno';
 export { default as LogoEsdras } from './logoEsdras';
 export { default as LogoutIcon } from './LogoutIcon';
 export { default as MagnifierIcon } from './MagnifierIcon';
+export { default as MercadoPagoIcon } from './MercadoPagoIcon';
 export { default as OkIcon } from './OkIcon';
 export { default as PlaceholderIcon } from './PlaceholderIcon';
 export { default as PlusIcon } from './PlusIcon';

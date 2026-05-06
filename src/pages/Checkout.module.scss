@@ -169,17 +169,67 @@
 }
 
 .checkoutProNotice {
-    padding: vars.$padding-xl;
-    background: rgba(0, 160, 255, 0.06);
-    border: vars.$border-width-base solid rgba(0, 160, 255, 0.25);
-    border-radius: vars.$radius-md;
+    padding: vars.$padding-2xl;
+    background: rgba(0, 158, 227, 0.05);
+    border: vars.$border-width-thin solid rgba(0, 158, 227, 0.2);
+    border-radius: vars.$radius-lg;
     color: $text-secondary;
-    font-size: $font-size-sm;
+    font-family: $defaultFont;
     line-height: 1.5;
+}
+
+.mpHeader {
+    display: flex;
+    align-items: center;
+    gap: vars.$gap-xl;
+    margin-bottom: vars.$margin-xl;
+}
+
+.mpIcon {
+    flex-shrink: 0;
+    border-radius: vars.$radius-sm;
+}
+
+.mpHeaderText {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 
     strong {
+        font-size: $font-size-3xl;
+        font-weight: $font-weight-semibold;
         color: $text-primary;
+        font-family: $defaultFont;
     }
+
+    span {
+        font-size: $font-size-lg;
+        color: $text-quinary;
+    }
+}
+
+.mpDescription {
+    font-size: $font-size-xl;
+    color: $text-secondary;
+    margin: 0 0 vars.$margin-xl;
+}
+
+.mpMethods {
+    display: flex;
+    flex-wrap: wrap;
+    gap: vars.$gap-sm;
+}
+
+.mpMethod {
+    padding: vars.$padding-xs vars.$padding-lg;
+    background: rgba(0, 158, 227, 0.08);
+    border: vars.$border-width-thin solid rgba(0, 158, 227, 0.2);
+    border-radius: vars.$radius-999;
+    font-size: $font-size-sm;
+    font-family: $defaultFont;
+    font-weight: $font-weight-semibold;
+    color: #007ab8;
+    letter-spacing: 0.01em;
 }
 
 .paymentMethods {
@@ -322,14 +372,45 @@
     margin-bottom: vars.$margin-4xl;
 }
 
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
 .submitButton {
     @include ctaPrimaryBlock;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: vars.$gap-lg;
+    transition:
+        background vars.$transition-base vars.$ease-base,
+        transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
+        opacity 160ms cubic-bezier(0.23, 1, 0.32, 1);
+
+    &:active:not(:disabled) {
+        transform: scale(0.97);
+    }
 
     &:disabled {
         opacity: 0.6;
         cursor: not-allowed;
         transform: none;
     }
+}
+
+.spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-top-color: white;
+    border-radius: vars.$radius-full;
+    animation: spin 600ms linear infinite;
+    flex-shrink: 0;
+}
+
+.buttonTextLoading {
+    opacity: 0.85;
+    transition: opacity 160ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .loading {

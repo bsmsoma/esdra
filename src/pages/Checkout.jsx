@@ -1,10 +1,11 @@
 import { useCart } from "../contexts/CartContext";
 import { useAuth } from "../contexts/AuthContext";
-import { useNavigate, Form, redirect, useActionData, Link } from "react-router";
+import { useNavigate, Form, redirect, useActionData, useNavigation, Link } from "react-router";
 import { getCustomerByUid, createOrderSecure } from "../firebase";
 import { useEffect, useMemo, useState } from "react";
 import { formatPrice } from "../utils/priceUtils";
 import { mapItemsForAnalytics, trackEvent } from "../utils/analytics";
+import MercadoPagoIcon from "../assets/icons/MercadoPagoIcon";
 import styles from "./Checkout.module.scss";
 
 function getAddressDisplayTitle(address) {
@@ -66,6 +67,7 @@ export default function Checkout() {
     const { user } = useAuth();
     const navigate = useNavigate();
     const actionData = useActionData();
+    const navigation = useNavigation();
     const [customer, setCustomer] = useState(null);
     const [loading, setLoading] = useState(true);
     const [selectedAddressId, setSelectedAddressId] = useState(null);
@@ -182,6 +184,15 @@ export default function Checkout() {
     const shipping = fixedShippingAmount;
     const discount = 0; // TODO: Apply coupons
     const finalTotal = subtotal + shipping - discount;
+
+    const isSubmitting = navigation.state !== "idle";
+    const isRedirecting = Boolean(actionData?.checkoutUrl);
+    const isLoading = isSubmitting || isRedirecting;
+    const submitLabel = isRedirecting
+        ? "Redirecionando..."
+        : isSubmitting
+        ? "Processando..."
+        : "Ir para o Pagamento";
 
     if (loading || cartLoading) {
         return <div className={styles.loading}>Carregando...</div>;
@@ -319,7 +330,21 @@ export default function Checkout() {
                         <div className={styles.section}>
                             <h2 className={styles.sectionTitle}>Pagamento</h2>
                             <div className={styles.checkoutProNotice}>
-                                <p>Você será redirecionado ao <strong>Mercado Pago</strong> para escolher sua forma de pagamento (PIX, cartão de crédito, boleto e mais).</p>
+                                <div className={styles.mpHeader}>
+                                    <MercadoPagoIcon size={36} className={styles.mpIcon} />
+                                    <div className={styles.mpHeaderText}>
+                                        <strong>Mercado Pago</strong>
+                                        <span>Ambiente seguro e criptografado</span>
+                                    </div>
+                                </div>
+                                <p className={styles.mpDescription}>
+                                    Você será redirecionado para escolher sua forma de pagamento.
+                                </p>
+                                <div className={styles.mpMethods}>
+                                    <span className={styles.mpMethod}>PIX</span>
+                                    <span className={styles.mpMethod}>Cartão de crédito</span>
+                                    <span className={styles.mpMethod}>Boleto</span>
+                                </div>
                             </div>
                             <input type="hidden" name="paymentMethod" value="checkout_pro" />
                         </div>
@@ -379,11 +404,15 @@ export default function Checkout() {
                             <button
                                 type="submit"
                                 className={styles.submitButton}
-                                disabled={missingCheckoutData.length > 0 || Boolean(actionData?.checkoutUrl)}
+                                disabled={missingCheckoutData.length > 0 || isRedirecting}
+                                aria-busy={isLoading}
                             >
-                                {actionData?.checkoutUrl
-                                    ? "Redirecionando para o Mercado Pago..."
-                                    : "Ir para o Pagamento"}
+                                {isLoading && (
+                                    <span className={styles.spinner} aria-hidden="true" />
+                                )}
+                                <span className={isLoading ? styles.buttonTextLoading : ""}>
+                                    {submitLabel}
+                                </span>
                             </button>
                         </div>
                     </div>
