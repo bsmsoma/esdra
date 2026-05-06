@@ -8,7 +8,7 @@
     justify-content: center;
     min-height: 60vh;
     padding: vars.$spacing-xl;
-    background-color: $secondary-color;
+    background-color: $background-secondary;
 }
 
 .errorContent {
@@ -16,7 +16,7 @@
     width: 100%;
     text-align: center;
     padding: vars.$padding-3xl;
-    background-color: $primary-color;
+    background-color: $background-color;
     border-radius: vars.$radius-lg;
     box-shadow: $shadow-lg;
 }
@@ -39,7 +39,7 @@
 .errorDetails {
     margin: vars.$spacing-xl 0;
     text-align: left;
-    background-color: $secondary-color;
+    background-color: $background-secondary;
     padding: vars.$spacing-md;
     border-radius: vars.$radius-md;
     border: 1px solid $status-error;
@@ -101,7 +101,7 @@
 
 .resetButton {
     background-color: $border-color;
-    color: $primary-color;
+    color: $background-color;
 
     &:hover {
         background-color: $border-color-hover;

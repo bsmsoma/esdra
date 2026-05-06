@@ -34,7 +34,7 @@
                 font-family: $clashGroteskSemibold;
                 font-size: $font-size-xl;
                 font-weight: $font-weight-semibold;
-                color: $footer-heading;
+                color: $text-primary;
                 margin-bottom: 0.5rem;
 
                 .brandLogo {
@@ -42,7 +42,7 @@
                     width: 100%;
                     max-width: 128px;
                     height: auto;
-                    color: $footer-heading;
+                    color: $text-primary;
 
                     path {
                         fill: currentColor;
@@ -54,7 +54,7 @@
                 font-family: $defaultFont;
                 font-size: $font-size-base;
                 line-height: 1.6;
-                color: $footer-text-muted;
+                color: $text-quinary;
                 margin-bottom: 1rem;
             }
 
@@ -105,12 +105,12 @@
                 li {
                     font-family: $defaultFont;
                     font-size: $font-size-base;
-                    color: $footer-text-muted;
+                    color: $text-quinary;
                     transition: all 0.3s ease;
                     cursor: pointer;
 
                     a {
-                        color: $footer-text-muted;
+                        color: $text-quinary;
                         text-decoration: none;
                         transition: color 0.2s ease;
                         display: inline-block;
@@ -146,11 +146,7 @@
     }
 
     .footerBottom {
-        background: linear-gradient(
-            135deg,
-            $footer-bottom-start 0%,
-            $footer-bottom-end 100%
-        );
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
         padding: 1.5rem 0;
         margin-top: 2rem;
 
@@ -167,14 +163,14 @@
             .copyright {
                 font-family: $defaultFont;
                 font-size: $font-size-sm;
-                color: $footer-bottom-text;
+                color: #ecf0f1;
                 margin: 0;
             }
 
             .developer {
                 font-family: $defaultFont;
                 font-size: $font-size-sm;
-                color: $footer-bottom-text;
+                color: #ecf0f1;
                 margin: 0;
 
                 .developerLink {
@@ -197,7 +193,7 @@
                         filter: brightness(0) saturate(100%) invert(88%)
                             sepia(12%) saturate(186%) hue-rotate(169deg)
                             brightness(103%) contrast(92%);
-                        color: $footer-bottom-text;
+                        color: #ecf0f1;
                         fill: currentColor;
                     }
 

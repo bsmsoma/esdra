@@ -3,18 +3,37 @@ import { formatPrice } from "../utils/priceUtils";
 import { Link } from "react-router";
 import styles from "./CartItem.module.scss";
 import { toast } from "react-toastify";
+import { useState, useEffect } from "react";
 
 export default function CartItem({ item }) {
     const { updateQuantity, removeFromCart } = useCart();
+    const [inputValue, setInputValue] = useState(String(item.quantity));
+
+    useEffect(function syncInput() {
+        setInputValue(String(item.quantity));
+    }, [item.quantity]);
 
     function handleQuantityChange(e) {
-        const newQuantity = parseInt(e.target.value, 10);
+        setInputValue(e.target.value);
+    }
+
+    function commitQuantity() {
+        const newQuantity = parseInt(inputValue, 10);
         if (!isNaN(newQuantity) && newQuantity > 0) {
-            updateQuantity(item.productId, item.size, item.type, newQuantity).catch(function (
-                error
-            ) {
-                toast.error(error.message || "Erro ao atualizar quantidade");
-            });
+            if (newQuantity !== item.quantity) {
+                updateQuantity(item.productId, item.size, item.type, newQuantity).catch(function (error) {
+                    toast.error(error.message || "Erro ao atualizar quantidade");
+                    setInputValue(String(item.quantity));
+                });
+            }
+        } else {
+            setInputValue(String(item.quantity));
+        }
+    }
+
+    function handleKeyDown(e) {
+        if (e.key === "Enter") {
+            e.target.blur();
         }
     }
 
@@ -53,8 +72,10 @@ export default function CartItem({ item }) {
                     type="number"
                     id={`quantity-${item.productId}-${item.size}`}
                     min="1"
-                    value={item.quantity}
+                    value={inputValue}
                     onChange={handleQuantityChange}
+                    onBlur={commitQuantity}
+                    onKeyDown={handleKeyDown}
                     className={styles.quantityInput}
                 />
             </div>

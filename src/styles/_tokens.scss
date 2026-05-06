@@ -1,84 +1,142 @@
 // ========================================
-// DESIGN TOKENS (paleta única)
+// DESIGN TOKENS
 // ========================================
-// Design system unificado com paleta premium e moderna
-// Adequado para e-commerce sensorial com estética clean
+// Sistema de cor único: SCSS variables são a fonte de verdade.
+// O bloco :root abaixo é apenas uma camada de exportação — não define
+// nenhum valor por conta própria, apenas expõe as variáveis SCSS como
+// CSS custom properties para os módulos que preferem var(--...).
 //
 // Convenção:
-// - Espaçamento: preferir tokens de _variables ($spacing-*, $padding-*, $gap-*) — base 4px.
-// - Cores em módulos: usar tokens semânticos abaixo; evitar hex soltos.
-// - Interativos: incluir &:focus-visible (ex.: @include focus-visible-ring em _mixins.scss).
+// - Espaçamento: preferir tokens de _variables ($spacing-*, $padding-*, $gap-*).
+// - Cores em módulos SCSS: usar $variáveis diretamente.
+// - Cores em JSX inline ou arquivos não-SCSS: usar var(--color-*).
+// - Interativos: incluir &:focus-visible (@include focus-visible-ring em _mixins.scss).
 
-// Re-exporta variáveis globais (spacing, transições, etc.)
 @forward "variables";
 
+// ========================================
+// PALETA STOREFRONT — quente/premium
+// ========================================
+// Usada por: ProductCard, BannerTop, Dashboard, DashboardLayout, Preview, ProductDetails
+
+$color-bg:                  #f7f2eb;
+$color-card:                #fffdf9;
+$color-title:               #2a221d;
+$color-text:                #4b3f35;
+$color-muted:               #74685d;
+$color-border-soft:         #e4d8cb;
+
+$color-banner-bg:           #f5ece1;
+$color-banner-text:         #5f4d3e;
+$color-photo-bg:            #f4ebdf;
+$color-photo-border:        #cdb9a4;
+$color-placeholder-border:  #bca68f;
+$color-placeholder-text:    #5a4638;
+
+$color-icon-border:         #c8b8a5;
+$color-ingredient-accent:   #bea78f;
+$color-tag-border:          #d9c9b8;
+$color-tag-text:            #6a5748;
+$color-tag-bg:              #f8f2ea;
+$color-badge-bg:            #f5e8da;
+$color-badge-text:          #674f3c;
+
+$color-primary-warm:        #7f6348;
+$color-primary-warm-contrast: #ffffff;
+$color-secondary-bg:        #f4ece2;
+$color-secondary-text:      #5f4c3c;
+
+$color-input-border-warm:   #cab9a4;
+$color-input-bg-warm:       #fffefb;
+$color-focus-warm:          #9d8165;
+$color-focus-warm-strong:   #8f7154;
+$color-success-warm:        #2e6f4e;
+$color-error-warm:          #8f3e3e;
+
+$color-sticky-border:       #d7c6b3;
+
+$shadow-soft-warm: 0 14px 38px rgba(103, 77, 51, 0.12);
+
+$gradient-placeholder-warm: linear-gradient(180deg, #fdf8f2 0%, #f5e9db 100%);
+$gradient-sensory-overlay: linear-gradient(
+  rgba(247, 242, 235, 0.93),
+  rgba(247, 242, 235, 0.93)
+);
+$gradient-sticky-cta: linear-gradient(
+  to top,
+  rgba(245, 239, 231, 0.98),
+  rgba(245, 239, 231, 0.82)
+);
+
+// ========================================
+// EXPORTAÇÃO CSS CUSTOM PROPERTIES
+// ========================================
+// Derivado das SCSS variables acima — não editar valores aqui.
+// Para mudar uma cor, edite a $variável correspondente.
+
 :root {
-  /* Brand / Neutros */
-  --color-bg: #f7f2eb;
-  --color-card: #fffdf9;
-  --color-title: #2a221d;
-  --color-text: #4b3f35;
-  --color-muted: #74685d;
-  --color-border-soft: #e4d8cb;
+  --color-bg:                  #{$color-bg};
+  --color-card:                #{$color-card};
+  --color-title:               #{$color-title};
+  --color-text:                #{$color-text};
+  --color-muted:               #{$color-muted};
+  --color-border-soft:         #{$color-border-soft};
 
-  /* Superfícies auxiliares */
-  --color-banner-bg: #f5ece1;
-  --color-banner-text: #5f4d3e;
-  --color-photo-bg: #f4ebdf;
-  --color-photo-border: #cdb9a4;
-  --color-placeholder-border: #bca68f;
-  --color-placeholder-text: #5a4638;
+  --color-banner-bg:           #{$color-banner-bg};
+  --color-banner-text:         #{$color-banner-text};
+  --color-photo-bg:            #{$color-photo-bg};
+  --color-photo-border:        #{$color-photo-border};
+  --color-placeholder-border:  #{$color-placeholder-border};
+  --color-placeholder-text:    #{$color-placeholder-text};
 
-  /* Accent / UI */
-  --color-icon-border: #c8b8a5;
-  --color-ingredient-accent: #bea78f;
-  --color-tag-border: #d9c9b8;
-  --color-tag-text: #6a5748;
-  --color-tag-bg: #f8f2ea;
-  --color-badge-bg: #f5e8da;
-  --color-badge-text: #674f3c;
+  --color-icon-border:         #{$color-icon-border};
+  --color-ingredient-accent:   #{$color-ingredient-accent};
+  --color-tag-border:          #{$color-tag-border};
+  --color-tag-text:            #{$color-tag-text};
+  --color-tag-bg:              #{$color-tag-bg};
+  --color-badge-bg:            #{$color-badge-bg};
+  --color-badge-text:          #{$color-badge-text};
 
-  /* Botões */
-  --color-primary: #7f6348;
-  --color-primary-contrast: #ffffff;
-  --color-secondary-bg: #f4ece2;
-  --color-secondary-text: #5f4c3c;
+  --color-primary:             #{$color-primary-warm};
+  --color-primary-contrast:    #{$color-primary-warm-contrast};
+  --color-secondary-bg:        #{$color-secondary-bg};
+  --color-secondary-text:      #{$color-secondary-text};
 
-  /* Form / Estados */
-  --color-input-border: #cab9a4;
-  --color-input-bg: #fffefb;
-  --color-focus: #9d8165;
-  --color-focus-strong: #8f7154;
-  --color-success: #2e6f4e;
-  --color-error: #8f3e3e;
+  --color-input-border:        #{$color-input-border-warm};
+  --color-input-bg:            #{$color-input-bg-warm};
+  --color-focus:               #{$color-focus-warm};
+  --color-focus-strong:        #{$color-focus-warm-strong};
+  --color-success:             #{$color-success-warm};
+  --color-error:               #{$color-error-warm};
 
-  /* Sticky / overlays */
-  --color-sticky-border: #d7c6b3;
-  --gradient-placeholder: linear-gradient(180deg, #fdf8f2 0%, #f5e9db 100%);
-  --gradient-sensory-overlay: linear-gradient(
-    rgba(247, 242, 235, 0.93),
-    rgba(247, 242, 235, 0.93)
-  );
-  --gradient-sticky-cta: linear-gradient(
-    to top,
-    rgba(245, 239, 231, 0.98),
-    rgba(245, 239, 231, 0.82)
-  );
+  --color-sticky-border:       #{$color-sticky-border};
+  --shadow-soft:               #{$shadow-soft-warm};
 
-  /* Tipografia */
+  --gradient-placeholder:      #{$gradient-placeholder-warm};
+  --gradient-sensory-overlay:  #{$gradient-sensory-overlay};
+  --gradient-sticky-cta:       #{$gradient-sticky-cta};
+
+  /* Tipografia (storefront) */
   --font-base: "Inter", "Avenir Next", "Segoe UI", sans-serif;
+  --text-xs: 0.76rem;
+  --text-sm: 0.82rem;
+  --text-md: 0.95rem;
+  --text-base: 1rem;
+  --text-lg: 1.1rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 1.85rem;
+  --lh-tight: 1.2;
+  --lh-title: 1.25;
+  --lh-body: 1.55;
 
-  /* Sombra */
-  --shadow-soft: 0 14px 38px rgba(103, 77, 51, 0.12);
-
-  /* Radius */
+  /* Radius (storefront) */
   --radius-sm: 10px;
   --radius-md: 12px;
   --radius-lg: 14px;
   --radius-xl: 16px;
   --radius-pill: 999px;
 
-  /* Espaçamento (8pt base) */
+  /* Espaçamento (storefront) */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -89,36 +147,15 @@
   --space-8: 36px;
   --space-9: 48px;
 
-  /* Tipografia escala */
-  --text-xs: 0.76rem;
-  --text-sm: 0.82rem;
-  --text-md: 0.95rem;
-  --text-base: 1rem;
-  --text-lg: 1.1rem;
-  --text-xl: 1.5rem;
-  --text-2xl: 1.85rem;
-
-  /* Line-height */
-  --lh-tight: 1.2;
-  --lh-title: 1.25;
-  --lh-body: 1.55;
-
-  /* Motion */
   --transition-fast: 0.2s ease;
 }
 
 // ========================================
-// COLORS
+// PALETA COMPONENTES — neutra/admin
 // ========================================
+// Usada por: DashboardOrders, Login, Checkout, e maioria dos módulos SCSS.
 
-// Primary Colors
-$primary-color: #FFFFFF;
-$secondary-color: #F8F8F2;
-$ternary-color: #F4E4E4;
-$quaternary-color: #B8A07E;
-$quinary-color: #4A4A4A;
-
-// Background Colors
+// ---- Backgrounds ----
 $background-color: #ffffff;
 $background-secondary: #F8F8F2;
 $background-tertiary: #FAF7F4;
@@ -130,10 +167,9 @@ $background-editing: #e6f7ff;
 $background-modal: rgba(255, 255, 255, 0.8);
 $background-overlay: rgba(0, 0, 0, 0.05);
 
-// Mídia / placeholders (vídeo, letterbox)
 $surface-video: #000000;
 
-// Border Colors
+// ---- Borders ----
 $border-color: #ddd;
 $border-color-secondary: #b8b8b8;
 $border-color-accent: #b8a07e;
@@ -143,20 +179,17 @@ $border-color-error: #dc3545;
 $border-color-success: #10b981;
 $border-color-info: #3b82f6;
 
-// Text Colors
+// ---- Text ----
 $text-primary: #1A1A1A;
 $text-secondary: #ffffff;
 $text-tertiary: #8F8F8F;
 $text-quaternary: #4a4a4a;
 $text-quinary: #666;
-$text-accent: #1a1a1a;
-$text-accent-secondary: #2c2c2c;
-$text-accent-tertiary: #2d2d2d;
 $text-error: #721c24;
 $text-success: #1e40af;
 $text-info: #4A6FA5;
 
-// Button Colors
+// ---- Buttons ----
 $button-primary-bg: #141414;
 $button-primary-hover: #333333;
 $button-primary-text: #ffffff;
@@ -172,7 +205,7 @@ $button-cancel: #6c757d;
 $button-cancel-hover: #5a6268;
 $button-disabled: #cccccc;
 
-// Accent Colors
+// ---- Accents ----
 $accent-gold: #b8a07e;
 $accent-gold-hover: #8a6d5e;
 $accent-gold-secondary: #d4c4b7;
@@ -180,20 +213,13 @@ $accent-blue: #548bf4;
 $accent-whatsapp: #25D366;
 $accent-whatsapp-hover: #20BA5A;
 
-// Brand accent (login, footer, CTAs secundários — gradiente rosa/roxo)
+// Brand accent — login, footer, CTAs com gradiente rosa/roxo
 $accent-brand-pink: #ff6b9d;
 $accent-brand-purple: #c471ed;
 $accent-brand-purple-muted: rgba(196, 113, 237, 0.15);
 $accent-brand-purple-tint: rgba(196, 113, 237, 0.05);
 
-// Footer / superfícies escuras
-$footer-heading: #2c3e50;
-$footer-text-muted: #6c757d;
-$footer-bottom-start: #2c3e50;
-$footer-bottom-end: #34495e;
-$footer-bottom-text: #ecf0f1;
-
-// Alertas (fundo claro + texto escuro — melhor contraste que vermelho sólido)
+// ---- Status ----
 $status-error-surface: #fef2f2;
 $status-error-border: #fecaca;
 $status-error-text: #991b1b;
@@ -201,91 +227,28 @@ $status-success-surface: #f0fdf4;
 $status-success-border: #bbf7d0;
 $status-success-text: #166534;
 
-// Foco acessível (outline)
-$focus-ring-width: 2px;
-$focus-ring-offset: 3px;
-$focus-ring-color: $accent-gold-secondary;
-$focus-ring-color-brand: $accent-brand-purple;
-
-// Status Colors
 $status-success: #10b981;
 $status-error: #ef4444;
 $status-info: #5B7DB1;
 $status-warning: #f59e0b;
 
-// Shadow Colors
+// ---- Focus ----
+$focus-ring-width: 2px;
+$focus-ring-offset: 3px;
+$focus-ring-color: $accent-gold-secondary;
+$focus-ring-color-brand: $accent-brand-purple;
+
+// ---- Shadows ----
 $shadow-color: rgba(0, 0, 0, 0.6);
 $shadow-color-secondary: rgba(0, 0, 0, 0.1);
 $shadow-color-tertiary: rgba(0, 0, 0, 0.05);
-$shadow-color-quaternary: rgba(0, 0, 0, 0.08);
-$shadow-color-quinary: rgba(0, 0, 0, 0.15);
 $shadow-color-accent: rgba(184, 160, 126, 0.2);
 $shadow-color-accent-secondary: rgba(184, 160, 126, 0.3);
 $shadow-color-success: rgba(16, 185, 129, 0.3);
 $shadow-color-error: rgba(239, 68, 68, 0.3);
 $shadow-color-whatsapp: rgba(37, 211, 102, 0.3);
 
-// Gradient Colors
-$gradient-gold-start: #b8a07e;
-$gradient-gold-end: #d4c4b7;
-$gradient-overlay: linear-gradient(to right, #b8a07e, #d4c4b7);
-$gradient-brand-accent: linear-gradient(135deg, $accent-brand-pink 0%, $accent-brand-purple 100%);
-$gradient-brand-accent-horizontal: linear-gradient(90deg, $accent-brand-pink 0%, $accent-brand-purple 100%);
-$gradient-tear: linear-gradient(to bottom, rgba(0, 0, 255, 0.5), rgba(0, 0, 255, 0.2));
-
-// ========================================
-// TYPOGRAPHY
-// ========================================
-
-// Font Families
-$font-primary: "Montserrat", sans-serif;
-$font-secondary: "Futura PT Book", sans-serif;
-$font-tertiary: "Futura PT Heavy", sans-serif;
-$font-clash-medium: "ClashGrotesk-Medium", sans-serif;
-$font-clash-semibold: "ClashGrotesk-Semibold", sans-serif;
-
-// Font Sizes
-$font-size-xs: 0.7rem;      // 11.2px
-$font-size-sm: 0.75rem;     // 12px
-$font-size-base: 0.8rem;   // 12.8px
-$font-size-md: 0.85rem;    // 13.6px
-$font-size-lg: 0.9rem;     // 14.4px
-$font-size-xl: 0.95rem;    // 15.2px
-$font-size-2xl: 1rem;      // 16px
-$font-size-3xl: 1.1rem;    // 17.6px
-$font-size-4xl: 1.2rem;   // 19.2px
-$font-size-5xl: 1.4rem;   // 22.4px
-$font-size-6xl: 1.5rem;   // 24px
-$font-size-7xl: 1.8rem;   // 28.8px
-$font-size-8xl: 2rem;    // 32px
-$font-size-9xl: 2.5rem;  // 40px
-$font-size-10xl: 3rem;   // 48px
-
-// Font Weights
-$font-weight-normal: 400;
-$font-weight-medium: 500;
-$font-weight-semibold: 600;
-$font-weight-bold: 700;
-$font-weight-extrabold: 800;
-
-// Letter Spacing
-$letter-spacing-tight: -0.5%;
-$letter-spacing-normal: 0;
-$letter-spacing-wide: 0.5px;
-$letter-spacing-wider: 1%;
-$letter-spacing-widest: 0.15em;
-
-// Line Heights
-$line-height-tight: 1.2;
-$line-height-normal: 1.5;
-$line-height-relaxed: 1.6;
-
-// ========================================
-// SHADOWS
-// ========================================
-
 $shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
-// Elevação média (antes0.6 opacidade era pesado demais para cards/dropdowns)
 $shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
 $shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.08);
 $shadow-xl: 0 10px 30px rgba(0, 0, 0, 0.04);
@@ -296,6 +259,57 @@ $shadow-success: 0 4px 12px rgba(16, 185, 129, 0.3);
 $shadow-error: 0 4px 12px rgba(239, 68, 68, 0.3);
 $shadow-whatsapp: 0 2px 6px rgba(37, 211, 102, 0.3);
 $shadow-whatsapp-hover: 0 4px 10px rgba(37, 211, 102, 0.4);
+
+// ---- Gradients ----
+$gradient-gold-start: #b8a07e;
+$gradient-gold-end: #d4c4b7;
+$gradient-overlay: linear-gradient(to right, #b8a07e, #d4c4b7);
+$gradient-brand-accent: linear-gradient(135deg, $accent-brand-pink 0%, $accent-brand-purple 100%);
+$gradient-brand-accent-horizontal: linear-gradient(90deg, $accent-brand-pink 0%, $accent-brand-purple 100%);
+$gradient-tear: linear-gradient(to bottom, rgba(0, 0, 255, 0.5), rgba(0, 0, 255, 0.2));
+
+// ========================================
+// TIPOGRAFIA
+// ========================================
+// @font-face e aliases em _typography.scss.
+
+$font-primary: "Montserrat", sans-serif;
+$font-secondary: "Futura PT Book", sans-serif;
+$font-tertiary: "Futura PT Heavy", sans-serif;
+$font-clash-medium: "ClashGrotesk-Medium", sans-serif;
+$font-clash-semibold: "ClashGrotesk-Semibold", sans-serif;
+
+$font-size-xs: 0.7rem;
+$font-size-sm: 0.75rem;
+$font-size-base: 0.8rem;
+$font-size-md: 0.85rem;
+$font-size-lg: 0.9rem;
+$font-size-xl: 0.95rem;
+$font-size-2xl: 1rem;
+$font-size-3xl: 1.1rem;
+$font-size-4xl: 1.2rem;
+$font-size-5xl: 1.4rem;
+$font-size-6xl: 1.5rem;
+$font-size-7xl: 1.8rem;
+$font-size-8xl: 2rem;
+$font-size-9xl: 2.5rem;
+$font-size-10xl: 3rem;
+
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+$font-weight-extrabold: 800;
+
+$letter-spacing-tight: -0.02em;
+$letter-spacing-normal: 0;
+$letter-spacing-wide: 0.5px;
+$letter-spacing-wider: 0.01em;
+$letter-spacing-widest: 0.15em;
+
+$line-height-tight: 1.2;
+$line-height-normal: 1.5;
+$line-height-relaxed: 1.6;
 
 // ========================================
 // OPACITY

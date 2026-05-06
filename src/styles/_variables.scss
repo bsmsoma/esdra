@@ -89,8 +89,6 @@ $border-width-base: 2px;
 $border-width-thick: 4px;
 
 // Transform Values
-$transform-scale-hover: 1.1;
-$transform-scale-active: 1.05;
-$transform-scale-disabled: 0.95;
+$transform-scale-hover: 1.02;   // era 1.1 — 10% é muito agressivo para UI; 2% é sutil e correto
 $transform-translate-y: -2px;
 $transform-translate-y-hover: -5px;
