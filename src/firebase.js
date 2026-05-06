@@ -18,6 +18,7 @@ import {
     getCountFromServer,
     or,
     increment,
+    runTransaction,
 } from "firebase/firestore";
 import {
     getAuth,
@@ -328,44 +329,41 @@ export async function setInventorySize(productId, size, quantity) {
     }
 }
 
-// Reservar estoque (para carrinho)
+// Reservar estoque (para carrinho) — atômico via transação
 export async function reserveStock(productId, size, quantity) {
     const sizeRef = getInventorySizeRef(productId, size);
-    const snap = await getDoc(sizeRef);
-    
-    if (!snap.exists()) {
-        throw new Error(`Estoque não encontrado para produto ${productId}, tamanho ${size}`);
-    }
-    
-    const data = snap.data();
-    const available = data.quantity - data.reserved;
-    
-    if (available < quantity) {
-        throw new Error(`Estoque insuficiente. Disponível: ${available}, Solicitado: ${quantity}`);
-    }
-    
-    await updateDoc(sizeRef, {
-        reserved: increment(quantity),
-        lastUpdated: serverTimestamp(),
+    await runTransaction(db, async (tx) => {
+        const snap = await tx.get(sizeRef);
+        if (!snap.exists()) {
+            throw new Error(`Estoque não encontrado para produto ${productId}, tamanho ${size}`);
+        }
+        const data = snap.data();
+        const available = data.quantity - data.reserved;
+        if (available < quantity) {
+            throw new Error(`Estoque insuficiente. Disponível: ${available}, Solicitado: ${quantity}`);
+        }
+        tx.update(sizeRef, {
+            reserved: increment(quantity),
+            lastUpdated: serverTimestamp(),
+        });
     });
 }
 
-// Liberar reserva (remover do carrinho)
+// Liberar reserva (remover do carrinho) — atômico via transação
 export async function releaseReservation(productId, size, quantity) {
     const sizeRef = getInventorySizeRef(productId, size);
-    const snap = await getDoc(sizeRef);
-    
-    if (!snap.exists()) {
-        console.warn(`Estoque não encontrado para produto ${productId}, tamanho ${size}`);
-        return;
-    }
-    
-    const data = snap.data();
-    const newReserved = Math.max(0, data.reserved - quantity);
-    
-    await updateDoc(sizeRef, {
-        reserved: newReserved,
-        lastUpdated: serverTimestamp(),
+    await runTransaction(db, async (tx) => {
+        const snap = await tx.get(sizeRef);
+        if (!snap.exists()) {
+            console.warn(`Estoque não encontrado para produto ${productId}, tamanho ${size}`);
+            return;
+        }
+        const data = snap.data();
+        const newReserved = Math.max(0, (data.reserved || 0) - quantity);
+        tx.update(sizeRef, {
+            reserved: newReserved,
+            lastUpdated: serverTimestamp(),
+        });
     });
 }
 

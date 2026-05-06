@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import {onCall, onRequest, HttpsError} from "firebase-functions/v2/https";
 import {onDocumentCreated} from "firebase-functions/v2/firestore";
+import {onSchedule} from "firebase-functions/v2/scheduler";
 import {logger} from "firebase-functions/v2";
 import {initializeApp} from "firebase-admin/app";
 import {getFirestore, FieldValue} from "firebase-admin/firestore";
@@ -313,7 +314,10 @@ async function resolveOrderItemsTx(transaction, lojaId, cartItems) {
     const quantity = Number(inventoryData.quantity || 0);
     const sold = Number(inventoryData.sold || 0);
     const reserved = Number(inventoryData.reserved || 0);
-    const available = quantity - reserved;
+    // Subtract the user's own reservation (already in `reserved`) to avoid
+    // blocking legitimate checkouts when other carts also have reservations.
+    const reservedByOthers = Math.max(0, reserved - item.quantity);
+    const available = quantity - reservedByOthers;
 
     if (available < item.quantity) {
       throw new HttpsError("failed-precondition", `Estoque insuficiente para ${productData.name || item.productId}.`);
@@ -1267,4 +1271,82 @@ export const processEmailQueue = onDocumentCreated(
       });
     }
   },
+);
+
+// Libera reservas de carrinhos expirados (TTL = expiresAt definido em 7 dias pelo client)
+export const cleanupExpiredCarts = onSchedule(
+  {
+    schedule: "every 6 hours",
+    timeZone: "America/Sao_Paulo",
+    region: "southamerica-east1",
+    memory: "256MiB",
+    timeoutSeconds: 300,
+  },
+  async () => {
+    const lojaId = globalThis.process?.env?.DEFAULT_STORE_ID || "esdra-aromas";
+    const now = getFirestore().Timestamp ? getFirestore().Timestamp.now() : FieldValue.serverTimestamp();
+    const cartsRef = db.collection(`lojas/${lojaId}/carts`);
+
+    let expiredCarts;
+    try {
+      expiredCarts = await cartsRef.where("expiresAt", "<", new Date()).get();
+    } catch (err) {
+      logger.error("cleanupExpiredCarts: erro ao buscar carrinhos expirados", {err: err.message});
+      return;
+    }
+
+    if (expiredCarts.empty) {
+      logger.info("cleanupExpiredCarts: nenhum carrinho expirado encontrado");
+      return;
+    }
+
+    let released = 0;
+    let errors = 0;
+
+    for (const cartDoc of expiredCarts.docs) {
+      const items = cartDoc.data().items || [];
+      if (items.length === 0) {
+        await cartDoc.ref.set({updatedAt: FieldValue.serverTimestamp()}, {merge: true});
+        continue;
+      }
+
+      try {
+        await db.runTransaction(async (tx) => {
+          const invRefs = items.map((item) =>
+            db.doc(`lojas/${lojaId}/products/${item.productId}/inventory/${item.size}`)
+          );
+          const invSnaps = await Promise.all(invRefs.map((ref) => tx.get(ref)));
+
+          invSnaps.forEach((snap, i) => {
+            if (!snap.exists) return;
+            const data = snap.data();
+            const current = Number(data.reserved || 0);
+            const toRelease = Number(items[i].quantity || 0);
+            tx.update(invRefs[i], {
+              reserved: Math.max(0, current - toRelease),
+              lastUpdated: FieldValue.serverTimestamp(),
+            });
+          });
+
+          tx.set(cartDoc.ref, {
+            items: [],
+            updatedAt: FieldValue.serverTimestamp(),
+          }, {merge: true});
+        });
+        released++;
+      } catch (err) {
+        errors++;
+        logger.error("cleanupExpiredCarts: erro ao liberar carrinho", {
+          cartId: cartDoc.id,
+          err: err.message,
+        });
+      }
+    }
+
+    logger.info("cleanupExpiredCarts: concluído", {
+      total: expiredCarts.size,
+      released,
+      errors,
+    });
+  }
 );

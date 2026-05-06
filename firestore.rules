@@ -25,6 +25,12 @@ service cloud.firestore {
       match /inventory/{size} {
         allow read: if true;
         allow write: if isAdmin();
+        // Usuários autenticados podem atualizar apenas o campo `reserved` (reserva de carrinho).
+        // quantity, sold e outros campos continuam exclusivos do admin/backend.
+        allow update: if isAuthenticated()
+          && request.resource.data.diff(resource.data)
+              .affectedKeys()
+              .hasOnly(['reserved', 'lastUpdated']);
       }
     }
     
