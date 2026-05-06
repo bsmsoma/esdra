@@ -94,6 +94,26 @@
     cursor: pointer;
 }
 
+.searchInput {
+    padding: vars.$padding-sm vars.$padding-lg;
+    border: vars.$border-width-thin solid $border-color;
+    border-radius: vars.$radius-xs;
+    font-family: $defaultFont;
+    font-size: $font-size-2xl;
+    color: $text-primary;
+    background: $background-color;
+    min-width: 240px;
+
+    &::placeholder {
+        color: $text-quinary;
+    }
+
+    &:focus {
+        outline: none;
+        border-color: $border-color-active;
+    }
+}
+
 .filterCount {
     font-family: $defaultFont;
     font-size: $font-size-lg;

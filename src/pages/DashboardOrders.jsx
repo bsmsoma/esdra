@@ -2,6 +2,7 @@ import { Fragment, useEffect, useMemo, useState, useCallback } from "react";
 import {
     getAllOrdersPaginated,
     updateOrderStatusByAdmin,
+    normalizeString,
 } from "../firebase";
 import { formatPrice } from "../utils/priceUtils";
 import styles from "./DashboardOrders.module.scss";
@@ -76,6 +77,7 @@ export default function DashboardOrders() {
     const [lastDoc, setLastDoc] = useState(null);
     const [hasMore, setHasMore] = useState(false);
     const [statusFilter, setStatusFilter] = useState("");
+    const [searchQuery, setSearchQuery] = useState("");
     const [savingOrderId, setSavingOrderId] = useState("");
     const [feedbackMessage, setFeedbackMessage] = useState("");
     const [feedbackType, setFeedbackType] = useState("success");
@@ -109,9 +111,17 @@ export default function DashboardOrders() {
 
     const filteredRows = useMemo(
         function applyFilter() {
-            const filtered = statusFilter
-                ? orders.filter(function (o) { return o.status === statusFilter; })
-                : orders;
+            const query = normalizeString(searchQuery);
+            const filtered = orders.filter(function (o) {
+                if (statusFilter && o.status !== statusFilter) return false;
+                if (query) {
+                    const haystack = normalizeString(
+                        [o.orderNumber, o.customerName, o.customerEmail].filter(Boolean).join(" ")
+                    );
+                    if (!haystack.includes(query)) return false;
+                }
+                return true;
+            });
             return filtered.map(function (order) {
                 const draft = orderDrafts[order.id] || {};
                 return {
@@ -122,7 +132,7 @@ export default function DashboardOrders() {
                 };
             });
         },
-        [orderDrafts, orders, statusFilter]
+        [orderDrafts, orders, statusFilter, searchQuery]
     );
 
     async function handleSaveStatus(order) {
@@ -247,6 +257,14 @@ export default function DashboardOrders() {
                         );
                     })}
                 </select>
+                <input
+                    type="search"
+                    className={styles.searchInput}
+                    placeholder="Buscar por nº, cliente ou email…"
+                    value={searchQuery}
+                    onChange={function (e) { setSearchQuery(e.target.value); }}
+                    aria-label="Buscar pedidos"
+                />
                 <span className={styles.filterCount}>
                     {filteredRows.length} pedido{filteredRows.length !== 1 ? "s" : ""}
                     {statusFilter ? ` com status "${getStatusLabel(statusFilter)}"` : " carregados"}
