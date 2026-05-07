@@ -25,6 +25,38 @@
     .productCard:hover .productCardMedia img {
         transform: scale(1.05);
     }
+
+    .productCardDescription {
+        overflow-y: scroll;
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+
+        &:hover {
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--color-muted) transparent;
+            mask-image: none;
+            -webkit-mask-image: none;
+            cursor: default;
+
+            &::-webkit-scrollbar {
+                display: block;
+                width: 4px;
+            }
+
+            &::-webkit-scrollbar-thumb {
+                background: rgba(0, 0, 0, 0.18);
+                border-radius: 2px;
+            }
+
+            &::-webkit-scrollbar-track {
+                background: transparent;
+            }
+        }
+    }
 }
 
 .productCardMedia {
@@ -70,6 +102,10 @@
     color: var(--color-muted);
     font-size: $font-size-lg;
     line-height: $line-height-relaxed;
+    height: 4.5em;
+    overflow: hidden;
+    mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
 }
 
 .productCardFooter {
