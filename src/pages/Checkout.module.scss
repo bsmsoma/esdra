@@ -180,32 +180,31 @@
 
 .mpHeader {
     display: flex;
-    align-items: center;
-    gap: vars.$gap-xl;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: vars.$gap-md;
     margin-bottom: vars.$margin-xl;
 }
 
-.mpIcon {
-    flex-shrink: 0;
-    border-radius: vars.$radius-sm;
+.mpLogoHorizontal {
+    display: block;
+
+    @include responsiveMobile {
+        display: none;
+    }
 }
 
-.mpHeaderText {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
+.mpLogoVertical {
+    display: none;
 
-    strong {
-        font-size: $font-size-3xl;
-        font-weight: $font-weight-semibold;
-        color: $text-primary;
-        font-family: $defaultFont;
+    @include responsiveMobile {
+        display: block;
     }
+}
 
-    span {
-        font-size: $font-size-lg;
-        color: $text-quinary;
-    }
+.mpSecureText {
+    font-size: $font-size-lg;
+    color: $text-quinary;
 }
 
 .mpDescription {

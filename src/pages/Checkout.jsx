@@ -5,7 +5,7 @@ import { getCustomerByUid, createOrderSecure } from "../firebase";
 import { useEffect, useMemo, useState } from "react";
 import { formatPrice } from "../utils/priceUtils";
 import { mapItemsForAnalytics, trackEvent } from "../utils/analytics";
-import MercadoPagoIcon from "../assets/icons/MercadoPagoIcon";
+import { MPHandshakeHorizontal, MPHandshakeVertical } from "../assets/icons";
 import styles from "./Checkout.module.scss";
 
 function getAddressDisplayTitle(address) {
@@ -331,11 +331,9 @@ export default function Checkout() {
                             <h2 className={styles.sectionTitle}>Pagamento</h2>
                             <div className={styles.checkoutProNotice}>
                                 <div className={styles.mpHeader}>
-                                    <MercadoPagoIcon size={36} className={styles.mpIcon} />
-                                    <div className={styles.mpHeaderText}>
-                                        <strong>Mercado Pago</strong>
-                                        <span>Ambiente seguro e criptografado</span>
-                                    </div>
+                                    <MPHandshakeHorizontal width={260} className={styles.mpLogoHorizontal} />
+                                    <MPHandshakeVertical size={140} className={styles.mpLogoVertical} />
+                                    <span className={styles.mpSecureText}>Ambiente seguro e criptografado</span>
                                 </div>
                                 <p className={styles.mpDescription}>
                                     Você será redirecionado para escolher sua forma de pagamento.

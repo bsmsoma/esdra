@@ -736,6 +736,12 @@ export async function commitMedia({
     return response.data;
 }
 
+export async function createProduct({ productData, storeId = getStoreId() }) {
+    const callable = httpsCallable(functions, "createProduct");
+    const response = await callable({ productData, storeId });
+    return response.data; // { productId, code }
+}
+
 export async function deleteMediaSecure({
     productId,
     mediaUrls = [],

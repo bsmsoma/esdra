@@ -8,21 +8,15 @@ import {
     useNavigate,
 } from "react-router";
 import {
-    addDoc,
     updateDoc,
     deleteDoc,
-    serverTimestamp,
     normalizeString,
     createSearchableArray,
-    formatImageFileName,
-    formatVideoFileName,
-    getProductsCollection,
-    query,
-    orderBy,
-    limit,
-    getDocs,
+    getProductDocRef,
+    getStoreId,
     setInventorySize,
     createUploadSession,
+    createProduct,
     commitMedia,
     deleteMediaSecure,
     uploadFileWithSignedUrl,
@@ -35,25 +29,6 @@ import { toast } from "react-toastify";
 import { compressImages } from "../utils/imageCompression";
 import { invalidateCache } from "../utils/cache";
 import { VideoIcon } from "../assets/icons";
-// Todo: add a toast when a action is performed
-// add a toast when a action is performed
-// - Refactor the code to use useActionData and useLoaderData. DONE
-
-async function getNextProductCode() {
-    const latestProductQuery = query(
-        getProductsCollection(),
-        orderBy("code", "desc"),
-        limit(1)
-    );
-    const latestProductSnapshot = await getDocs(latestProductQuery);
-    if (latestProductSnapshot.empty) {
-        return 1;
-    }
-
-    const latestCode = Number(latestProductSnapshot.docs[0]?.data()?.code);
-    return Number.isFinite(latestCode) ? latestCode + 1 : 1;
-}
-
 export async function productFormAddAction({ request }) {
     const formData = await request.formData();
     //variables that i need to normalize to handle search
@@ -64,8 +39,6 @@ export async function productFormAddAction({ request }) {
         : "";
 
     try {
-        const generatedProductCode = await getNextProductCode();
-
         const availableSizes = ["unico"];
         const sellValue = parsePrice(formData.get("sellValue"));
 
@@ -76,22 +49,15 @@ export async function productFormAddAction({ request }) {
             };
         }
 
-        const productData = {
+        const productDataPayload = {
             name: formData.get("name"),
-            code: generatedProductCode,
-            sku: `ESD-${generatedProductCode}`,
             category: formData.get("category"),
             availableSizes: availableSizes,
             productDetail: formData.get("productDetail"),
             color: "",
             collection: formData.get("collection") || "",
             coverIndex: 0,
-
-            //metadata
-            createdAt: serverTimestamp(),
             lastModified: "",
-
-            //search area
             searchableName: normalizeName,
             searchableCategory: normalizeCategory,
             searchableNameArray: createSearchableArray(normalizeName),
@@ -106,7 +72,7 @@ export async function productFormAddAction({ request }) {
 
         const filesToUpload = [];
 
-        images.forEach(function (image, index) {
+        images.forEach(function (image) {
             if (!image || image.size <= 0) {
                 return;
             }
@@ -116,12 +82,6 @@ export async function productFormAddAction({ request }) {
                 contentType: normalizeFileContentType(image.type, image.name),
                 size: image.size,
                 extension: image.name.split(".").pop().toLowerCase(),
-                displayName: formatImageFileName(
-                    generatedProductCode,
-                    formData.get("name"),
-                    image.name,
-                    index
-                ),
             });
         });
 
@@ -135,11 +95,6 @@ export async function productFormAddAction({ request }) {
                 ),
                 size: videoFile.size,
                 extension: videoFile.name.split(".").pop().toLowerCase(),
-                displayName: formatVideoFileName(
-                    generatedProductCode,
-                    formData.get("name"),
-                    videoFile.name
-                ),
             });
         }
 
@@ -154,12 +109,11 @@ export async function productFormAddAction({ request }) {
             };
         }
 
-        const productDocRef = await addDoc(getProductsCollection(), {
-            ...productData,
-            images: [],
-            video: null,
+        const { productId: actualProductId } = await createProduct({
+            productData: productDataPayload,
+            storeId: getStoreId(),
         });
-        const actualProductId = productDocRef.id;
+        const productDocRef = getProductDocRef(actualProductId);
         const uploadedObjects = [];
         let committedMediaUrls = [];
 
@@ -612,17 +566,6 @@ export default function ProductFormAdd() {
                         id="name"
                         required
                         aria-label="Nome do produto"
-                    />
-                </div>
-                <div className={styles.formgroup}>
-                    <label htmlFor="codePreview">Código do Produto:</label>
-                    <input
-                        type="text"
-                        id="codePreview"
-                        value="Gerado automaticamente"
-                        readOnly
-                        disabled
-                        aria-label="Código do produto"
                     />
                 </div>
                 <div className={styles.formgroup}>

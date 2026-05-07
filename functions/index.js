@@ -287,6 +287,17 @@ async function generateOrderNumberTx(transaction, lojaId) {
   return `ESD-${year}-${String(sequence).padStart(3, "0")}`;
 }
 
+async function generateProductCodeTx(transaction, lojaId) {
+  const counterRef = db.doc(`lojas/${lojaId}/meta/productCounter`);
+  const snap = await transaction.get(counterRef);
+  const nextCode = Number(snap.data()?.value ?? 0) + 1;
+  transaction.set(counterRef,
+      {value: nextCode, updatedAt: FieldValue.serverTimestamp()},
+      {merge: true},
+  );
+  return nextCode;
+}
+
 async function resolveOrderItemsTx(transaction, lojaId, cartItems) {
   const resolvedItems = [];
   const inventoryUpdates = [];
@@ -852,6 +863,41 @@ export const cancelOrderByCustomer = onCall(FUNCTION_CONFIG, async (request) => 
   });
 
   return {ok: true};
+});
+
+export const createProduct = onCall(FUNCTION_CONFIG, async (request) => {
+  requireAdmin(request);
+  const lojaId = getStoreId(request.data);
+  const productData = request.data?.productData;
+
+  if (!productData?.name || !productData?.category) {
+    throw new HttpsError("invalid-argument", "name e category são obrigatórios.");
+  }
+
+  const counterRef = db.doc(`lojas/${lojaId}/meta/productCounter`);
+  const counterSnap = await counterRef.get();
+  if (!counterSnap.exists) {
+    const maxSnap = await db.collection(`lojas/${lojaId}/products`)
+        .orderBy("code", "desc").limit(1).get();
+    const maxCode = maxSnap.empty ? 0 : Number(maxSnap.docs[0].data().code || 0);
+    await counterRef.set({value: maxCode, bootstrapped: true});
+  }
+
+  const result = await db.runTransaction(async (tx) => {
+    const code = await generateProductCodeTx(tx, lojaId);
+    const productRef = db.collection(`lojas/${lojaId}/products`).doc();
+    tx.set(productRef, {
+      ...productData,
+      code,
+      sku: `ESD-${code}`,
+      images: [],
+      video: null,
+      createdAt: FieldValue.serverTimestamp(),
+    });
+    return {productId: productRef.id, code};
+  });
+
+  return result;
 });
 
 function validateFilesMetadata(filesMeta) {

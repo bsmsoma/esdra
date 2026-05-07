@@ -723,17 +723,6 @@ function ProductFormEdit() {
                     />
                 </div>
                 <div className={styles.formgroup}>
-                    <label htmlFor="codePreview">Código do Produto:</label>
-                    <input
-                        type="text"
-                        id="codePreview"
-                        value={String(product.code || "Não definido")}
-                        readOnly
-                        disabled
-                        aria-label="Código do produto"
-                    />
-                </div>
-                <div className={styles.formgroup}>
                     <label htmlFor="category">Categoria:</label>
                     <select
                         name="category"

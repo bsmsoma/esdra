@@ -1,0 +1,16 @@
+[
+  {
+    "origin": [
+      "http://localhost:5173",
+      "http://localhost:4173",
+      "https://esdra-ba0ff.web.app",
+      "https://esdra-ba0ff.firebaseapp.com",
+      "https://esdraaromas.com.br",
+      "https://www.esdraaromas.com.br",
+      "https://esdra.netlify.app"
+    ],
+    "method": ["GET", "PUT", "HEAD", "OPTIONS"],
+    "maxAgeSeconds": 3600,
+    "responseHeader": ["Content-Type", "x-goog-resumable"]
+  }
+]
