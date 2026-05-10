@@ -930,25 +930,24 @@ export default function ProductDetails() {
                                 <div className={styles.addToCartWrapper}>
                                     <div className={styles.addToCartContainer}>
                                         {availableQuantity !== null &&
-                                            availableQuantity > 0 && (
-                                                <p
-                                                    className={
-                                                        styles.availability
-                                                    }
-                                                >
-                                                    {availableQuantity <= 3
-                                                        ? `Últimas ${availableQuantity} unidade(s)`
-                                                        : `${availableQuantity} disponível(is)`}
+                                            availableQuantity === 0 && (
+                                                <p className={styles.unavailable}>
+                                                    Indisponível
                                                 </p>
                                             )}
                                         {availableQuantity !== null &&
-                                            availableQuantity === 0 && (
+                                            availableQuantity > 0 &&
+                                            availableQuantity < 30 && (
                                                 <p
-                                                    className={
-                                                        styles.unavailable
-                                                    }
+                                                    className={`${styles.availability}${availableQuantity <= 5 ? ` ${styles.availabilityUrgent}` : ""}`}
                                                 >
-                                                    Indisponível
+                                                    {availableQuantity === 1
+                                                        ? "Última unidade disponível"
+                                                        : availableQuantity <= 3
+                                                        ? `Quase esgotado — restam apenas ${availableQuantity}`
+                                                        : availableQuantity <= 10
+                                                        ? `Poucas unidades — restam ${availableQuantity}`
+                                                        : "Estoque se esgotando"}
                                                 </p>
                                             )}
                                         {error && (
