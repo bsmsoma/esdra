@@ -852,6 +852,25 @@ export default function ProductDetails() {
                                             sizesDisplay.value
                                         )}
                                     </button>
+                                    {availableQuantity !== null &&
+                                        availableQuantity === 0 && (
+                                            <span className={styles.stockBadgeUnavailable}>
+                                                Indisponível
+                                            </span>
+                                        )}
+                                    {availableQuantity !== null &&
+                                        availableQuantity > 0 &&
+                                        availableQuantity < 30 && (
+                                            <span className={`${styles.stockBadge}${availableQuantity <= 5 ? ` ${styles.stockBadgeUrgent}` : ""}`}>
+                                                {availableQuantity === 1
+                                                    ? "Última unidade"
+                                                    : availableQuantity <= 3
+                                                    ? `Restam ${availableQuantity}`
+                                                    : availableQuantity <= 10
+                                                    ? `Poucas — ${availableQuantity} un.`
+                                                    : "Estoque limitado"}
+                                            </span>
+                                        )}
                                 </div>
                             )}
 
@@ -929,13 +948,15 @@ export default function ProductDetails() {
                             {productPrice != null && (
                                 <div className={styles.addToCartWrapper}>
                                     <div className={styles.addToCartContainer}>
-                                        {availableQuantity !== null &&
+                                        {sizesDisplay.type !== "single" &&
+                                            availableQuantity !== null &&
                                             availableQuantity === 0 && (
                                                 <p className={styles.unavailable}>
                                                     Indisponível
                                                 </p>
                                             )}
-                                        {availableQuantity !== null &&
+                                        {sizesDisplay.type !== "single" &&
+                                            availableQuantity !== null &&
                                             availableQuantity > 0 &&
                                             availableQuantity < 30 && (
                                                 <p
