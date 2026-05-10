@@ -24,7 +24,7 @@ import {
     commitMedia,
     uploadFileWithSignedUrl,
 } from "../firebase";
-import { parsePrice, formatPriceForInput } from "../utils/priceUtils";
+import { parsePrice } from "../utils/priceUtils";
 import { clampProductCoverIndex } from "../utils/productMedia";
 import { normalizeFileContentType } from "../utils/mimeUtils";
 import { getCallableErrorMessage } from "../utils/firebaseCallableErrors";
@@ -119,7 +119,7 @@ export async function productFormEditAction({ request }) {
         const availableSizes = ["unico"];
         const sellValue = parsePrice(formData.get("sellValue"));
 
-        if (sellValue === null) {
+        if (!sellValue || sellValue <= 0) {
             return {
                 error: "Por favor, preencha o valor de venda.",
                 type: "missing_sell_price",
@@ -127,12 +127,12 @@ export async function productFormEditAction({ request }) {
         }
 
         const productData = {
-            name: formData.get("name"),
+            name: formData.get("name").trim(),
             code: productCode,
             sku: existingProductData.sku || `ESD-${productCode}`,
             category: formData.get("category"),
             availableSizes: availableSizes,
-            productDetail: formData.get("productDetail"),
+            productDetail: formData.get("productDetail").trim(),
             color: "",
             collection: formData.get("collection") || "",
             coverIndex: 0,
@@ -289,8 +289,8 @@ export async function productFormEditAction({ request }) {
         // 5. Atualizar o produto no banco de dados
         await updateDoc(getProductDocRef(productId), productData);
 
-        const stockQuantity = Number(formData.get("stockQuantity") || 0);
-        await setInventorySize(productId, "unico", Math.max(0, stockQuantity));
+        const stockQuantity = Math.floor(Number(formData.get("stockQuantity") || 0));
+        await setInventorySize(productId, "unico", Math.min(99999, Math.max(0, stockQuantity)));
 
         // Invalidate all product caches since a product was updated
         invalidateCache("productsLayout");
@@ -331,12 +331,35 @@ function ProductFormEdit() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isCompressing, setIsCompressing] = useState(false);
     const [category, setCategory] = useState(product.category || "");
+    const [priceInput, setPriceInput] = useState(() => {
+        if (!product.sellValue) return "";
+        const cents = Math.round(product.sellValue * 100);
+        return (cents / 100).toLocaleString("pt-BR", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        });
+    });
 
     const submit = useSubmit();
     const navigate = useNavigate();
 
     function handleCategoryChange(e) {
         setCategory(e.target.value);
+    }
+
+    function handlePriceChange(e) {
+        const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+        if (!digits) {
+            setPriceInput("");
+            return;
+        }
+        const cents = parseInt(digits, 10);
+        setPriceInput(
+            (cents / 100).toLocaleString("pt-BR", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            })
+        );
     }
 
     // Reset submitting state when there's an error
@@ -524,11 +547,17 @@ function ProductFormEdit() {
 
         const formData = new FormData(e.target);
 
+        const name = formData.get("name")?.trim();
+        if (!name) {
+            toast.warn("O nome do produto não pode ser vazio.");
+            return;
+        }
+
         // Validate selling price
         const sellValue = formData.get("sellValue");
         const parsedSellValue = parsePrice(sellValue);
 
-        if (parsedSellValue === null) {
+        if (!parsedSellValue || parsedSellValue <= 0) {
             toast.warn("Por favor, preencha o valor de venda.");
             return;
         }
@@ -718,6 +747,7 @@ function ProductFormEdit() {
                         name="name"
                         id="name"
                         defaultValue={product.name}
+                        maxLength={100}
                         required
                         aria-label="Nome do produto"
                     />
@@ -727,7 +757,6 @@ function ProductFormEdit() {
                     <select
                         name="category"
                         id="category"
-                        defaultValue={product.category}
                         required
                         aria-label="Categoria do produto"
                         onChange={handleCategoryChange}
@@ -745,6 +774,7 @@ function ProductFormEdit() {
                         type="text"
                         name="collection"
                         id="collection"
+                        maxLength={80}
                         placeholder="Deixe em branco se não pertencer a nenhuma coleção"
                         defaultValue={product.collection || ""}
                         aria-label="Coleção do produto"
@@ -757,6 +787,8 @@ function ProductFormEdit() {
                         id="stockQuantity"
                         name="stockQuantity"
                         min="0"
+                        max="99999"
+                        step="1"
                         defaultValue={initialStockQuantity}
                         required
                         aria-label="Quantidade em estoque"
@@ -765,9 +797,9 @@ function ProductFormEdit() {
                 <div className={styles.formgroup}>
                     <label htmlFor="productDetail">Detalhe do Produto:</label>
                     <textarea
-                        type="text"
                         name="productDetail"
                         id="productDetail"
+                        maxLength={2000}
                         defaultValue={product.productDetail}
                         required
                         aria-label="Detalhes do produto"
@@ -777,11 +809,12 @@ function ProductFormEdit() {
                     <label htmlFor="sellValue">Valor de Venda:</label>
                     <input
                         type="text"
-                        inputMode="decimal"
+                        inputMode="numeric"
                         name="sellValue"
                         id="sellValue"
-                        defaultValue={formatPriceForInput(product.sellValue)}
-                        placeholder="Ex: 59,90"
+                        placeholder="0,00"
+                        value={priceInput}
+                        onChange={handlePriceChange}
                         aria-label="Valor de venda"
                         required
                     />

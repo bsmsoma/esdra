@@ -25,7 +25,7 @@
             top: 0;
             height: 100%;
             width: 50%;
-            transition: all vars.$transition-slow vars.$ease-in-out;
+            transition: transform vars.$transition-slow $ease-cubic, opacity vars.$transition-slow $ease-cubic;
 
             .form {
                 height: 100%;
@@ -74,7 +74,7 @@
                     transition: color vars.$transition-fast vars.$ease-base;
 
                     &:hover {
-                        color: $accent-brand-purple;
+                        color: $accent-gold;
                     }
 
                     @include focus-visible-ring;
@@ -173,7 +173,7 @@
                             color: $text-primary;
                         }
 
-                        @include focus-visible-ring($focus-ring-color-brand);
+                        @include focus-visible-ring($accent-gold);
                     }
                 }
 
@@ -188,7 +188,7 @@
                         width: 18px;
                         height: 18px;
                         cursor: pointer;
-                        accent-color: $accent-brand-purple;
+                        accent-color: $accent-gold;
                     }
 
                     label {
@@ -211,13 +211,16 @@
                     font-size: $font-size-2xl;
                     text-transform: uppercase;
                     color: $text-secondary;
-                    background: $gradient-brand-accent;
-                    transition: transform vars.$transition-fast vars.$ease-base,
-                        opacity vars.$transition-fast vars.$ease-base;
+                    background: linear-gradient(135deg, $accent-gold-hover 0%, $accent-gold 100%);
+                    transition: transform vars.$transition-fast $ease-cubic,
+                        opacity vars.$transition-fast $ease-cubic;
 
                     &:hover:not(:disabled) {
-                        transform: translateY(-1px);
-                        opacity: 0.96;
+                        opacity: 0.92;
+                    }
+
+                    &:active:not(:disabled) {
+                        transform: scale(0.97);
                     }
 
                     &:disabled {
@@ -225,7 +228,7 @@
                         cursor: not-allowed;
                     }
 
-                    @include focus-visible-ring($text-secondary, $focus-ring-width, 2px);
+                    @include focus-visible-ring($accent-gold, $focus-ring-width, 2px);
                 }
 
                 .dividerText {
@@ -254,8 +257,12 @@
                         background-color vars.$transition-base vars.$ease-base;
 
                     &:hover:not(:disabled) {
-                        border-color: $accent-brand-purple;
-                        background: $accent-brand-purple-tint;
+                        border-color: $accent-gold;
+                        background: rgba($accent-gold, 0.06);
+                    }
+
+                    &:active:not(:disabled) {
+                        transform: scale(0.97);
                     }
 
                     &:disabled {
@@ -263,7 +270,7 @@
                         cursor: not-allowed;
                     }
 
-                    @include focus-visible-ring;
+                    @include focus-visible-ring($accent-gold);
 
                     .googleIcon {
                         width: 20px;
@@ -326,15 +333,15 @@
                     font-family: $defaultFont;
                     font-size: inherit;
                     font-weight: $font-weight-semibold;
-                    color: $accent-brand-purple;
+                    color: $accent-gold;
                     border-bottom: 2px solid transparent;
                     transition: border-color vars.$transition-fast vars.$ease-base;
 
                     &:hover {
-                        border-bottom-color: $accent-brand-purple;
+                        border-bottom-color: $accent-gold;
                     }
 
-                    @include focus-visible-ring($focus-ring-color-brand);
+                    @include focus-visible-ring($accent-gold);
                 }
             }
         }
@@ -359,28 +366,28 @@
             width: 50%;
             height: 100%;
             overflow: hidden;
-            transition: all vars.$transition-slow vars.$ease-in-out;
+            transition: transform vars.$transition-slow $ease-cubic, border-radius vars.$transition-slow $ease-cubic;
             z-index: 100;
             border-radius: vars.$radius-xl 0 0 vars.$radius-xl;
 
             .toggle {
-                background-color: $text-primary;
+                background: linear-gradient(145deg, #4a3526 0%, $color-primary-warm 45%, $accent-gold 100%);
                 color: $text-secondary;
                 height: 100%;
                 width: 200%;
                 position: relative;
                 left: -100%;
-                transition: all vars.$transition-slow vars.$ease-in-out;
+                transition: transform vars.$transition-slow $ease-cubic;
 
-                // Overlay for text readability (deep charcoal, soft opacity)
+                // Subtle warmth overlay for depth
                 &::before {
                     content: "";
                     position: absolute;
                     inset: 0;
                     background: linear-gradient(
                         135deg,
-                        rgba(26, 26, 26, 0.55) 0%,
-                        rgba(26, 26, 26, 0.35) 100%
+                        rgba(26, 16, 8, 0.3) 0%,
+                        rgba(26, 16, 8, 0.1) 100%
                     );
                     pointer-events: none;
                 }
@@ -424,12 +431,15 @@
                     border-radius: vars.$radius-md;
                     border: vars.$border-width-base solid rgba(255, 255, 255, 0.75);
                     cursor: pointer;
-                    transition: transform vars.$transition-fast vars.$ease-base,
-                        background-color vars.$transition-fast vars.$ease-base;
+                    transition: transform vars.$transition-fast $ease-cubic,
+                        background-color vars.$transition-fast $ease-cubic;
 
                     &:hover {
-                        transform: translateY(-1px);
                         background-color: rgba(255, 255, 255, 0.12);
+                    }
+
+                    &:active {
+                        transform: scale(0.97);
                     }
 
                     @include focus-visible-ring($text-secondary, $focus-ring-width, 2px);

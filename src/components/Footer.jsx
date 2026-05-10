@@ -25,13 +25,16 @@ function Footer() {
             <footer className={styles.footer}>
                 <div className={styles.footerContainer}>
                     <div className={`${styles.footerSection} ${styles.footerBrand}`}>
-                        <h3 className={styles.footerTitle}>
-                            <LogoEsdras
-                                className={styles.brandLogo}
-                                aria-hidden="true"
-                                focusable="false"
-                            />
-                        </h3>
+                        <div className={styles.logoGroup}>
+                            <h3 className={styles.footerTitle}>
+                                <LogoEsdras
+                                    className={styles.brandLogo}
+                                    aria-hidden="true"
+                                    focusable="false"
+                                />
+                            </h3>
+                            <span className={styles.logoSubtitle} aria-hidden="true">Aromas</span>
+                        </div>
                         <p className={styles.footerDescription}>
                             Velas e produtos sensoriais artesanais para transformar
                             momentos cotidianos em rituais elegantes de bem-estar.

@@ -42,7 +42,7 @@ export async function productFormAddAction({ request }) {
         const availableSizes = ["unico"];
         const sellValue = parsePrice(formData.get("sellValue"));
 
-        if (sellValue === null) {
+        if (!sellValue || sellValue <= 0) {
             return {
                 error: "Por favor, preencha o valor de venda.",
                 type: "missing_sell_price",
@@ -50,10 +50,10 @@ export async function productFormAddAction({ request }) {
         }
 
         const productDataPayload = {
-            name: formData.get("name"),
+            name: formData.get("name").trim(),
             category: formData.get("category"),
             availableSizes: availableSizes,
-            productDetail: formData.get("productDetail"),
+            productDetail: formData.get("productDetail").trim(),
             color: "",
             collection: formData.get("collection") || "",
             coverIndex: 0,
@@ -166,11 +166,11 @@ export async function productFormAddAction({ request }) {
                 coverIndex: safeCover,
             });
 
-            const stockQuantity = Number(formData.get("stockQuantity") || 0);
+            const stockQuantity = Math.floor(Number(formData.get("stockQuantity") || 0));
             await setInventorySize(
                 actualProductId,
                 "unico",
-                Math.max(0, stockQuantity)
+                Math.min(99999, Math.max(0, stockQuantity))
             );
 
             invalidateCache("productsLayout");
@@ -236,12 +236,28 @@ export default function ProductFormAdd() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isCompressing, setIsCompressing] = useState(false);
     const [category, setCategory] = useState("");
+    const [priceInput, setPriceInput] = useState("");
 
     const submit = useSubmit();
     const navigate = useNavigate();
 
     function handleCategoryChange(e) {
         setCategory(e.target.value);
+    }
+
+    function handlePriceChange(e) {
+        const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+        if (!digits) {
+            setPriceInput("");
+            return;
+        }
+        const cents = parseInt(digits, 10);
+        setPriceInput(
+            (cents / 100).toLocaleString("pt-BR", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            })
+        );
     }
 
     // Reset submitting state when there's an error
@@ -268,11 +284,17 @@ export default function ProductFormAdd() {
 
         const formData = new FormData(e.target);
 
+        const name = formData.get("name")?.trim();
+        if (!name) {
+            toast.warn("O nome do produto não pode ser vazio.");
+            return;
+        }
+
         // Validate selling price
         const sellValue = formData.get("sellValue");
         const parsedSellValue = parsePrice(sellValue);
 
-        if (parsedSellValue === null) {
+        if (!parsedSellValue || parsedSellValue <= 0) {
             toast.warn("Por favor, preencha o valor de venda.");
             return;
         }
@@ -564,6 +586,7 @@ export default function ProductFormAdd() {
                         type="text"
                         name="name"
                         id="name"
+                        maxLength={100}
                         required
                         aria-label="Nome do produto"
                     />
@@ -591,6 +614,7 @@ export default function ProductFormAdd() {
                         type="text"
                         name="collection"
                         id="collection"
+                        maxLength={80}
                         placeholder="Deixe em branco se não pertencer a nenhuma coleção"
                         aria-label="Coleção do produto"
                     />
@@ -602,6 +626,8 @@ export default function ProductFormAdd() {
                         name="stockQuantity"
                         id="stockQuantity"
                         min="0"
+                        max="99999"
+                        step="1"
                         defaultValue="0"
                         required
                         aria-label="Quantidade inicial em estoque"
@@ -610,9 +636,9 @@ export default function ProductFormAdd() {
                 <div className={styles.formgroup}>
                     <label htmlFor="productDetail">Detalhe do Produto:</label>
                     <textarea
-                        type="text"
                         name="productDetail"
                         id="productDetail"
+                        maxLength={2000}
                         required
                         aria-label="Detalhes do produto"
                     />
@@ -621,10 +647,12 @@ export default function ProductFormAdd() {
                     <label htmlFor="sellValue">Valor de Venda:</label>
                     <input
                         type="text"
-                        inputMode="decimal"
+                        inputMode="numeric"
                         name="sellValue"
                         id="sellValue"
-                        placeholder="Ex: 59,90"
+                        placeholder="0,00"
+                        value={priceInput}
+                        onChange={handlePriceChange}
                         aria-label="Valor de venda"
                         required
                     />

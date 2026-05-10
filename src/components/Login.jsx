@@ -633,11 +633,10 @@ export default function Login() {
                             className={`${styles.togglePanel} ${styles.toggleLeft}`}
                         >
                             <h1 className={styles.toggleTitle}>
-                                Bem-vindo de volta
+                                Que bom ter você de volta
                             </h1>
                             <p className={styles.toggleText}>
-                                Acesse sua conta e continue sua experiência
-                                conosco.
+                                Seus aromas favoritos estão te esperando.
                             </p>
                             <button
                                 type="button"
@@ -651,11 +650,11 @@ export default function Login() {
                             className={`${styles.togglePanel} ${styles.toggleRight}`}
                         >
                             <h1 className={styles.toggleTitle}>
-                                Sua jornada começa aqui
+                                Descubra o mundo Esdra
                             </h1>
                             <p className={styles.toggleText}>
-                                Crie sua conta e descubra uma curadoria pensada
-                                para momentos especiais.
+                                Crie sua conta e explore aromas artesanais
+                                para transformar seus momentos.
                             </p>
                             <button
                                 type="button"
