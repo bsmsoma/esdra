@@ -6,6 +6,7 @@ import {
 } from "../firebase";
 import { formatPrice } from "../utils/priceUtils";
 import styles from "./DashboardOrders.module.scss";
+import { PrinterIcon } from "../assets/icons";
 
 function formatDate(ts) {
     if (!ts) return "-";
@@ -307,6 +308,9 @@ export default function DashboardOrders() {
                                                         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
                                                             <path d="M4 2L8 6L4 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                                         </svg>
+                                                        <span className={styles.expandLabel}>
+                                                            {isExpanded ? "Mostrar menos" : "Mostrar mais"}
+                                                        </span>
                                                     </button>
                                                 </td>
                                                 <td>#{order.orderNumber}</td>
@@ -486,6 +490,7 @@ export default function DashboardOrders() {
                                                                     className={styles.printButton}
                                                                     onClick={function () { handlePrint(order.id); }}
                                                                 >
+                                                                    <PrinterIcon size={15} />
                                                                     Imprimir pedido
                                                                 </button>
                                                             </div>

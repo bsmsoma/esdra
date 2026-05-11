@@ -17,6 +17,7 @@ export { default as MPHandshakeHorizontal } from './MPHandshakeHorizontal';
 export { default as MPHandshakeVertical } from './MPHandshakeVertical';
 export { default as OkIcon } from './OkIcon';
 export { default as PlaceholderIcon } from './PlaceholderIcon';
+export { default as PrinterIcon } from './PrinterIcon';
 export { default as PlusIcon } from './PlusIcon';
 export { default as SaveIcon } from './SaveIcon';
 export { default as SidebarClosedIcon } from './SidebarClosedIcon';
