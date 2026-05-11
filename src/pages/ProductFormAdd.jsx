@@ -22,6 +22,7 @@ import {
     uploadFileWithSignedUrl,
 } from "../firebase"; // add, delete, update, handle upload and download of files
 import { parsePrice } from "../utils/priceUtils";
+import { colors } from "../utils/colors";
 import { clampProductCoverIndex } from "../utils/productMedia";
 import { normalizeFileContentType } from "../utils/mimeUtils";
 import { getCallableErrorMessage } from "../utils/firebaseCallableErrors";
@@ -49,19 +50,24 @@ export async function productFormAddAction({ request }) {
             };
         }
 
+        const rawColors =
+            formData.get("category") === "Velas Aromaticas"
+                ? JSON.parse(formData.get("colors") || "[]")
+                : [];
+
         const productDataPayload = {
             name: formData.get("name").trim(),
             category: formData.get("category"),
             availableSizes: availableSizes,
             productDetail: formData.get("productDetail").trim(),
-            color: "",
+            color: rawColors,
             collection: formData.get("collection") || "",
             coverIndex: 0,
             lastModified: "",
             searchableName: normalizeName,
             searchableCategory: normalizeCategory,
             searchableNameArray: createSearchableArray(normalizeName),
-            searchableColor: "",
+            searchableColor: rawColors.map((c) => normalizeString(c)).join(" "),
             searchableCollection: normalizeCollection,
             rentValue: null,
             sellValue: sellValue,
@@ -236,6 +242,8 @@ export default function ProductFormAdd() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isCompressing, setIsCompressing] = useState(false);
     const [category, setCategory] = useState("");
+    const [selectedColors, setSelectedColors] = useState([]);
+    const [colorPickerValue, setColorPickerValue] = useState("");
     const [priceInput, setPriceInput] = useState("");
 
     const submit = useSubmit();
@@ -243,6 +251,18 @@ export default function ProductFormAdd() {
 
     function handleCategoryChange(e) {
         setCategory(e.target.value);
+        setSelectedColors([]);
+        setColorPickerValue("");
+    }
+
+    function handleAddColor() {
+        if (!colorPickerValue || selectedColors.includes(colorPickerValue)) return;
+        setSelectedColors((prev) => [...prev, colorPickerValue]);
+        setColorPickerValue("");
+    }
+
+    function handleRemoveColor(name) {
+        setSelectedColors((prev) => prev.filter((c) => c !== name));
     }
 
     function handlePriceChange(e) {
@@ -608,6 +628,75 @@ export default function ProductFormAdd() {
                         <option value="Kits de Autocuidado">Kits de Autocuidado</option>
                     </select>
                 </div>
+                {category === "Velas Aromaticas" && (
+                    <div className={styles.formgroup}>
+                        <label>Cores da Vela:</label>
+                        <input
+                            type="hidden"
+                            name="colors"
+                            value={JSON.stringify(selectedColors)}
+                        />
+                        {selectedColors.length > 0 && (
+                            <div className={styles.colorChips}>
+                                {selectedColors.map((name) => {
+                                    const hex =
+                                        colors.find((c) => c.name === name)?.hex ||
+                                        "#D9D9D9";
+                                    return (
+                                        <span key={name} className={styles.colorChip}>
+                                            <span
+                                                className={styles.chipSwatch}
+                                                style={{ backgroundColor: hex }}
+                                            />
+                                            {name}
+                                            <button
+                                                type="button"
+                                                className={styles.chipRemove}
+                                                onClick={() => handleRemoveColor(name)}
+                                                aria-label={`Remover ${name}`}
+                                            >
+                                                ×
+                                            </button>
+                                        </span>
+                                    );
+                                })}
+                            </div>
+                        )}
+                        <div className={styles.colorAddRow}>
+                            <span
+                                className={styles.colorSwatch}
+                                style={{
+                                    backgroundColor:
+                                        colors.find((c) => c.name === colorPickerValue)?.hex ||
+                                        "transparent",
+                                }}
+                            />
+                            <select
+                                id="color"
+                                value={colorPickerValue}
+                                onChange={(e) => setColorPickerValue(e.target.value)}
+                                aria-label="Selecionar cor"
+                            >
+                                <option value="">Selecione uma cor</option>
+                                {colors
+                                    .filter((c) => !selectedColors.includes(c.name))
+                                    .map((c) => (
+                                        <option key={c.name} value={c.name}>
+                                            {c.name}
+                                        </option>
+                                    ))}
+                            </select>
+                            <button
+                                type="button"
+                                className={styles.addColorBtn}
+                                onClick={handleAddColor}
+                                disabled={!colorPickerValue}
+                            >
+                                Adicionar
+                            </button>
+                        </div>
+                    </div>
+                )}
                 <div className={styles.formgroup}>
                     <label htmlFor="collection">Coleção:</label>
                     <input

@@ -85,21 +85,17 @@ export default function ProductDetails() {
         [id]
     );
 
-    const productColorValue =
-        typeof currentProduct.color === "string"
-            ? currentProduct.color.trim()
-            : "";
-    const color = ColorsUtils.find(
-        (availableColor) =>
-            availableColor.name.toLowerCase() ===
-            productColorValue.toLowerCase()
-    );
     const hexColorPattern = /^#(?:[0-9a-fA-F]{3}){1,2}$/;
-    const colorHex = color?.hex
-        ? color.hex
-        : hexColorPattern.test(productColorValue)
-          ? productColorValue
-          : "#D9D9D9";
+    const colorValues = (currentProduct.color || []).filter(Boolean);
+    const colorSwatches = colorValues.map((name) => {
+        const found = ColorsUtils.find(
+            (c) => c.name.toLowerCase() === name.toLowerCase()
+        );
+        return {
+            name,
+            hex: found?.hex ?? (hexColorPattern.test(name) ? name : "#D9D9D9"),
+        };
+    });
     const productPrice = currentProduct.sellValue ?? currentProduct.rentValue ?? null;
 
     React.useEffect(
@@ -182,7 +178,7 @@ export default function ProductDetails() {
             `Código: ${currentProduct.code}\n` +
             `Nome: ${currentProduct.name}\n` +
             `Categoria: ${currentProduct.category}\n` +
-            `Cor: ${currentProduct.color}\n` +
+            `Cor: ${colorValues.join(", ")}\n` +
             `Tamanho: ${
                 selectedSize != null
                     ? formatSizeLabelForDisplay(selectedSize)
@@ -814,17 +810,25 @@ export default function ProductDetails() {
                         <p className={styles.productDetail}>
                             {currentProduct.productDetail}
                         </p>
-                        <p className={styles.color}>
-                            Cor: <span>{currentProduct.color}</span>
-                        </p>
-                        <div className={styles.colorContainer}>
-                            <div className={styles.colorBlock}>
-                                <div
-                                    className={styles.colorInside}
-                                    style={{ backgroundColor: colorHex }}
-                                ></div>
-                            </div>
-                        </div>
+                        {currentProduct.category === "Velas Aromaticas" &&
+                            colorSwatches.length > 0 && (
+                            <>
+                                <p className={styles.color}>
+                                    {colorSwatches.length === 1 ? "Cor:" : "Cores:"}{" "}
+                                    <span>{colorValues.join(", ")}</span>
+                                </p>
+                                <div className={styles.colorContainer}>
+                                    {colorSwatches.map(({ name, hex }) => (
+                                        <div key={name} className={styles.colorBlock}>
+                                            <div
+                                                className={styles.colorInside}
+                                                style={{ backgroundColor: hex }}
+                                            ></div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        )}
                         <div className={styles.productSizeContainer}>
                             <h4>Tamanhos Disponíveis: </h4>
 

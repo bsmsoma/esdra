@@ -126,7 +126,7 @@ function applyClientFilters(products, filters) {
                 return c.length > 0;
             });
             
-            if (colors.length > 0 && !colors.includes(product.color)) {
+            if (colors.length > 0 && !colors.some((c) => (product.color || []).includes(c))) {
                 return false;
             }
         }
@@ -239,7 +239,7 @@ export async function productsLayoutLoader({ request }) {
             });
             
             const filteredProductColors = [...new Set(products.flatMap(function (product) {
-                return product.color;
+                return product.color || [];
             }))];
 
             // Get collection display name from first product

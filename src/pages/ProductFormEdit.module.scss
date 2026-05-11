@@ -53,6 +53,90 @@
             gap: 8px;
         }
 
+        .colorChips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .colorChip {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px 4px 6px;
+            border: 1px solid $border-color;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            background-color: $background-even;
+
+            .chipSwatch {
+                width: 16px;
+                height: 16px;
+                border-radius: 50%;
+                border: 1px solid rgba(0, 0, 0, 0.15);
+                flex-shrink: 0;
+            }
+
+            .chipRemove {
+                background: none;
+                border: none;
+                cursor: pointer;
+                color: $text-quinary;
+                font-size: 1.1rem;
+                padding: 0;
+                line-height: 1;
+                transition: color 0.15s ease-out;
+
+                &:hover {
+                    color: $status-error-text;
+                }
+            }
+        }
+
+        .colorAddRow {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            select {
+                flex: 1;
+                width: auto;
+            }
+        }
+
+        .colorSwatch {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid $border-color;
+            flex-shrink: 0;
+            transition: background-color 0.2s ease;
+        }
+
+        .addColorBtn {
+            padding: 10px 14px;
+            border: 1px solid $border-color;
+            border-radius: 4px;
+            background-color: $background-even;
+            cursor: pointer;
+            font-size: 0.875rem;
+            white-space: nowrap;
+            font-family: inherit;
+            transition: background-color 0.15s ease-out, border-color 0.15s ease-out, color 0.15s ease-out;
+
+            &:hover:not(:disabled) {
+                background-color: $button-info;
+                border-color: $button-info;
+                color: white;
+            }
+
+            &:disabled {
+                opacity: 0.4;
+                cursor: default;
+            }
+        }
+
         .multipleSizesToggle {
             display: flex;
             align-items: center;

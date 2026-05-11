@@ -145,7 +145,7 @@ export default function Dashboard() {
                     const searchableContent = [
                         normalizeString(product.name),
                         normalizeString(product.category),
-                        normalizeString(product.color),
+                        (product.color || []).map((c) => normalizeString(c)).join(" "),
                         normalizeString(product.collection || ""),
                     ].join(" ");
 
