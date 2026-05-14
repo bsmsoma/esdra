@@ -14,6 +14,7 @@ playwright-report/
 # Claude Code
 .claude/
 skills-lock.json
+docs/
 
 # Contas de serviço Firebase (NUNCA commitar — acesso total ao projeto)
 scripts/firebase-service-account.json
