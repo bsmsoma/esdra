@@ -177,6 +177,7 @@ export async function productFormAddAction({ request }) {
                 Math.min(99999, Math.max(0, stockQuantity))
             );
 
+            invalidateCache("dashboard");
             invalidateCache("productsLayout");
             invalidateCache("home");
             invalidateCache("productDetails");
