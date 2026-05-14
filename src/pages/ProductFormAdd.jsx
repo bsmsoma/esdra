@@ -13,7 +13,6 @@ import {
     normalizeString,
     createSearchableArray,
     getProductDocRef,
-    getStoreId,
     setInventorySize,
     createUploadSession,
     createProduct,
@@ -117,7 +116,6 @@ export async function productFormAddAction({ request }) {
 
         const { productId: actualProductId } = await createProduct({
             productData: productDataPayload,
-            storeId: getStoreId(),
         });
         const productDocRef = getProductDocRef(actualProductId);
         const uploadedObjects = [];

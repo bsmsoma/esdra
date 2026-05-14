@@ -18,7 +18,7 @@ import ProductCard from "../components/ProductCard";
 import ScrambleWord from "../components/ScrambleWord";
 
 const HERO_LOOP_VIDEO_URL =
-    "https://firebasestorage.googleapis.com/v0/b/esdra-ba71d.firebasestorage.app/o/lojas%2Fesdra-aromas%2Fassets%2FloopHeroVideoWeb.webm?alt=media";
+    "https://firebasestorage.googleapis.com/v0/b/esdra-ba0ff.firebasestorage.app/o/assets%2FloopHeroVideoWeb.webm?alt=media";
 
 const TRUST_ITEMS = [
     {

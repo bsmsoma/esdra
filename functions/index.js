@@ -81,12 +81,6 @@ function requireAdmin(request) {
   }
 }
 
-function getStoreId(data) {
-  if (typeof data?.storeId === "string" && data.storeId.trim().length > 0) {
-    return data.storeId.trim().toLowerCase();
-  }
-  return globalThis.process?.env?.DEFAULT_STORE_ID || "esdra-aromas";
-}
 
 function getMercadoPagoSandboxPayerConfig() {
   if (PAYMENT_PROVIDER !== "mercadopago") {
@@ -169,6 +163,7 @@ async function createCheckoutProPreference({orderId, orderNumber, items, shippin
       failure: `${appUrl}/checkout/success?orderId=${orderId}&mp_status=failure`,
       pending: `${appUrl}/checkout/success?orderId=${orderId}&mp_status=pending`,
     },
+    auto_return: "approved",
     external_reference: orderId,
     statement_descriptor: "Esdra Aromas",
     shipments: {
@@ -217,7 +212,6 @@ async function createPaymentIntent({orderId, orderNumber, items, shipping, custo
 }
 
 async function queueTransactionalEmail({
-  lojaId,
   orderId,
   orderNumber,
   type,
@@ -229,7 +223,7 @@ async function queueTransactionalEmail({
     return;
   }
 
-  const queueRef = db.collection(`lojas/${lojaId}/emailQueue`).doc();
+  const queueRef = db.collection("emailQueue").doc();
   await queueRef.set({
     orderId,
     orderNumber,
@@ -265,9 +259,9 @@ function logError(message, payload) {
   }
 }
 
-async function generateOrderNumberTx(transaction, lojaId) {
+async function generateOrderNumberTx(transaction) {
   const year = new Date().getFullYear();
-  const counterRef = db.doc(`lojas/${lojaId}/meta/orderCounter`);
+  const counterRef = db.doc("meta/orderCounter");
   const counterSnap = await transaction.get(counterRef);
 
   let sequence = 1;
@@ -287,8 +281,8 @@ async function generateOrderNumberTx(transaction, lojaId) {
   return `ESD-${year}-${String(sequence).padStart(3, "0")}`;
 }
 
-async function generateProductCodeTx(transaction, lojaId) {
-  const counterRef = db.doc(`lojas/${lojaId}/meta/productCounter`);
+async function generateProductCodeTx(transaction) {
+  const counterRef = db.doc("meta/productCounter");
   const snap = await transaction.get(counterRef);
   const nextCode = Number(snap.data()?.value ?? 0) + 1;
   transaction.set(counterRef,
@@ -298,14 +292,14 @@ async function generateProductCodeTx(transaction, lojaId) {
   return nextCode;
 }
 
-async function resolveOrderItemsTx(transaction, lojaId, cartItems) {
+async function resolveOrderItemsTx(transaction, cartItems) {
   const resolvedItems = [];
   const inventoryUpdates = [];
   let subtotal = 0;
 
   for (const item of cartItems) {
-    const productRef = db.doc(`lojas/${lojaId}/products/${item.productId}`);
-    const inventoryRef = db.doc(`lojas/${lojaId}/products/${item.productId}/inventory/${item.size}`);
+    const productRef = db.doc(`products/${item.productId}`);
+    const inventoryRef = db.doc(`products/${item.productId}/inventory/${item.size}`);
 
     const [productSnap, inventorySnap] = await Promise.all([
       transaction.get(productRef),
@@ -375,7 +369,6 @@ export const createOrder = onCall(FUNCTION_CONFIG, async (request) => {
   const startedAt = Date.now();
   const uid = request.auth.uid;
   const requestId = request.rawRequest?.headers["x-cloud-trace-context"] || crypto.randomUUID();
-  const lojaId = getStoreId(request.data);
 
   const cartItems = normalizeOrderItems(request.data?.cartItems);
   const shippingAddress = validateShippingAddress(request.data?.shippingAddress);
@@ -393,7 +386,7 @@ export const createOrder = onCall(FUNCTION_CONFIG, async (request) => {
     throw new HttpsError("invalid-argument", "idempotencyKey inválida.");
   }
 
-  const idempotencyRef = db.doc(`lojas/${lojaId}/idempotency/${uid}_${idempotencyKey}`);
+  const idempotencyRef = db.doc(`idempotency/${uid}_${idempotencyKey}`);
 
   try {
     const result = await db.runTransaction(async (transaction) => {
@@ -408,7 +401,7 @@ export const createOrder = onCall(FUNCTION_CONFIG, async (request) => {
         };
       }
 
-      const customerRef = db.doc(`lojas/${lojaId}/customers/${uid}`);
+      const customerRef = db.doc(`customers/${uid}`);
       const customerSnap = await transaction.get(customerRef);
       if (!customerSnap.exists) {
         throw new HttpsError("failed-precondition", "Cliente não encontrado.");
@@ -445,11 +438,11 @@ export const createOrder = onCall(FUNCTION_CONFIG, async (request) => {
         throw new HttpsError("invalid-argument", "Email e documento do pagador são obrigatórios.");
       }
 
-      const {resolvedItems, subtotal, inventoryUpdates} = await resolveOrderItemsTx(transaction, lojaId, cartItems);
+      const {resolvedItems, subtotal, inventoryUpdates} = await resolveOrderItemsTx(transaction, cartItems);
       const discount = 0;
       const total = subtotal + shipping - discount;
-      const orderNumber = await generateOrderNumberTx(transaction, lojaId);
-      const orderRef = db.collection(`lojas/${lojaId}/orders`).doc();
+      const orderNumber = await generateOrderNumberTx(transaction);
+      const orderRef = db.collection("orders").doc();
 
       const now = FieldValue.serverTimestamp();
       transaction.set(orderRef, {
@@ -479,7 +472,7 @@ export const createOrder = onCall(FUNCTION_CONFIG, async (request) => {
         updatedAt: now,
       });
 
-      const cartRef = db.doc(`lojas/${lojaId}/carts/${uid}`);
+      const cartRef = db.doc(`carts/${uid}`);
       transaction.set(cartRef, {
         items: [],
         updatedAt: now,
@@ -516,7 +509,7 @@ export const createOrder = onCall(FUNCTION_CONFIG, async (request) => {
       };
     });
 
-    const orderRef = db.doc(`lojas/${lojaId}/orders/${result.orderId}`);
+    const orderRef = db.doc(`orders/${result.orderId}`);
     const orderSnap = await orderRef.get();
     if (!orderSnap.exists) {
       throw new HttpsError("internal", "Pedido não encontrado após criação.");
@@ -558,7 +551,6 @@ export const createOrder = onCall(FUNCTION_CONFIG, async (request) => {
 
       if (!result.reused) {
         await queueTransactionalEmail({
-          lojaId,
           orderId: result.orderId,
           orderNumber: result.orderNumber,
           type: "order_confirmation",
@@ -575,7 +567,6 @@ export const createOrder = onCall(FUNCTION_CONFIG, async (request) => {
     logInfo("createOrder_success", {
       requestId,
       uid,
-      lojaId,
       orderId: result.orderId,
       orderNumber: result.orderNumber,
       reused: result.reused,
@@ -592,7 +583,6 @@ export const createOrder = onCall(FUNCTION_CONFIG, async (request) => {
     logError("createOrder_error", {
       requestId,
       uid,
-      lojaId,
       message: error.message,
       code: error.code || "internal",
       durationMs: Date.now() - startedAt,
@@ -604,8 +594,8 @@ export const createOrder = onCall(FUNCTION_CONFIG, async (request) => {
   }
 });
 
-async function updateOrderFromPayment({storeId, orderId, providerPaymentId, paymentStatus, rawPayload}) {
-  const orderRef = db.doc(`lojas/${storeId}/orders/${orderId}`);
+async function updateOrderFromPayment({orderId, providerPaymentId, paymentStatus, rawPayload}) {
+  const orderRef = db.doc(`orders/${orderId}`);
   const orderSnap = await orderRef.get();
   if (!orderSnap.exists) {
     return;
@@ -630,7 +620,6 @@ async function updateOrderFromPayment({storeId, orderId, providerPaymentId, paym
 
   if (paymentStatus === "paid" && orderData.paymentStatus !== "paid") {
     await queueTransactionalEmail({
-      lojaId: storeId,
       orderId,
       orderNumber: orderData.orderNumber || "",
       type: "payment_approved",
@@ -659,11 +648,9 @@ async function handleMercadoPagoNotification(mpPaymentId) {
     return;
   }
 
-  const storeId = getStoreId({});
   const paymentStatus = normalizeWebhookPaymentStatus(paymentData.status);
 
   await updateOrderFromPayment({
-    storeId,
     orderId,
     providerPaymentId: String(paymentData.id || ""),
     paymentStatus,
@@ -726,7 +713,6 @@ export const paymentWebhook = onRequest(FUNCTION_CONFIG, async (request, respons
       payload?.data?.orderId ||
       ""
     ).trim();
-    const storeId = getStoreId(payload);
     if (!orderId) {
       response.status(200).json({received: true});
       return;
@@ -734,7 +720,7 @@ export const paymentWebhook = onRequest(FUNCTION_CONFIG, async (request, respons
 
     const providerPaymentId = String(payload?.id || payload?.data?.id || "").trim();
     const paymentStatus = normalizeWebhookPaymentStatus(payload?.status || payload?.data?.status);
-    await updateOrderFromPayment({storeId, orderId, providerPaymentId, paymentStatus, rawPayload: payload});
+    await updateOrderFromPayment({orderId, providerPaymentId, paymentStatus, rawPayload: payload});
 
     response.status(200).json({ok: true});
   } catch (error) {
@@ -752,7 +738,6 @@ export const updateOrderStatusByAdmin = onCall(FUNCTION_CONFIG, async (request) 
   requireAdmin(request);
 
   const orderId = String(request.data?.orderId || "").trim();
-  const lojaId = getStoreId(request.data);
   const nextStatus = String(request.data?.status || "").trim().toLowerCase();
   const paymentStatus = String(request.data?.paymentStatus || "").trim().toLowerCase();
   const adminNotes = String(request.data?.adminNotes || "").trim();
@@ -770,7 +755,7 @@ export const updateOrderStatusByAdmin = onCall(FUNCTION_CONFIG, async (request) 
     throw new HttpsError("invalid-argument", "Status de pagamento inválido.");
   }
 
-  const orderRef = db.doc(`lojas/${lojaId}/orders/${orderId}`);
+  const orderRef = db.doc(`orders/${orderId}`);
   const orderSnap = await orderRef.get();
   if (!orderSnap.exists) {
     throw new HttpsError("not-found", "Pedido não encontrado.");
@@ -795,7 +780,6 @@ export const updateOrderStatusByAdmin = onCall(FUNCTION_CONFIG, async (request) 
 
   if (nextStatus === "pago" || paymentStatus === "paid") {
     await queueTransactionalEmail({
-      lojaId,
       orderId,
       orderNumber: orderData.orderNumber || "",
       type: "payment_approved",
@@ -814,14 +798,13 @@ export const updateOrderStatusByAdmin = onCall(FUNCTION_CONFIG, async (request) 
 export const cancelOrderByCustomer = onCall(FUNCTION_CONFIG, async (request) => {
   requireAuth(request);
   const uid = request.auth.uid;
-  const lojaId = getStoreId(request.data);
   const orderId = String(request.data?.orderId || "").trim();
 
   if (!orderId) {
     throw new HttpsError("invalid-argument", "orderId é obrigatório.");
   }
 
-  const orderRef = db.doc(`lojas/${lojaId}/orders/${orderId}`);
+  const orderRef = db.doc(`orders/${orderId}`);
 
   await db.runTransaction(async (transaction) => {
     const orderSnap = await transaction.get(orderRef);
@@ -841,7 +824,7 @@ export const cancelOrderByCustomer = onCall(FUNCTION_CONFIG, async (request) => 
 
     const items = order.items || [];
     const inventoryRefs = items.map((item) =>
-      db.doc(`lojas/${lojaId}/products/${item.productId}/inventory/${item.size}`)
+      db.doc(`products/${item.productId}/inventory/${item.size}`)
     );
     const inventorySnaps = await Promise.all(inventoryRefs.map((ref) => transaction.get(ref)));
 
@@ -867,25 +850,24 @@ export const cancelOrderByCustomer = onCall(FUNCTION_CONFIG, async (request) => 
 
 export const createProduct = onCall(FUNCTION_CONFIG, async (request) => {
   requireAdmin(request);
-  const lojaId = getStoreId(request.data);
   const productData = request.data?.productData;
 
   if (!productData?.name || !productData?.category) {
     throw new HttpsError("invalid-argument", "name e category são obrigatórios.");
   }
 
-  const counterRef = db.doc(`lojas/${lojaId}/meta/productCounter`);
+  const counterRef = db.doc("meta/productCounter");
   const counterSnap = await counterRef.get();
   if (!counterSnap.exists) {
-    const maxSnap = await db.collection(`lojas/${lojaId}/products`)
+    const maxSnap = await db.collection("products")
         .orderBy("code", "desc").limit(1).get();
     const maxCode = maxSnap.empty ? 0 : Number(maxSnap.docs[0].data().code || 0);
     await counterRef.set({value: maxCode, bootstrapped: true});
   }
 
   const result = await db.runTransaction(async (tx) => {
-    const code = await generateProductCodeTx(tx, lojaId);
-    const productRef = db.collection(`lojas/${lojaId}/products`).doc();
+    const code = await generateProductCodeTx(tx);
+    const productRef = db.collection("products").doc();
     tx.set(productRef, {
       ...productData,
       code,
@@ -933,7 +915,6 @@ export const createUploadSession = onCall(FUNCTION_CONFIG, async (request) => {
   const requestId = request.rawRequest?.headers["x-cloud-trace-context"] || crypto.randomUUID();
 
   try {
-    const lojaId = getStoreId(request.data);
     const productId = String(request.data?.productId || "").trim();
     const filesMeta = validateFilesMetadata(request.data?.filesMeta);
 
@@ -946,7 +927,7 @@ export const createUploadSession = onCall(FUNCTION_CONFIG, async (request) => {
     const uploads = [];
 
     for (const fileMeta of filesMeta) {
-      const objectKey = `lojas/${lojaId}/produtos/${productId}/${fileMeta.kind === "image" ? "imagens" : "videos"}/${crypto.randomUUID()}.${fileMeta.extension || "bin"}`;
+      const objectKey = `produtos/${productId}/${fileMeta.kind === "image" ? "imagens" : "videos"}/${crypto.randomUUID()}.${fileMeta.extension || "bin"}`;
       const file = bucket.file(objectKey);
       const [signedUrl] = await file.getSignedUrl({
         version: "v4",
@@ -968,7 +949,6 @@ export const createUploadSession = onCall(FUNCTION_CONFIG, async (request) => {
     logInfo("createUploadSession_success", {
       requestId,
       uid,
-      lojaId,
       productId,
       filesCount: uploads.length,
     });
@@ -1028,7 +1008,6 @@ export const commitMedia = onCall(FUNCTION_CONFIG, async (request) => {
   const requestId = request.rawRequest?.headers["x-cloud-trace-context"] || crypto.randomUUID();
 
   try {
-    const lojaId = getStoreId(request.data);
     const productId = String(request.data?.productId || "").trim();
     const uploadedObjects = Array.isArray(request.data?.uploadedObjects) ? request.data.uploadedObjects : [];
     const keepExistingImageUrls = Array.isArray(request.data?.keepExistingImageUrls) ? request.data.keepExistingImageUrls : [];
@@ -1052,7 +1031,7 @@ export const commitMedia = onCall(FUNCTION_CONFIG, async (request) => {
         throw new HttpsError("invalid-argument", "uploadedObjects inválido.");
       }
 
-      const expectedPrefix = `lojas/${lojaId}/produtos/${productId}/`;
+      const expectedPrefix = `produtos/${productId}/`;
       if (!objectKey.startsWith(expectedPrefix)) {
         throw new HttpsError("permission-denied", "Objeto fora do escopo permitido.");
       }
@@ -1091,7 +1070,7 @@ export const commitMedia = onCall(FUNCTION_CONFIG, async (request) => {
       }
     }
 
-    const productRef = db.doc(`lojas/${lojaId}/products/${productId}`);
+    const productRef = db.doc(`products/${productId}`);
     const finalImages = [...keepExistingImageUrls, ...images];
     const updatePayload = {
       images: finalImages,
@@ -1119,14 +1098,13 @@ export const commitMedia = onCall(FUNCTION_CONFIG, async (request) => {
           continue;
         }
         const filePath = pathMatch[1];
-        if (!filePath.startsWith(`lojas/${lojaId}/produtos/${productId}/`)) {
+        if (!filePath.startsWith(`produtos/${productId}/`)) {
           continue;
         }
         await bucket.file(filePath).delete({ignoreNotFound: true});
       } catch (error) {
         logError("commitMedia_delete_old_media_failed", {
           uid,
-          lojaId,
           productId,
           mediaUrl,
           message: error.message,
@@ -1137,7 +1115,6 @@ export const commitMedia = onCall(FUNCTION_CONFIG, async (request) => {
     logInfo("commitMedia_success", {
       requestId,
       uid,
-      lojaId,
       productId,
       imagesCount: finalImages.length,
       hasVideo: Boolean(updatePayload.video),
@@ -1167,7 +1144,6 @@ export const commitMedia = onCall(FUNCTION_CONFIG, async (request) => {
 
 export const deleteMedia = onCall(FUNCTION_CONFIG, async (request) => {
   requireAdmin(request);
-  const lojaId = getStoreId(request.data);
   const productId = String(request.data?.productId || "").trim();
   const mediaUrls = Array.isArray(request.data?.mediaUrls) ? request.data.mediaUrls : [];
   const objectKeys = Array.isArray(request.data?.objectKeys) ? request.data.objectKeys : [];
@@ -1178,7 +1154,7 @@ export const deleteMedia = onCall(FUNCTION_CONFIG, async (request) => {
   }
 
   let deletedCount = 0;
-  const expectedPrefix = `lojas/${lojaId}/produtos/${productId}/`;
+  const expectedPrefix = `produtos/${productId}/`;
 
   for (const objectKeyRaw of objectKeys) {
     const objectKey = String(objectKeyRaw || "").trim();
@@ -1205,7 +1181,6 @@ export const deleteMedia = onCall(FUNCTION_CONFIG, async (request) => {
 
   logInfo("deleteMedia_success", {
     uid: request.auth.uid,
-    lojaId,
     productId,
     deletedCount,
   });
@@ -1215,13 +1190,12 @@ export const deleteMedia = onCall(FUNCTION_CONFIG, async (request) => {
 
 export const processEmailQueue = onDocumentCreated(
   {
-    document: "lojas/{lojaId}/emailQueue/{docId}",
+    document: "emailQueue/{docId}",
     region: "southamerica-east1",
     timeoutSeconds: 30,
     memory: "256MiB",
   },
   async (event) => {
-    const lojaId = event.params.lojaId;
     const docId = event.params.docId;
     const snap = event.data;
     if (!snap) return;
@@ -1233,7 +1207,7 @@ export const processEmailQueue = onDocumentCreated(
 
     const apiKey = globalThis.process?.env?.RESEND_API_KEY;
     if (!apiKey) {
-      logError("processEmailQueue_no_api_key", {lojaId, docId});
+      logError("processEmailQueue_no_api_key", {docId});
       await docRef.update({
         status: "failed",
         errorMessage: "RESEND_API_KEY não configurado nas variáveis de ambiente.",
@@ -1300,10 +1274,9 @@ export const processEmailQueue = onDocumentCreated(
         updatedAt: FieldValue.serverTimestamp(),
       });
 
-      logInfo("processEmailQueue_sent", {lojaId, docId, orderNumber, type, to});
+      logInfo("processEmailQueue_sent", {docId, orderNumber, type, to});
     } catch (err) {
       logError("processEmailQueue_error", {
-        lojaId,
         docId,
         orderNumber,
         type,
@@ -1329,8 +1302,7 @@ export const cleanupExpiredCarts = onSchedule(
     timeoutSeconds: 300,
   },
   async () => {
-    const lojaId = globalThis.process?.env?.DEFAULT_STORE_ID || "esdra-aromas";
-    const cartsRef = db.collection(`lojas/${lojaId}/carts`);
+    const cartsRef = db.collection("carts");
 
     let expiredCarts;
     try {
@@ -1358,7 +1330,7 @@ export const cleanupExpiredCarts = onSchedule(
       try {
         await db.runTransaction(async (tx) => {
           const invRefs = items.map((item) =>
-            db.doc(`lojas/${lojaId}/products/${item.productId}/inventory/${item.size}`)
+            db.doc(`products/${item.productId}/inventory/${item.size}`)
           );
           const invSnaps = await Promise.all(invRefs.map((ref) => tx.get(ref)));
 

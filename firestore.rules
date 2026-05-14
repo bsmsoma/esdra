@@ -2,61 +2,52 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper functions
     function isAuthenticated() {
       return request.auth != null;
     }
-    
+
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
-    
+
     function isAdmin() {
-      return isAuthenticated() && 
+      return isAuthenticated() &&
              request.auth.token.admin == true;
     }
-    
-    // Produtos (existente)
-    match /lojas/{lojaId}/products/{productId} {
+
+    match /products/{productId} {
       allow read: if true;
       allow write: if isAdmin();
-      
-      // Estoque (subcoleção)
+
       match /inventory/{size} {
         allow read: if true;
         allow write: if isAdmin();
-        // Usuários autenticados podem atualizar apenas o campo `reserved` (reserva de carrinho).
-        // quantity, sold e outros campos continuam exclusivos do admin/backend.
         allow update: if isAuthenticated()
           && request.resource.data.diff(resource.data)
               .affectedKeys()
               .hasOnly(['reserved', 'lastUpdated']);
       }
     }
-    
-    // Clientes
-    match /lojas/{lojaId}/customers/{customerId} {
+
+    match /customers/{customerId} {
       allow read: if isOwner(customerId) || isAdmin();
       allow create: if isAuthenticated() && isOwner(customerId);
       allow update: if isOwner(customerId) || isAdmin();
       allow delete: if isAdmin();
     }
-    
-    // Carrinhos
-    match /lojas/{lojaId}/carts/{userId} {
+
+    match /carts/{userId} {
       allow read: if isOwner(userId) || isAdmin();
       allow write: if isOwner(userId);
     }
-    
-    // Pedidos: only owner or admin can read; only owner can create order for themselves
-    match /lojas/{lojaId}/orders/{orderId} {
-      allow read: if isAdmin() || 
+
+    match /orders/{orderId} {
+      allow read: if isAdmin() ||
                     (isAuthenticated() && resource.data.customerId == request.auth.uid);
-      allow create: if isAuthenticated() && 
+      allow create: if isAuthenticated() &&
                        request.resource.data.customerId == request.auth.uid;
-      // Atualizações críticas (status, pagamento, total, itens) devem ser feitas no backend.
       allow update: if isAdmin();
       allow delete: if isAdmin();
     }
   }
-} 
+}

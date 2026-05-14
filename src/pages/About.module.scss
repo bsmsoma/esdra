@@ -2,45 +2,173 @@
 @use "../styles/variables" as vars;
 @use "../styles/tokens" as *;
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+$ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+
+// ─── Section ────────────────────────────────────────────────────────────────
 
 .aboutus {
-    background: $background-color;
-    padding: vars.$padding-4xl;
-    text-align: center;
+    background: $color-bg;
     border-radius: vars.$radius-xl;
+    overflow: hidden;
     opacity: 0;
-    font-family: $defaultFont;
-    transform: translateY(20px);
-    transition: all vars.$animation-duration-slower vars.$ease-in-out;
-    
+    transition: opacity 0.25s ease;
+
     &.visible {
         opacity: 1;
-        transform: translateY(0);
-    }
 
-    h2 {
-        font-size: $font-size-8xl;
-        margin-bottom: vars.$margin-5xl;
-        color: $text-primary;
+        .imageWrap {
+            clip-path: inset(0 0 0% 0);
+        }
+
+        .imageWrap img {
+            transform: scale(1);
+        }
+
+        .heading {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .rule {
+            transform: scaleX(1);
+        }
+
+        .body p {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
+}
+
+// ─── Layout ─────────────────────────────────────────────────────────────────
+
+.inner {
+    display: grid;
+    grid-template-columns: 52% 1fr;
+    min-height: 620px;
+
+    @media (max-width: vars.$breakpoint-tablet) {
+        grid-template-columns: 1fr;
+    }
+}
+
+// ─── Image ──────────────────────────────────────────────────────────────────
+
+.imageWrap {
+    overflow: hidden;
+    clip-path: inset(0 0 100% 0);
+    transition: clip-path 0.8s $ease-out 0.05s;
 
     img {
         width: 100%;
-        max-height: 700px;
+        height: 100%;
         object-fit: cover;
-        border-radius: vars.$radius-xl;
-        margin-bottom: vars.$margin-5xl;
+        object-position: center 20%;
+        display: block;
+        transform: scale(1.05);
+        transition: transform 1.2s $ease-out;
+
+        @media (hover: hover) and (pointer: fine) {
+            .imageWrap:hover & {
+                transform: scale(1.03);
+            }
+        }
+
+        @media (max-width: vars.$breakpoint-tablet) {
+            min-height: 420px;
+        }
+    }
+}
+
+// ─── Content ─────────────────────────────────────────────────────────────────
+
+.content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 4rem 4rem 4rem 4.5rem;
+    background:
+        radial-gradient(ellipse at 130% 55%, rgba(184, 160, 126, 0.18) 0%, transparent 58%),
+        $color-bg;
+    overflow: hidden;
+
+    // Decorative watermark
+    &::before {
+        content: '01';
+        position: absolute;
+        bottom: -1rem;
+        right: 1.5rem;
+        font-family: $font-clash-semibold;
+        font-size: 11rem;
+        color: $color-title;
+        opacity: 0.04;
+        line-height: 1;
+        letter-spacing: -0.04em;
+        pointer-events: none;
+        user-select: none;
     }
 
-    p {
-        font-size: $font-size-2xl;
-        line-height: $line-height-relaxed;
-        color: $text-primary;
-        margin-bottom: vars.$margin-5xl;
+    @media (max-width: vars.$breakpoint-tablet) {
+        padding: 3rem vars.$padding-4xl;
     }
+}
+
+// ─── Heading ─────────────────────────────────────────────────────────────────
+
+.heading {
+    font-family: $font-clash-semibold;
+    font-size: clamp(2.4rem, 5vw, 4rem);
+    color: $color-title;
+    letter-spacing: -0.035em;
+    line-height: 0.95;
+    margin-bottom: 1.75rem;
+    opacity: 0;
+    transform: translateX(-18px);
+    transition: opacity 0.55s $ease-out 0.3s, transform 0.55s $ease-out 0.3s;
+}
+
+// ─── Rule ────────────────────────────────────────────────────────────────────
+
+.rule {
+    display: block;
+    height: 1px;
+    background: $color-border-soft;
+    margin-bottom: 1.75rem;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.65s $ease-out 0.52s;
+}
+
+// ─── Body text ───────────────────────────────────────────────────────────────
+
+.body {
+    p {
+        font-family: $font-secondary;
+        font-size: clamp(0.875rem, 1.3vw, 0.975rem);
+        line-height: 1.85;
+        color: $color-text;
+        opacity: 0;
+        transform: translateY(8px);
+        transition: opacity 0.5s $ease-out, transform 0.5s $ease-out;
+
+        &:not(:last-child) {
+            margin-bottom: 1.1rem;
+        }
+
+        &:nth-child(1) { transition-delay: 0.62s; }
+        &:nth-child(2) { transition-delay: 0.72s; }
+        &:nth-child(3) { transition-delay: 0.82s; }
+    }
+}
+
+// ─── Reduced motion ──────────────────────────────────────────────────────────
+
+@media (prefers-reduced-motion: reduce) {
+    .aboutus { transition: opacity 0.15s ease; }
+    .imageWrap { transition: none; clip-path: inset(0); }
+    .imageWrap img { transition: none; transform: none; }
+    .heading { transition: opacity 0.15s ease; transform: none; }
+    .rule { transition: none; transform: scaleX(1); }
+    .body p { transition: opacity 0.15s ease; transform: none; }
 }

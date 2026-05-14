@@ -69,14 +69,9 @@ if (import.meta.env.VITE_USE_EMULATORS === "true") {
     connectFunctionsEmulator(functions, "127.0.0.1", 5001);
 }
 
-// Store ID for multi-tenant support
-export function getStoreId() {
-    return import.meta.env.VITE_STORE_ID || "esdra-aromas";
-}
-
-// Get products collection with multi-tenant structure
+// Get products collection
 export function getProductsCollection() {
-    return collection(db, "lojas", getStoreId(), "products");
+    return collection(db, "products");
 }
 
 // Initialize Firebase Storage
@@ -121,9 +116,9 @@ export { query, where, orderBy, limit, startAfter, getCountFromServer, or };
 // Storage of files
 export { getStorage, ref, uploadBytes, getDownloadURL, deleteObject };
 
-// Helper function to get product document reference (multi-tenant structure)
+// Helper function to get product document reference
 export function getProductDocRef(productId) {
-    return doc(db, "lojas", getStoreId(), "products", productId);
+    return doc(db, "products", productId);
 }
 
 //my custom functions to handle database
@@ -254,28 +249,22 @@ export const formatVideoFileName = (
     return `${productCode}-${normalizedName}.${extension}`;
 };
 
-// Gera o caminho completo no Storage para imagens de produtos (estrutura multi-tenant)
 export function getProductStoragePath(productId, fileName) {
-    const storeId = getStoreId();
-    return `lojas/${storeId}/produtos/${productId}/imagens/${fileName}`;
+    return `produtos/${productId}/imagens/${fileName}`;
 }
 
-// Gera o caminho completo no Storage para vídeos de produtos (estrutura multi-tenant)
 export function getProductVideoPath(productId, fileName) {
-    const storeId = getStoreId();
-    return `lojas/${storeId}/produtos/${productId}/videos/${fileName}`;
+    return `produtos/${productId}/videos/${fileName}`;
 }
 
 // =============================== INVENTORY FUNCTIONS =============================== //
 
-// Obter referência da coleção de estoque
 export function getInventoryCollection(productId) {
-    return collection(db, "lojas", getStoreId(), "products", productId, "inventory");
+    return collection(db, "products", productId, "inventory");
 }
 
-// Obter referência de estoque por tamanho
 export function getInventorySizeRef(productId, size) {
-    return doc(db, "lojas", getStoreId(), "products", productId, "inventory", size.toString());
+    return doc(db, "products", productId, "inventory", size.toString());
 }
 
 // Verificar disponibilidade
@@ -406,14 +395,12 @@ export async function getProductInventory(productId) {
 
 // =============================== CUSTOMER FUNCTIONS =============================== //
 
-// Obter coleção de clientes
 export function getCustomersCollection() {
-    return collection(db, "lojas", getStoreId(), "customers");
+    return collection(db, "customers");
 }
 
-// Obter referência de cliente
 export function getCustomerDocRef(customerId) {
-    return doc(db, "lojas", getStoreId(), "customers", customerId);
+    return doc(db, "customers", customerId);
 }
 
 // Criar ou atualizar cliente
@@ -448,14 +435,12 @@ export async function getCustomerByUid(uid) {
 
 // =============================== CART FUNCTIONS =============================== //
 
-// Obter coleção de carrinhos
 export function getCartsCollection() {
-    return collection(db, "lojas", getStoreId(), "carts");
+    return collection(db, "carts");
 }
 
-// Obter referência de carrinho
 export function getCartDocRef(userId) {
-    return doc(db, "lojas", getStoreId(), "carts", userId);
+    return doc(db, "carts", userId);
 }
 
 // Obter carrinho por ID do usuário
@@ -484,14 +469,12 @@ export async function createOrUpdateCart(userId, items) {
 
 // =============================== ORDER FUNCTIONS =============================== //
 
-// Obter coleção de pedidos
 export function getOrdersCollection() {
-    return collection(db, "lojas", getStoreId(), "orders");
+    return collection(db, "orders");
 }
 
-// Obter referência de pedido
 export function getOrderDocRef(orderId) {
-    return doc(db, "lojas", getStoreId(), "orders", orderId);
+    return doc(db, "orders", orderId);
 }
 
 // Gerar número único do pedido
@@ -658,7 +641,6 @@ export async function createOrderSecure({
     customer,
     notes = "",
     idempotencyKey,
-    storeId = getStoreId(),
 }) {
     const callable = httpsCallable(functions, "createOrder");
     const response = await callable({
@@ -669,7 +651,6 @@ export async function createOrderSecure({
         customer,
         notes,
         idempotencyKey,
-        storeId,
     });
     return response.data;
 }
@@ -679,7 +660,6 @@ export async function updateOrderStatusByAdmin({
     status,
     paymentStatus = "",
     adminNotes = "",
-    storeId = getStoreId(),
 }) {
     const callable = httpsCallable(functions, "updateOrderStatusByAdmin");
     const response = await callable({
@@ -687,28 +667,19 @@ export async function updateOrderStatusByAdmin({
         status,
         paymentStatus,
         adminNotes,
-        storeId,
     });
     return response.data;
 }
 
-export async function cancelOrderByCustomer({ orderId, storeId = getStoreId() }) {
+export async function cancelOrderByCustomer({ orderId }) {
     const callable = httpsCallable(functions, "cancelOrderByCustomer");
-    const response = await callable({ orderId, storeId });
+    const response = await callable({ orderId });
     return response.data;
 }
 
-export async function createUploadSession({
-    productId,
-    filesMeta,
-    storeId = getStoreId(),
-}) {
+export async function createUploadSession({ productId, filesMeta }) {
     const callable = httpsCallable(functions, "createUploadSession");
-    const response = await callable({
-        productId,
-        filesMeta,
-        storeId,
-    });
+    const response = await callable({ productId, filesMeta });
     return response.data;
 }
 
@@ -720,7 +691,6 @@ export async function commitMedia({
     replaceVideo = false,
     removeVideo = false,
     oldVideoUrl = "",
-    storeId = getStoreId(),
 }) {
     const callable = httpsCallable(functions, "commitMedia");
     const response = await callable({
@@ -731,14 +701,13 @@ export async function commitMedia({
         replaceVideo,
         removeVideo,
         oldVideoUrl,
-        storeId,
     });
     return response.data;
 }
 
-export async function createProduct({ productData, storeId = getStoreId() }) {
+export async function createProduct({ productData }) {
     const callable = httpsCallable(functions, "createProduct");
-    const response = await callable({ productData, storeId });
+    const response = await callable({ productData });
     return response.data; // { productId, code }
 }
 
@@ -746,15 +715,9 @@ export async function deleteMediaSecure({
     productId,
     mediaUrls = [],
     objectKeys = [],
-    storeId = getStoreId(),
 }) {
     const callable = httpsCallable(functions, "deleteMedia");
-    const response = await callable({
-        productId,
-        mediaUrls,
-        objectKeys,
-        storeId,
-    });
+    const response = await callable({ productId, mediaUrls, objectKeys });
     return response.data;
 }
 
