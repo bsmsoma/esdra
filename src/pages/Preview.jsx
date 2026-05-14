@@ -1,6 +1,7 @@
 import React from "react";
 import { toast } from "react-toastify";
 import styles from "./Preview.module.scss";
+import RouteError from "../components/RouteError";
 
 // ─── Toast samples ────────────────────────────────────────────────────────────
 
@@ -53,6 +54,11 @@ export default function Preview() {
                         return <ToastSample key={t.type} {...t} />;
                     })}
                 </div>
+            </section>
+
+            <section className={styles.section}>
+                <h2 className={styles.sectionTitle}>RouteError</h2>
+                <RouteError />
             </section>
 
             <section className={styles.section}>

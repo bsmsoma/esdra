@@ -206,8 +206,6 @@ function Home() {
         navigate("/products?query=sabonete%20artesanal");
     }
 
-    const showVideoColumn = validHeroVideos.length > 0;
-
     function renderProductCard(product) {
         const productImage = getProductImage(product);
         const productPrice = getProductPrice(product);
