@@ -21,30 +21,38 @@ import { toast } from "react-toastify";
 import { formatPrice } from "../utils/priceUtils";
 import { formatSizesDisplayForAdmin } from "../utils/productSizes";
 import { getProductCoverImageUrl } from "../utils/productMedia";
-import { invalidateCache } from "../utils/cache";
+import { generateCacheKey, getCachedData, setCachedData, invalidateCache } from "../utils/cache";
 import { debug } from "../utils/logger";
 
 export async function dashboardLoader() {
-    // A autenticação já é verificada no loader do DashboardLayout (rota pai)
+    const cacheKey = generateCacheKey("dashboard");
+    const cached = getCachedData(cacheKey);
+    if (cached !== null) return cached;
+
     const snapshot = await getDocs(getProductsCollection());
-    const products = snapshot.docs.map(function (d) {
+    const products = snapshot.docs.map(function(d) {
         return { ...d.data(), id: d.id };
     });
 
-    // Fetch inventory for each product and compute total available stock
-    const productsWithStock = await Promise.all(
-        products.map(async function (product) {
-            const inventory = await getProductInventory(product.id);
-            let totalStock = 0;
-            Object.values(inventory).forEach(function (sizeData) {
-                const q = sizeData.quantity || 0;
-                const r = sizeData.reserved || 0;
-                totalStock += Math.max(0, q - r);
+    // allSettled: falha de inventário de um produto não derruba o dashboard inteiro
+    const results = await Promise.allSettled(
+        products.map(function(product) {
+            return getProductInventory(product.id).then(function(inventory) {
+                let totalStock = 0;
+                Object.values(inventory).forEach(function(sizeData) {
+                    totalStock += Math.max(0, (sizeData.quantity || 0) - (sizeData.reserved || 0));
+                });
+                return { ...product, totalStock };
             });
-            return { ...product, totalStock };
         })
     );
 
+    const productsWithStock = results.map(function(result, i) {
+        if (result.status === "fulfilled") return result.value;
+        return { ...products[i], totalStock: null };
+    });
+
+    setCachedData(cacheKey, productsWithStock);
     return productsWithStock;
 }
 
@@ -111,6 +119,7 @@ export default function Dashboard() {
                 await deleteDoc(getProductDocRef(id));
 
                 // Invalidate all product caches since a product was deleted
+                invalidateCache("dashboard");
                 invalidateCache("productsLayout");
                 invalidateCache("home");
                 invalidateCache("productDetails");
