@@ -1,0 +1,97 @@
+@use "../App.scss" as *;
+@use "../styles/variables" as vars;
+@use "../styles/tokens" as *;
+
+.wrap {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: vars.$spacing-2xl;
+    background: $color-bg;
+}
+
+.inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 420px;
+}
+
+.code {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: vars.$radius-full;
+    border: 1.5px solid $color-border-soft;
+    font-family: $font-clash-semibold;
+    font-size: 1.4rem;
+    color: $color-muted;
+    margin-bottom: 1.5rem;
+}
+
+.title {
+    font-family: $font-clash-semibold;
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    color: $color-title;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+    margin-bottom: 0.75rem;
+}
+
+.message {
+    font-family: $font-secondary;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: $color-text;
+    margin-bottom: 2rem;
+}
+
+.actions {
+    display: flex;
+    gap: vars.$gap-xl;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.btnPrimary {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.65rem 1.5rem;
+    background: $color-title;
+    color: #fff;
+    font-family: $font-secondary;
+    font-size: 0.875rem;
+    border-radius: vars.$radius-999;
+    text-decoration: none;
+    transition: background 0.2s ease, transform 0.15s ease;
+
+    &:active { transform: scale(0.97); }
+
+    @media (hover: hover) and (pointer: fine) {
+        &:hover { background: $color-muted; }
+    }
+}
+
+.btnSecondary {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.65rem 1.5rem;
+    background: transparent;
+    color: $color-text;
+    font-family: $font-secondary;
+    font-size: 0.875rem;
+    border: 1px solid $color-border-soft;
+    border-radius: vars.$radius-999;
+    cursor: pointer;
+    transition: border-color 0.2s ease, transform 0.15s ease;
+
+    &:active { transform: scale(0.97); }
+
+    @media (hover: hover) and (pointer: fine) {
+        &:hover { border-color: $color-muted; }
+    }
+}

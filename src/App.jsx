@@ -38,6 +38,7 @@ import { RouterProvider } from "react-router/dom";
 import { AuthProvider, requireAdminAuth } from "./contexts/AuthContext";
 import { CartProvider } from "./contexts/CartContext";
 import ErrorBoundary from "./components/ErrorBoundary";
+import RouteError from "./components/RouteError";
 import HydrateFallback from "./components/HydrateFallback";
 import "./App.scss";
 import { ToastContainer, Slide } from "react-toastify";
@@ -72,6 +73,7 @@ const router = createBrowserRouter(
             path="/"
             element={<RootLayout />}
             HydrateFallback={HydrateFallback}
+            errorElement={<RouteError />}
         > {/* Layout is the main layout of the app */}
             <Route index element={<Home />} loader={homeLoader} />
             <Route path="about" element={<About />} />

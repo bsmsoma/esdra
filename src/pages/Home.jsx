@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, Suspense } from "react";
 import styles from "./Home.module.scss";
 import editorialImg from "../assets/image/editorial-ingredients.jpeg";
-import { Link, useNavigate, useLoaderData, useLocation } from "react-router";
+import { Link, useNavigate, useLoaderData, useLocation, Await } from "react-router";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination } from "swiper/modules";
 import "swiper/css";
@@ -92,101 +92,68 @@ function getProductDescription(product) {
     );
 }
 
-// Loader function to fetch the last 4 products by code and last 5 videos
-export async function homeLoader() {
+async function fetchRecentProducts() {
     const cacheKey = generateCacheKey("home");
-    const videosCacheKey = generateCacheKey("home-videos");
+    const cached = getCachedData(cacheKey);
+    if (cached !== null) return cached;
 
-    // Try to get from cache first
-    const cachedData = getCachedData(cacheKey);
-    const cachedVideos = getCachedData(videosCacheKey);
-
-    let products = cachedData;
-    let videos = cachedVideos;
-
-    if (products === null) {
-        try {
-            const q = query(
-                getProductsCollection(),
-                orderBy("code", "desc"),
-                limit(4)
-            );
-            const snapshot = await getDocs(q);
-            products = mapSnapshotProducts(snapshot);
-
-            // Store in cache
-            setCachedData(cacheKey, products);
-        } catch (error) {
-            console.error("Erro ao buscar produtos recentes:", error);
-            products = [];
-        }
+    try {
+        const q = query(getProductsCollection(), orderBy("code", "desc"), limit(4));
+        const snapshot = await getDocs(q);
+        const products = mapSnapshotProducts(snapshot);
+        setCachedData(cacheKey, products);
+        return products;
+    } catch (error) {
+        console.error("Erro ao buscar produtos recentes:", error);
+        return [];
     }
+}
 
-    if (videos === null) {
-        try {
-            // Buscar produtos ordenados por code (mais recentes primeiro)
-            // Buscar mais produtos para garantir que temos vídeos suficientes
-            const allProductsQuery = query(
-                getProductsCollection(),
-                orderBy("code", "desc"),
-                limit(50)
-            );
-            const allProductsSnapshot = await getDocs(allProductsQuery);
-            const allProducts = mapSnapshotProducts(allProductsSnapshot);
+async function fetchHeroVideos() {
+    const cacheKey = generateCacheKey("home-videos");
+    const cached = getCachedData(cacheKey);
+    if (cached !== null) return cached;
 
-            // Filtrar produtos com vídeo e pegar os 5 mais recentes
-            const productsWithVideos = allProducts
-                .filter(function (product) {
-                    return (
-                        product.video &&
-                        product.video !== null &&
-                        product.video !== ""
-                    );
-                })
-                .sort(function (a, b) {
-                    // Ordenar por createdAt se disponível, senão por code
-                    if (a.createdAt && b.createdAt) {
-                        const aTime = a.createdAt.toMillis
-                            ? a.createdAt.toMillis()
-                            : 0;
-                        const bTime = b.createdAt.toMillis
-                            ? b.createdAt.toMillis()
-                            : 0;
-                        return bTime - aTime;
-                    }
-                    return (b.code || 0) - (a.code || 0);
-                })
-                .slice(0, 5);
+    try {
+        const q = query(getProductsCollection(), orderBy("code", "desc"), limit(50));
+        const snapshot = await getDocs(q);
+        const allProducts = mapSnapshotProducts(snapshot);
 
-            videos = productsWithVideos.map(function (product) {
-                return {
-                    id: product.id,
-                    videoUrl: product.video,
-                };
-            });
+        const productsWithVideos = allProducts
+            .filter(function(p) { return p.video && p.video !== ""; })
+            .sort(function(a, b) {
+                if (a.createdAt && b.createdAt) {
+                    const aTime = a.createdAt.toMillis ? a.createdAt.toMillis() : 0;
+                    const bTime = b.createdAt.toMillis ? b.createdAt.toMillis() : 0;
+                    return bTime - aTime;
+                }
+                return (b.code || 0) - (a.code || 0);
+            })
+            .slice(0, 5);
 
-            // Se não houver vídeos suficientes, preencher com null
-            videos = [...videos, ...getEmptyVideos()].slice(0, 5);
+        const videos = [
+            ...productsWithVideos.map(function(p) { return { id: p.id, videoUrl: p.video }; }),
+            ...getEmptyVideos(),
+        ].slice(0, 5);
 
-            // Store in cache
-            setCachedData(videosCacheKey, videos);
-        } catch (error) {
-            console.error("Erro ao buscar vídeos:", error);
-            videos = getEmptyVideos();
-        }
+        setCachedData(cacheKey, videos);
+        return videos;
+    } catch (error) {
+        console.error("Erro ao buscar vídeos:", error);
+        return getEmptyVideos();
     }
+}
 
-    return {
-        products: products || [],
-        videos: videos || [],
-    };
+export async function homeLoader() {
+    const products = await fetchRecentProducts(); // crítico — bloqueia navegação, chega pronto
+    const videosPromise = fetchHeroVideos();      // não-crítico — deferred, carrega em background
+
+    return { products, videosPromise };
 }
 
 function Home() {
     const navigate = useNavigate();
-    const loaderData = useLoaderData();
-    const recentProducts = loaderData.products || [];
-    const mainHeroVideos = loaderData.videos || [];
+    const { products: recentProducts = [], videosPromise } = useLoaderData();
     const location = useLocation();
     const trustStripRef = React.useRef(null);
     const productsGridRef = React.useRef(null);
@@ -210,11 +177,6 @@ function Home() {
         return function() { observer.disconnect(); };
     }, []);
 
-const validHeroVideos = useMemo(function () {
-        return mainHeroVideos.filter(function (video) {
-            return video && video.videoUrl;
-        });
-    }, [mainHeroVideos]);
 
     // Handle scroll to section when hash is present in URL
     useEffect(
@@ -244,6 +206,8 @@ const validHeroVideos = useMemo(function () {
         navigate("/products?query=sabonete%20artesanal");
     }
 
+    const showVideoColumn = validHeroVideos.length > 0;
+
     function renderProductCard(product) {
         const productImage = getProductImage(product);
         const productPrice = getProductPrice(product);
@@ -265,103 +229,106 @@ const validHeroVideos = useMemo(function () {
         );
     }
 
-    const showVideoColumn = validHeroVideos.length > 0;
+    const heroBanner = (
+        <div className={styles.promotionBanner}>
+            <video
+                className={styles.promotionVideo}
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="metadata"
+            >
+                <source src={HERO_LOOP_VIDEO_URL} type="video/webm" />
+                Seu navegador nao suporta videos.
+            </video>
+            <div className={styles.promotionContent}>
+                <span className={styles.promotionEyebrow}>ESDRA · Aromas</span>
+                <div className={styles.promotionRule} aria-hidden="true" />
+                <h2 className={styles.promotionTitle}>
+                    Ritual<br />
+                    <em>de Presença</em>
+                </h2>
+                <p className={styles.promotionSubtitle}>
+                    Feito à mão.<br />Sentido em cada detalhe.
+                </p>
+                <div className={styles.promotionActions}>
+                    <button
+                        type="button"
+                        className={styles.promotionButton}
+                        onClick={handlePromotionClick}
+                    >
+                        Explorar
+                        <span className={styles.promotionButtonArrow} aria-hidden="true">→</span>
+                    </button>
+                    <Link to="/products" className={styles.promotionButtonSecondary}>
+                        Ver coleção
+                    </Link>
+                </div>
+            </div>
+        </div>
+    );
 
     return (
         <div id="home" className={styles.homeContainer}>
-            <section
-                className={
-                    showVideoColumn
-                        ? styles.heroSection
-                        : `${styles.heroSection} ${styles.heroSectionBannerOnly}`
-                }
-            >
-                <div
-                    className={
-                        showVideoColumn
-                            ? styles.topGridSection
-                            : `${styles.topGridSection} ${styles.topGridSectionBannerOnly}`
-                    }
-                >
-                    {showVideoColumn && (
-                        <div className={styles.portraitVideoContainer}>
-                            <Swiper
-                                className={styles.heroVideoSwiper}
-                                modules={[Pagination]}
-                                pagination={{
-                                    clickable: true,
-                                }}
-                                spaceBetween={0}
-                                slidesPerView={1}
-                            >
-                                {validHeroVideos.map(function (video, index) {
-                                    return (
-                                        <SwiperSlide
-                                            key={video.id || `video-${index}`}
-                                            className={styles.heroVideoSlide}
-                                        >
-                                            <video
-                                                className={styles.portraitVideo}
-                                                autoPlay
-                                                loop
-                                                muted
-                                                playsInline
-                                            >
-                                                <source
-                                                    src={video.videoUrl}
-                                                    type="video/mp4"
-                                                />
-                                                Seu navegador não suporta vídeos.
-                                            </video>
-                                        </SwiperSlide>
-                                    );
-                                })}
-                            </Swiper>
-                        </div>
-                    )}
-                    <div className={styles.promotionBanner}>
-                        <video
-                            className={styles.promotionVideo}
-                            autoPlay
-                            loop
-                            muted
-                            playsInline
-                            preload="metadata"
-                        >
-                            <source src={HERO_LOOP_VIDEO_URL} type="video/webm" />
-                            Seu navegador nao suporta videos.
-                        </video>
-                        <div className={styles.promotionContent}>
-                            <span className={styles.promotionEyebrow}>
-                                ESDRA · Aromas
-                            </span>
-                            <div className={styles.promotionRule} aria-hidden="true" />
-                            <h2 className={styles.promotionTitle}>
-                                Ritual<br />
-                                <em>de Presença</em>
-                            </h2>
-                            <p className={styles.promotionSubtitle}>
-                                Feito à mão.<br />Sentido em cada detalhe.
-                            </p>
-                            <div className={styles.promotionActions}>
-                                <button
-                                    type="button"
-                                    className={styles.promotionButton}
-                                    onClick={handlePromotionClick}
-                                >
-                                    Explorar
-                                    <span className={styles.promotionButtonArrow} aria-hidden="true">→</span>
-                                </button>
-                                <Link
-                                    to="/products"
-                                    className={styles.promotionButtonSecondary}
-                                >
-                                    Ver coleção
-                                </Link>
-                            </div>
-                        </div>
+            <section className={styles.heroSection}>
+                <Suspense fallback={
+                    <div className={styles.topGridSection}>
+                        <div className={styles.videoColumnSkeleton} />
+                        {heroBanner}
                     </div>
-                </div>
+                }>
+                    <Await resolve={videosPromise} errorElement={
+                        <div className={`${styles.topGridSection} ${styles.topGridSectionBannerOnly}`}>
+                            {heroBanner}
+                        </div>
+                    }>
+                        {function(videos) {
+                            const validVideos = videos.filter(function(v) { return v && v.videoUrl; });
+                            if (!validVideos.length) {
+                                return (
+                                    <div className={`${styles.topGridSection} ${styles.topGridSectionBannerOnly}`}>
+                                        {heroBanner}
+                                    </div>
+                                );
+                            }
+                            return (
+                                <div className={styles.topGridSection}>
+                                    <div className={styles.portraitVideoContainer}>
+                                        <Swiper
+                                            className={styles.heroVideoSwiper}
+                                            modules={[Pagination]}
+                                            pagination={{ clickable: true }}
+                                            spaceBetween={0}
+                                            slidesPerView={1}
+                                        >
+                                            {validVideos.map(function(video, index) {
+                                                return (
+                                                    <SwiperSlide
+                                                        key={video.id || `video-${index}`}
+                                                        className={styles.heroVideoSlide}
+                                                    >
+                                                        <video
+                                                            className={styles.portraitVideo}
+                                                            autoPlay
+                                                            loop
+                                                            muted
+                                                            playsInline
+                                                        >
+                                                            <source src={video.videoUrl} type="video/mp4" />
+                                                            Seu navegador não suporta vídeos.
+                                                        </video>
+                                                    </SwiperSlide>
+                                                );
+                                            })}
+                                        </Swiper>
+                                    </div>
+                                    {heroBanner}
+                                </div>
+                            );
+                        }}
+                    </Await>
+                </Suspense>
             </section>
 
             <section

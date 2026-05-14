@@ -45,6 +45,21 @@
     }
 }
 
+.videoColumnSkeleton {
+    background: linear-gradient(110deg, #1a1a1a 30%, #2a2a2a 50%, #1a1a1a 70%);
+    background-size: 200% 100%;
+    animation: shimmer 1.6s linear infinite;
+
+    @media (max-width: $breakpoint-tablet) {
+        display: none;
+    }
+}
+
+@keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
 .portraitVideoContainer {
     position: relative;
     border-radius: 0;
