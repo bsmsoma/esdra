@@ -394,11 +394,12 @@ export default function DashboardOrders() {
                                                                     <div className={styles.itemsList}>
                                                                         {order.items.map(function (item, idx) {
                                                                             const imgSrc = item.productImage || item.imageUrl || item.image || null;
-                                                                            const itemSubtotal = (item.price || 0) * (item.quantity || 1);
+                                                                            const unitPrice = item.unitPrice || item.price || 0;
+                                                                            const itemSubtotal = item.lineTotal || unitPrice * (item.quantity || 1);
                                                                             return (
                                                                                 <div key={idx} className={styles.itemRow}>
                                                                                     {imgSrc ? (
-                                                                                        <img src={imgSrc} alt={item.name} className={styles.itemImage} />
+                                                                                        <img src={imgSrc} alt={item.productName || item.name} className={styles.itemImage} />
                                                                                     ) : (
                                                                                         <div className={styles.itemImagePlaceholder} />
                                                                                     )}
@@ -406,7 +407,7 @@ export default function DashboardOrders() {
                                                                                         <div className={styles.itemName}>{item.productName || item.name}</div>
                                                                                         <div className={styles.itemMeta}>
                                                                                             {item.size ? `${item.size} · ` : ""}
-                                                                                            {item.quantity}× · R$ {formatPrice(item.price || 0)} cada
+                                                                                            {item.quantity}× · R$ {formatPrice(unitPrice)} cada
                                                                                         </div>
                                                                                     </div>
                                                                                     <div className={styles.itemPrice}>
@@ -555,7 +556,7 @@ export default function DashboardOrders() {
                                     </thead>
                                     <tbody>
                                         {printingOrder.items.map(function (item, i) {
-                                            const unitPrice = item.price || item.unitPrice || 0;
+                                            const unitPrice = item.unitPrice || item.price || 0;
                                             const qty = item.quantity || 1;
                                             const lineTotal = item.lineTotal || unitPrice * qty;
                                             return (
