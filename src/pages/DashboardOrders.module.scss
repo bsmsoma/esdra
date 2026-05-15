@@ -572,21 +572,8 @@
 }
 
 @media print {
-    html,
-    body {
-        height: 100vh;
-        overflow: hidden;
-        margin: 0;
-        padding: 0;
-    }
-
-    body * {
-        visibility: hidden;
-    }
-
-    .printSlip,
-    .printSlip * {
-        visibility: visible;
+    #root {
+        display: none !important;
     }
 
     .printSlip {
