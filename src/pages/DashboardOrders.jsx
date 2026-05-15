@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useMemo, useState, useCallback } from "react";
+import { flushSync } from "react-dom";
 import {
     getAllOrdersPaginated,
     updateOrderStatusByAdmin,
@@ -198,11 +199,9 @@ export default function DashboardOrders() {
     function handlePrint(orderId) {
         const target = orders.find(function (o) { return o.id === orderId; });
         if (!target) return;
-        setPrintingOrder(target);
-        requestAnimationFrame(function () {
-            window.print();
-            window.addEventListener("afterprint", function () { setPrintingOrder(null); }, { once: true });
-        });
+        flushSync(function () { setPrintingOrder(target); });
+        window.print();
+        window.addEventListener("afterprint", function () { setPrintingOrder(null); }, { once: true });
     }
 
     if (loading) {
