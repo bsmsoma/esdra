@@ -393,7 +393,7 @@ export default function DashboardOrders() {
                                                                     <h4>Itens do pedido</h4>
                                                                     <div className={styles.itemsList}>
                                                                         {order.items.map(function (item, idx) {
-                                                                            const imgSrc = item.imageUrl || item.image || null;
+                                                                            const imgSrc = item.productImage || item.imageUrl || item.image || null;
                                                                             const itemSubtotal = (item.price || 0) * (item.quantity || 1);
                                                                             return (
                                                                                 <div key={idx} className={styles.itemRow}>
@@ -403,7 +403,7 @@ export default function DashboardOrders() {
                                                                                         <div className={styles.itemImagePlaceholder} />
                                                                                     )}
                                                                                     <div className={styles.itemDetails}>
-                                                                                        <div className={styles.itemName}>{item.name}</div>
+                                                                                        <div className={styles.itemName}>{item.productName || item.name}</div>
                                                                                         <div className={styles.itemMeta}>
                                                                                             {item.size ? `${item.size} · ` : ""}
                                                                                             {item.quantity}× · R$ {formatPrice(item.price || 0)} cada
@@ -560,7 +560,7 @@ export default function DashboardOrders() {
                                             const lineTotal = item.lineTotal || unitPrice * qty;
                                             return (
                                                 <tr key={i}>
-                                                    <td>{item.name || item.productName || "-"}</td>
+                                                    <td>{item.productName || item.name || "-"}</td>
                                                     <td>{item.size || "-"}</td>
                                                     <td>{qty}</td>
                                                     <td>R$ {formatPrice(unitPrice)}</td>
