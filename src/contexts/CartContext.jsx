@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useMemo, useCallback, u
 import PropTypes from "prop-types";
 import { useAuth } from "./AuthContext";
 import {
+    auth,
     getCartByUserId,
     createOrUpdateCart,
     reserveStock,
@@ -96,6 +97,9 @@ export function CartProvider({ children }) {
     // Add item to cart
     const addToCart = useCallback(
         async function addToCart(item) {
+            if (!auth.currentUser) {
+                throw new Error("LOGIN_REQUIRED");
+            }
             try {
                 const currentItems = cartItemsRef.current;
 

@@ -80,11 +80,7 @@ function HamburgerMenu(props) {
                             Kits de Autocuidado
                         </NavLink>
                     </li>
-                    <li>
-                        <NavLink to="about" onClick={function() { setIsOpen(false); }}>
-                            Sobre Nós
-                        </NavLink>
-                    </li>
+
                     {user ? (
                         <>
                             <li>

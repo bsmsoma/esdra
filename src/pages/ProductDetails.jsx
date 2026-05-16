@@ -1,7 +1,7 @@
 import styles from "./ProductDetails.module.scss";
 import React, { useState } from "react";
 import { useLoaderData, Link, useNavigate, useParams } from "react-router";
-import { getDoc, getProductDocRef, getAvailableQuantity } from "../firebase";
+import { auth, getDoc, getProductDocRef, getAvailableQuantity } from "../firebase";
 import { generateCacheKey, getCachedData, setCachedData } from "../utils/cache";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Navigation, HashNavigation } from "swiper/modules";
@@ -258,6 +258,11 @@ export default function ProductDetails() {
     );
 
     async function handleAddToCart() {
+        if (!auth.currentUser) {
+            window.location.href = `/login?redirectTo=${encodeURIComponent(window.location.pathname)}`;
+            return;
+        }
+
         let sizeToUse = selectedSize;
         let quantityToCheck = availableQuantity;
 
@@ -346,8 +351,13 @@ export default function ProductDetails() {
             setJustAdded(true);
             setTimeout(() => setJustAdded(false), 2000);
         } catch (error) {
-            setError(error.message || "Erro ao adicionar ao carrinho");
-            toast.error(error.message || "Erro ao adicionar ao carrinho");
+            if (error.message === "LOGIN_REQUIRED") {
+                window.location.href = `/login?redirectTo=${encodeURIComponent(window.location.pathname)}`;
+                return;
+            }
+            const msg = error.message || "Erro ao adicionar ao carrinho";
+            setError(msg);
+            toast.error(msg);
         } finally {
             setLoading(false);
         }

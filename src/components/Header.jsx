@@ -221,7 +221,7 @@ function Header() {
                             </NavLink>
                         </li>
                         <li>
-                            <NavLink to="about">Sobre Nós</NavLink>
+                            <NavLink to="products?category=Difusores">Difusores</NavLink>
                         </li>
                         <li>
                             <NavLink

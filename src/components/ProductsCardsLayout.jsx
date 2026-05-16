@@ -4,7 +4,7 @@ import ProductCard from "./ProductCard";
 import styles from "./ProductsCardsLayout.module.scss";
 import { useProducts } from "../pages/ProductsLayout";
 import { useCart } from "../contexts/CartContext";
-import { getAvailableQuantity } from "../firebase";
+import { auth, getAvailableQuantity } from "../firebase";
 import { toast } from "react-toastify";
 
 export default function ProductsCardsLayout() {
@@ -134,6 +134,10 @@ export default function ProductsCardsLayout() {
             "Produto artesanal para autocuidado e bem-estar.";
 
         async function handleAddCardToCart() {
+            if (!auth.currentUser) {
+                window.location.href = `/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+                return;
+            }
             try {
                 const availableSizes =
                     product.availableSizes ||
