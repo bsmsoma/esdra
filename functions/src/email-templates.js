@@ -185,5 +185,49 @@ export function buildEmail({type, customerName, orderNumber, total, paymentMetho
     };
   }
 
+  if (type === "new_order_admin") {
+    const dashboardUrl = `${String(appUrl || "").replace(/\/$/, "")}/dashboard/orders`;
+    return {
+      subject: `Novo pedido #${orderNumber} — ${firstName} — ${formattedTotal}`,
+      html: baseLayout(`
+        <p style="margin:0 0 6px;font-size:11px;color:#74685d;text-transform:uppercase;letter-spacing:2px;font-family:Arial,Helvetica,sans-serif;">Nova venda</p>
+        <h1 style="margin:0 0 28px;font-size:22px;color:#2a221d;font-weight:normal;font-family:Georgia,'Times New Roman',serif;">Pedido recebido na loja.</h1>
+
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f8f2ea;border-radius:4px;margin-bottom:28px;">
+          <tr>
+            <td style="padding:20px 24px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="vertical-align:top;">
+                    <p style="margin:0 0 3px;font-size:10px;color:#74685d;text-transform:uppercase;letter-spacing:1.5px;font-family:Arial,Helvetica,sans-serif;">Pedido</p>
+                    <p style="margin:0;font-size:17px;font-weight:700;color:#2a221d;font-family:Arial,Helvetica,sans-serif;">#${orderNumber}</p>
+                  </td>
+                  <td align="right" style="vertical-align:top;">
+                    <p style="margin:0 0 3px;font-size:10px;color:#74685d;text-transform:uppercase;letter-spacing:1.5px;font-family:Arial,Helvetica,sans-serif;">Total</p>
+                    <p style="margin:0;font-size:17px;font-weight:700;color:#2a221d;font-family:Arial,Helvetica,sans-serif;">${formattedTotal}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="2" style="padding-top:14px;border-top:1px solid #e4d8cb;">
+                    <p style="margin:0;font-size:12px;color:#74685d;font-family:Arial,Helvetica,sans-serif;">Cliente: <strong style="color:#4b3f35;">${firstName}</strong></p>
+                    ${paymentMethod ? `<p style="margin:4px 0 0;font-size:12px;color:#74685d;font-family:Arial,Helvetica,sans-serif;">Pagamento: <strong style="color:#4b3f35;">${formattedMethod}</strong></p>` : ""}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+          <tr>
+            <td style="border-radius:4px;background-color:#7f6348;">
+              <a href="${dashboardUrl}" target="_blank" style="display:inline-block;padding:14px 28px;font-size:13px;font-weight:600;color:#ffffff;text-decoration:none;letter-spacing:0.5px;font-family:Arial,Helvetica,sans-serif;">Ver pedido no painel &rarr;</a>
+            </td>
+          </tr>
+        </table>
+      `),
+    };
+  }
+
   return null;
 }

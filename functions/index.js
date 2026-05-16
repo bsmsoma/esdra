@@ -550,17 +550,31 @@ export const createOrder = onCall(FUNCTION_CONFIG, async (request) => {
       }, {merge: true});
 
       if (!result.reused) {
-        await queueTransactionalEmail({
-          orderId: result.orderId,
-          orderNumber: result.orderNumber,
-          type: "order_confirmation",
-          to: orderData.customerEmail,
-          customerName: orderData.customerName,
-          payload: {
-            total: orderData.total,
-            paymentMethod: orderData.paymentMethod,
-          },
-        });
+        const adminEmail = String(globalThis.process?.env?.ADMIN_EMAIL || "esdrags@gmail.com");
+        await Promise.all([
+          queueTransactionalEmail({
+            orderId: result.orderId,
+            orderNumber: result.orderNumber,
+            type: "order_confirmation",
+            to: orderData.customerEmail,
+            customerName: orderData.customerName,
+            payload: {
+              total: orderData.total,
+              paymentMethod: orderData.paymentMethod,
+            },
+          }),
+          queueTransactionalEmail({
+            orderId: result.orderId,
+            orderNumber: result.orderNumber,
+            type: "new_order_admin",
+            to: adminEmail,
+            customerName: orderData.customerName,
+            payload: {
+              total: orderData.total,
+              paymentMethod: orderData.paymentMethod,
+            },
+          }),
+        ]);
       }
     }
 
