@@ -1,5 +1,4 @@
 import { Fragment, useEffect, useMemo, useState, useCallback } from "react";
-import { flushSync, createPortal } from "react-dom";
 import {
     getAllOrdersPaginated,
     updateOrderStatusByAdmin,
@@ -85,7 +84,6 @@ export default function DashboardOrders() {
     const [feedbackType, setFeedbackType] = useState("success");
     const [orderDrafts, setOrderDrafts] = useState({});
     const [expandedOrderId, setExpandedOrderId] = useState(null);
-    const [printingOrder, setPrintingOrder] = useState(null);
 
     const fetchOrders = useCallback(async function ({ append = false, currentLastDoc = null } = {}) {
         try {
@@ -199,9 +197,90 @@ export default function DashboardOrders() {
     function handlePrint(orderId) {
         const target = orders.find(function (o) { return o.id === orderId; });
         if (!target) return;
-        flushSync(function () { setPrintingOrder(target); });
-        window.print();
-        window.addEventListener("afterprint", function () { setPrintingOrder(null); }, { once: true });
+
+        const items = Array.isArray(target.items) ? target.items : [];
+        const itemRows = items.map(function (item) {
+            const unitPrice = item.unitPrice || item.price || 0;
+            const qty = item.quantity || 1;
+            const lineTotal = item.lineTotal || unitPrice * qty;
+            return `<tr>
+                <td>${item.productName || item.name || "-"}</td>
+                <td>${item.size || "-"}</td>
+                <td class="r">${qty}</td>
+                <td class="r">R$ ${formatPrice(unitPrice)}</td>
+                <td class="r">R$ ${formatPrice(lineTotal)}</td>
+            </tr>`;
+        }).join("");
+
+        const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Pedido #${target.orderNumber}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, Helvetica, sans-serif; font-size: 12px; color: #000; padding: 2cm 2.5cm; }
+  .header { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 18px; }
+  .brand { font-size: 15px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; }
+  .order-num { font-size: 14px; font-weight: 700; }
+  .date { font-size: 10px; color: #666; }
+  section { margin-bottom: 14px; }
+  h3 { font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: #666; font-weight: 600; padding-bottom: 3px; border-bottom: 1px solid #ddd; margin-bottom: 5px; }
+  p { margin: 2px 0; line-height: 1.5; }
+  table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 11px; }
+  th, td { border: 1px solid #ccc; padding: 4px 8px; text-align: left; }
+  th { background: #f5f5f5; font-weight: 600; }
+  .r { text-align: right; }
+  strong { font-weight: 700; }
+  @media print { @page { margin: 1cm; } body { padding: 0; } }
+</style>
+</head>
+<body>
+  <div class="header">
+    <span class="brand">ESDRA Aromas</span>
+    <span class="order-num">#${target.orderNumber}</span>
+    <span class="date">Impresso em ${new Date().toLocaleString("pt-BR")}</span>
+  </div>
+  <section>
+    <h3>Dados do comprador</h3>
+    <p>${target.customerName || "-"}</p>
+    <p>${target.customerEmail || "-"}</p>
+    <p>${target.customerPhone || "-"}</p>
+    ${target.customerDocument ? `<p>CPF: ${target.customerDocument}</p>` : ""}
+    <p>Pedido em: ${formatDate(target.createdAt)}</p>
+  </section>
+  <section>
+    <h3>Endereço de entrega</h3>
+    <p>${formatAddress(target.shippingAddress)}</p>
+  </section>
+  ${items.length > 0 ? `
+  <section>
+    <h3>Itens do pedido</h3>
+    <table>
+      <thead><tr><th>Produto</th><th>Tam.</th><th class="r">Qtd.</th><th class="r">Unitário</th><th class="r">Total</th></tr></thead>
+      <tbody>${itemRows}</tbody>
+    </table>
+  </section>` : ""}
+  <section>
+    <h3>Resumo financeiro</h3>
+    ${target.subtotal != null ? `<p>Subtotal: R$ ${formatPrice(target.subtotal)}</p>` : ""}
+    ${target.shipping != null ? `<p>Frete: R$ ${formatPrice(target.shipping)}</p>` : ""}
+    <p><strong>Total: R$ ${formatPrice(target.total || 0)}</strong></p>
+    ${target.paymentMethod ? `<p>Pagamento: ${target.paymentMethod}</p>` : ""}
+    <p>Status: ${getStatusLabel(target.status)}</p>
+  </section>
+  ${target.notes ? `<section><h3>Observações do comprador</h3><p>${target.notes}</p></section>` : ""}
+  ${target.adminNotes ? `<section><h3>Notas internas</h3><p>${target.adminNotes}</p></section>` : ""}
+</body>
+</html>`;
+
+        const win = window.open("", "_blank");
+        if (!win) return;
+        win.document.write(html);
+        win.document.close();
+        win.focus();
+        win.print();
+        win.addEventListener("afterprint", function () { win.close(); });
     }
 
     if (loading) {
@@ -520,86 +599,6 @@ export default function DashboardOrders() {
                 </>
             )}
         </section>
-        {printingOrder && createPortal(
-            <div className={styles.printSlip} aria-hidden="true">
-                <div className={styles.printHeader}>
-                    <span className={styles.printBrand}>ESDRA Aromas</span>
-                    <span className={styles.printOrderNumber}>#{printingOrder.orderNumber}</span>
-                    <span className={styles.printDate}>Impresso em {new Date().toLocaleString("pt-BR")}</span>
-                </div>
-
-                <section className={styles.printSection}>
-                    <h3>Dados do comprador</h3>
-                    <p>{printingOrder.customerName || "-"}</p>
-                    <p>{printingOrder.customerEmail || "-"}</p>
-                    <p>{printingOrder.customerPhone || "-"}</p>
-                    {printingOrder.customerDocument && <p>CPF: {printingOrder.customerDocument}</p>}
-                    <p>Pedido em: {formatDate(printingOrder.createdAt)}</p>
-                </section>
-
-                <section className={styles.printSection}>
-                    <h3>Endereço de entrega</h3>
-                    <p>{formatAddress(printingOrder.shippingAddress)}</p>
-                </section>
-
-                {Array.isArray(printingOrder.items) && printingOrder.items.length > 0 && (
-                    <section className={styles.printSection}>
-                        <h3>Itens do pedido</h3>
-                        <table className={styles.printTable}>
-                            <thead>
-                                <tr>
-                                    <th>Produto</th>
-                                    <th>Tam.</th>
-                                    <th>Qtd.</th>
-                                    <th>Unitário</th>
-                                    <th>Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {printingOrder.items.map(function (item, i) {
-                                    const unitPrice = item.unitPrice || item.price || 0;
-                                    const qty = item.quantity || 1;
-                                    const lineTotal = item.lineTotal || unitPrice * qty;
-                                    return (
-                                        <tr key={i}>
-                                            <td>{item.productName || item.name || "-"}</td>
-                                            <td>{item.size || "-"}</td>
-                                            <td>{qty}</td>
-                                            <td>R$ {formatPrice(unitPrice)}</td>
-                                            <td>R$ {formatPrice(lineTotal)}</td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </section>
-                )}
-
-                <section className={styles.printSection}>
-                    <h3>Resumo financeiro</h3>
-                    {printingOrder.subtotal != null && <p>Subtotal: R$ {formatPrice(printingOrder.subtotal)}</p>}
-                    {printingOrder.shipping != null && <p>Frete: R$ {formatPrice(printingOrder.shipping)}</p>}
-                    <p><strong>Total: R$ {formatPrice(printingOrder.total || 0)}</strong></p>
-                    {printingOrder.paymentMethod && <p>Pagamento: {printingOrder.paymentMethod}</p>}
-                    <p>Status: {getStatusLabel(printingOrder.status)}</p>
-                </section>
-
-                {printingOrder.notes && (
-                    <section className={styles.printSection}>
-                        <h3>Observações do comprador</h3>
-                        <p>{printingOrder.notes}</p>
-                    </section>
-                )}
-
-                {printingOrder.adminNotes && (
-                    <section className={styles.printSection}>
-                        <h3>Notas internas</h3>
-                        <p>{printingOrder.adminNotes}</p>
-                    </section>
-                )}
-            </div>,
-            document.body
-        )}
         </>
     );
 }
