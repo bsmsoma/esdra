@@ -1,7 +1,52 @@
-import React from "react";
+import React, { useState } from "react";
 import { toast } from "react-toastify";
 import styles from "./Preview.module.scss";
 import RouteError from "../components/RouteError";
+import { buildEmail } from "../../functions/src/email-templates.js";
+
+const EMAIL_SAMPLE = {
+    customerName: "Esdra Aromas",
+    orderNumber: "00042",
+    total: 349.90,
+    paymentMethod: "checkout_pro",
+    appUrl: "https://esdraaromas.com.br",
+};
+
+const EMAIL_TYPES = [
+    { value: "order_confirmation", label: "Confirmação de pedido (cliente)" },
+    { value: "payment_approved",   label: "Pagamento aprovado (cliente)" },
+    { value: "new_order_admin",    label: "Novo pedido (admin)" },
+];
+
+function EmailPreview() {
+    const [type, setType] = useState("new_order_admin");
+    const content = buildEmail({ type, ...EMAIL_SAMPLE });
+    return (
+        <div>
+            <div className={styles.triggerRow} style={{ marginBottom: "1rem" }}>
+                {EMAIL_TYPES.map(function(t) {
+                    return (
+                        <button
+                            key={t.value}
+                            className={styles.triggerBtn}
+                            style={{ opacity: type === t.value ? 1 : 0.45 }}
+                            onClick={function() { setType(t.value); }}
+                        >
+                            {t.label}
+                        </button>
+                    );
+                })}
+            </div>
+            {content && (
+                <iframe
+                    srcDoc={content.html}
+                    title={content.subject}
+                    style={{ width: "100%", height: "600px", border: "1px solid #e4d8cb", borderRadius: "6px" }}
+                />
+            )}
+        </div>
+    );
+}
 
 // ─── Toast samples ────────────────────────────────────────────────────────────
 
@@ -59,6 +104,11 @@ export default function Preview() {
             <section className={styles.section}>
                 <h2 className={styles.sectionTitle}>RouteError</h2>
                 <RouteError />
+            </section>
+
+            <section className={styles.section}>
+                <h2 className={styles.sectionTitle}>Emails transacionais</h2>
+                <EmailPreview />
             </section>
 
             <section className={styles.section}>
