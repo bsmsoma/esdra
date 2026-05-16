@@ -46,6 +46,15 @@
         padding-right: vars.$padding-md;
     }
 
+    .productNameLink {
+        color: inherit;
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
     th {
         background-color: transparent;
         font-family: $clashGroteskMedium;

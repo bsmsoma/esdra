@@ -78,8 +78,13 @@ export default function Dashboard() {
                     toast.error(message);
                 }
 
-                // Limpar os parâmetros da URL após mostrar a mensagem
-                setSearchParams({});
+                // Limpar apenas os parâmetros de mensagem, preservando filtros de busca
+                setSearchParams(function (prev) {
+                    const next = new URLSearchParams(prev);
+                    next.delete("message");
+                    next.delete("type");
+                    return next;
+                });
             }
         },
         [searchParams, setSearchParams]
@@ -227,7 +232,11 @@ export default function Dashboard() {
                     return (
                         <tr key={product.id}>
                             <td className={styles.codeCell}>{product.sku || product.code}</td>
-                            <td>{product.name}</td>
+                            <td>
+                                <Link to={`/products/${product.id}`} className={styles.productNameLink}>
+                                    {product.name}
+                                </Link>
+                            </td>
                             <td>{product.category}</td>
                             <td>
                                 {productPrice != null

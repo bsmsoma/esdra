@@ -1,6 +1,6 @@
-import { createContext, useContext, useState, useMemo } from "react";
+import { createContext, useContext, useState, useMemo, useEffect } from "react";
 import styles from "./DashboardLayout.module.scss";
-import { Outlet, useNavigate, useLocation } from "react-router";
+import { Outlet, useNavigate, useLocation, useSearchParams } from "react-router";
 import { PlusIcon, MagnifierIcon } from "../assets/icons";
 
 // Busca local ao dashboard (lista admin). A vitrine em /products não usa este contexto.
@@ -16,15 +16,42 @@ export function useSearch() {
 }
 
 export default function DashboardLayout() {
-    const [searchText, setSearchText] = useState("");
-    const [searchCode, setSearchCode] = useState("");
+    const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
     const location = useLocation();
+
+    // Local state for instant input response
+    const [searchText, setSearchText] = useState(searchParams.get("q") || "");
+    const [searchCode, setSearchCode] = useState(searchParams.get("code") || "");
+
+    // Sync to URL with debounce so back button restores the search
+    useEffect(function syncSearchTextToUrl() {
+        const timer = setTimeout(function () {
+            setSearchParams(function (prev) {
+                const next = new URLSearchParams(prev);
+                if (searchText) next.set("q", searchText);
+                else next.delete("q");
+                return next;
+            }, { replace: true });
+        }, 400);
+        return function () { clearTimeout(timer); };
+    }, [searchText, setSearchParams]);
+
+    useEffect(function syncSearchCodeToUrl() {
+        const timer = setTimeout(function () {
+            setSearchParams(function (prev) {
+                const next = new URLSearchParams(prev);
+                if (searchCode) next.set("code", searchCode);
+                else next.delete("code");
+                return next;
+            }, { replace: true });
+        }, 400);
+        return function () { clearTimeout(timer); };
+    }, [searchCode, setSearchParams]);
 
     const isOrders = location.pathname === "/dashboard/orders";
     const showSearch = !isOrders;
 
-    // Memoize the context to avoid unnecessary re-renders
     const searchContextValue = useMemo(
         function () {
             return {
