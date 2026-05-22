@@ -238,6 +238,13 @@ async function queueTransactionalEmail({
   });
 }
 
+function maskEmail(email) {
+  if (!email || typeof email !== "string") return "***";
+  const [local, domain] = email.split("@");
+  if (!domain) return "***";
+  return `${local.slice(0, 2)}***@${domain}`;
+}
+
 function logInfo(message, payload) {
   try {
     logger.info(message, {structuredData: true, ...payload});
@@ -550,8 +557,11 @@ export const createOrder = onCall(FUNCTION_CONFIG, async (request) => {
       }, {merge: true});
 
       if (!result.reused) {
-        const adminEmail = String(globalThis.process?.env?.ADMIN_EMAIL || "esdrags@gmail.com");
-        await Promise.all([
+        const adminEmail = String(globalThis.process?.env?.ADMIN_EMAIL || "").trim();
+        if (!adminEmail) {
+          logError("createOrder_missing_admin_email", {orderId: result.orderId});
+        }
+        const emailTasks = [
           queueTransactionalEmail({
             orderId: result.orderId,
             orderNumber: result.orderNumber,
@@ -563,7 +573,9 @@ export const createOrder = onCall(FUNCTION_CONFIG, async (request) => {
               paymentMethod: orderData.paymentMethod,
             },
           }),
-          queueTransactionalEmail({
+        ];
+        if (adminEmail) {
+          emailTasks.push(queueTransactionalEmail({
             orderId: result.orderId,
             orderNumber: result.orderNumber,
             type: "new_order_admin",
@@ -573,8 +585,9 @@ export const createOrder = onCall(FUNCTION_CONFIG, async (request) => {
               total: orderData.total,
               paymentMethod: orderData.paymentMethod,
             },
-          }),
-        ]);
+          }));
+        }
+        await Promise.all(emailTasks);
       }
     }
 
@@ -1288,7 +1301,7 @@ export const processEmailQueue = onDocumentCreated(
         updatedAt: FieldValue.serverTimestamp(),
       });
 
-      logInfo("processEmailQueue_sent", {docId, orderNumber, type, to});
+      logInfo("processEmailQueue_sent", {docId, orderNumber, type, to: maskEmail(to)});
     } catch (err) {
       logError("processEmailQueue_error", {
         docId,
@@ -1302,6 +1315,81 @@ export const processEmailQueue = onDocumentCreated(
         failedAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),
       });
+    }
+  },
+);
+
+const DATA_RIGHTS_TYPE_LABELS = {
+  access: "Acesso aos dados (art. 18, I e II)",
+  correction: "Correção de dados (art. 18, III)",
+  deletion: "Exclusão de dados (art. 18, VI)",
+  portability: "Portabilidade (art. 18, V)",
+  revoke_consent: "Revogação de consentimento (art. 18, IX)",
+  info_sharing: "Informação sobre compartilhamento (art. 18, VII)",
+  opposition: "Oposição ao tratamento (art. 18, II)",
+  other: "Outro",
+};
+
+export const onDataRightsRequest = onDocumentCreated(
+  {
+    document: "dataRightsRequests/{requestId}",
+    region: "southamerica-east1",
+    timeoutSeconds: 30,
+    memory: "256MiB",
+  },
+  async (event) => {
+    const snap = event.data;
+    if (!snap) return;
+
+    const data = snap.data();
+    const apiKey = globalThis.process?.env?.RESEND_API_KEY;
+    const adminEmail = String(globalThis.process?.env?.ADMIN_EMAIL || "").trim();
+
+    if (!apiKey || !adminEmail) {
+      logError("onDataRightsRequest_missing_config", {requestId: event.params.requestId});
+      return;
+    }
+
+    const typeLabel = DATA_RIGHTS_TYPE_LABELS[data.requestType] || data.requestType || "Desconhecido";
+    const fromEmail = String(
+      globalThis.process?.env?.EMAIL_FROM || "ESDRA Aromas <noreply@esdraaromas.com.br>",
+    ).trim();
+
+    const html = `
+      <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
+        <h2 style="color:#2a221d">Nova solicitação LGPD recebida</h2>
+        <table style="width:100%;border-collapse:collapse;font-size:14px">
+          <tr><td style="padding:8px 0;color:#666;width:160px">Tipo</td><td style="padding:8px 0;font-weight:600">${typeLabel}</td></tr>
+          <tr><td style="padding:8px 0;color:#666">Nome</td><td style="padding:8px 0">${data.name || "—"}</td></tr>
+          <tr><td style="padding:8px 0;color:#666">E-mail</td><td style="padding:8px 0">${data.email || "—"}</td></tr>
+          <tr><td style="padding:8px 0;color:#666">CPF</td><td style="padding:8px 0">${data.cpf || "não informado"}</td></tr>
+          <tr><td style="padding:8px 0;color:#666">UID Firebase</td><td style="padding:8px 0">${data.uid || "não autenticado"}</td></tr>
+          <tr><td style="padding:8px 0;color:#666;vertical-align:top">Descrição</td><td style="padding:8px 0;white-space:pre-wrap">${data.description || "—"}</td></tr>
+        </table>
+        <hr style="margin:24px 0;border:none;border-top:1px solid #e4d8cb"/>
+        <p style="font-size:12px;color:#999">
+          Prazo de resposta: 15 dias úteis (art. 18, §3º da LGPD).<br/>
+          ID da solicitação: ${event.params.requestId}
+        </p>
+      </div>`;
+
+    try {
+      const resend = new Resend(apiKey);
+      await resend.emails.send({
+        from: fromEmail,
+        to: [adminEmail],
+        subject: `[LGPD] ${typeLabel} — ${data.name || data.email}`,
+        html,
+      });
+
+      await snap.ref.update({
+        adminNotifiedAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+
+      logInfo("onDataRightsRequest_notified", {requestId: event.params.requestId, type: data.requestType});
+    } catch (err) {
+      logError("onDataRightsRequest_email_failed", {requestId: event.params.requestId, message: err.message});
     }
   },
 );

@@ -3,27 +3,135 @@
 @use "../styles/tokens" as *;
 
 .legalPage {
-    max-width: 900px;
+    max-width: 860px;
     margin: 0 auto;
     padding: vars.$padding-4xl vars.$padding-xl;
     font-family: $defaultFont;
     color: $text-primary;
 
     h1 {
-        margin-bottom: vars.$margin-xl;
+        margin-bottom: vars.$margin-sm;
         font-size: $font-size-7xl;
     }
 
     h2 {
-        margin-top: vars.$margin-3xl;
-        margin-bottom: vars.$margin-sm;
+        margin-top: vars.$margin-6xl;
+        margin-bottom: vars.$margin-lg;
         font-size: $font-size-4xl;
+        color: $text-primary;
+    }
+
+    h3 {
+        margin-top: vars.$margin-4xl;
+        margin-bottom: vars.$margin-sm;
+        font-size: $font-size-3xl;
+        font-weight: $font-weight-semibold;
+        color: $text-quaternary;
     }
 
     p {
-        margin: 0;
+        margin: 0 0 vars.$margin-lg;
         line-height: $line-height-relaxed;
         color: $text-quinary;
     }
+
+    ul, ol {
+        margin: 0 0 vars.$margin-lg vars.$margin-5xl;
+        padding: 0;
+
+        li {
+            line-height: $line-height-relaxed;
+            color: $text-quinary;
+            margin-bottom: vars.$margin-sm;
+        }
+    }
+
+    a {
+        color: $accent-gold;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+
+        &:hover { color: $accent-gold-hover; }
+    }
+
+    strong {
+        font-weight: $font-weight-semibold;
+        color: $text-quaternary;
+    }
 }
 
+.lastUpdated {
+    font-size: $font-size-sm;
+    color: $text-tertiary;
+    margin-bottom: vars.$margin-6xl;
+}
+
+.infoBox {
+    background: $background-tertiary;
+    border: 1px solid $border-color;
+    border-left: 3px solid $accent-gold;
+    border-radius: vars.$radius-md;
+    padding: vars.$padding-xl vars.$padding-2xl;
+    margin-bottom: vars.$margin-5xl;
+
+    p { margin: 0; font-size: $font-size-md; }
+}
+
+.operatorsTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: vars.$margin-5xl;
+    font-size: $font-size-sm;
+
+    th {
+        text-align: left;
+        padding: vars.$padding-md vars.$padding-lg;
+        background: $background-secondary;
+        border-bottom: 2px solid $border-color;
+        font-weight: $font-weight-semibold;
+        color: $text-quaternary;
+    }
+
+    td {
+        padding: vars.$padding-md vars.$padding-lg;
+        border-bottom: 1px solid $border-color;
+        vertical-align: top;
+        color: $text-quinary;
+        line-height: $line-height-relaxed;
+    }
+
+    tr:last-child td { border-bottom: none; }
+}
+
+.rightsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: vars.$gap-xl;
+    margin-bottom: vars.$margin-5xl;
+}
+
+.rightCard {
+    border: 1px solid $border-color;
+    border-radius: vars.$radius-md;
+    padding: vars.$padding-xl;
+
+    strong {
+        display: block;
+        margin-bottom: vars.$margin-sm;
+    }
+
+    p { margin: 0; font-size: $font-size-sm; }
+}
+
+.contactBlock {
+    background: $background-tertiary;
+    border: 1px solid $border-color;
+    border-radius: vars.$radius-md;
+    padding: vars.$padding-2xl;
+    margin-bottom: vars.$margin-5xl;
+
+    p {
+        margin: 0 0 vars.$margin-sm;
+        &:last-child { margin: 0; }
+    }
+}

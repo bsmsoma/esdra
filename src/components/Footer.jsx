@@ -14,6 +14,7 @@ const navigationLinks = [
 const supportLinks = [
     { to: "/politica-de-privacidade", label: "Política de Privacidade" },
     { to: "/termos-de-uso", label: "Termos de Uso" },
+    { to: "/privacidade/direitos", label: "Meus Dados (LGPD)" },
 ];
 
 function Footer() {

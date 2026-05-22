@@ -1,0 +1,226 @@
+@use "../styles/tokens" as *;
+@use "../styles/variables" as vars;
+
+.page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: vars.$padding-4xl vars.$padding-xl;
+}
+
+.header {
+    margin-bottom: vars.$margin-6xl;
+
+    h1 {
+        font-size: $font-size-7xl;
+        color: $text-primary;
+        margin-bottom: vars.$margin-lg;
+    }
+
+    p {
+        font-size: $font-size-md;
+        color: $text-quinary;
+        line-height: $line-height-relaxed;
+        margin-bottom: vars.$margin-sm;
+    }
+
+    a {
+        color: $accent-gold;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+
+        &:hover { color: $accent-gold-hover; }
+    }
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: vars.$gap-2xl;
+}
+
+.row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: vars.$gap-xl;
+
+    @media (max-width: vars.$breakpoint-tablet) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: vars.$gap-sm;
+
+    label {
+        font-size: $font-size-md;
+        font-weight: $font-weight-medium;
+        color: $text-quaternary;
+
+        span[aria-hidden] {
+            color: $status-error;
+            margin-left: 2px;
+        }
+    }
+}
+
+.optional {
+    font-weight: $font-weight-normal;
+    color: $text-tertiary;
+    font-size: $font-size-sm;
+}
+
+.input {
+    padding: vars.$padding-lg vars.$padding-xl;
+    border: 1px solid $border-color;
+    border-radius: vars.$radius-md;
+    font-size: $font-size-md;
+    font-family: $font-primary;
+    color: $text-primary;
+    background: $background-color;
+    transition: border-color vars.$transition-fast;
+
+    &:focus {
+        outline: none;
+        border-color: $accent-gold;
+        box-shadow: 0 0 0 3px rgba(184, 160, 126, 0.15);
+    }
+}
+
+.inputNarrow {
+    max-width: 220px;
+
+    @media (max-width: vars.$breakpoint-tablet) {
+        max-width: 100%;
+    }
+}
+
+.textarea {
+    @extend .input;
+    resize: vertical;
+    min-height: 120px;
+    line-height: $line-height-relaxed;
+}
+
+.checkboxLabel {
+    display: flex;
+    align-items: flex-start;
+    gap: vars.$gap-md;
+    font-size: $font-size-sm;
+    color: $text-quinary;
+    line-height: $line-height-relaxed;
+    cursor: pointer;
+}
+
+.checkbox {
+    margin-top: 2px;
+    flex-shrink: 0;
+    accent-color: $accent-gold;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.errorMsg {
+    font-size: $font-size-sm;
+    color: $status-error-text;
+    background: $status-error-surface;
+    border: 1px solid $status-error-border;
+    border-radius: vars.$radius-md;
+    padding: vars.$padding-lg vars.$padding-xl;
+    margin: 0;
+}
+
+.submitButton {
+    align-self: flex-start;
+    padding: vars.$padding-lg vars.$padding-2xl;
+    background: $button-primary-bg;
+    color: $button-primary-text;
+    border: none;
+    border-radius: vars.$radius-md;
+    font-size: $font-size-md;
+    font-weight: $font-weight-medium;
+    cursor: pointer;
+    transition: background vars.$transition-fast;
+
+    &:hover:not(:disabled) { background: $button-primary-hover; }
+
+    &:disabled {
+        background: $button-disabled;
+        cursor: not-allowed;
+    }
+
+    &:focus-visible {
+        outline: 2px solid $accent-gold;
+        outline-offset: 2px;
+    }
+
+    @media (max-width: vars.$breakpoint-mobile) {
+        align-self: stretch;
+    }
+}
+
+// ── Success state ──────────────────────────────────────────────
+
+.successBox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: vars.$gap-xl;
+    padding: vars.$padding-4xl vars.$padding-2xl;
+    border: 1px solid $border-color-success;
+    border-radius: vars.$radius-lg;
+    background: $status-success-surface;
+    max-width: 520px;
+    margin: vars.$margin-6xl auto;
+
+    h1 {
+        font-size: $font-size-5xl;
+        color: $text-primary;
+        margin: 0;
+    }
+
+    p {
+        font-size: $font-size-md;
+        color: $text-quinary;
+        line-height: $line-height-relaxed;
+        margin: 0;
+    }
+
+    a {
+        color: $accent-gold;
+        text-decoration: underline;
+        &:hover { color: $accent-gold-hover; }
+    }
+}
+
+.successIcon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: $button-success;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: $font-size-5xl;
+    font-weight: $font-weight-bold;
+    line-height: 1;
+}
+
+.backLink {
+    display: inline-block;
+    margin-top: vars.$margin-sm;
+    padding: vars.$padding-md vars.$padding-2xl;
+    background: $button-primary-bg;
+    color: $button-primary-text;
+    border-radius: vars.$radius-md;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    text-decoration: none;
+    transition: background vars.$transition-fast;
+
+    &:hover { background: $button-primary-hover; }
+}

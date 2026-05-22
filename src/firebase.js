@@ -393,6 +393,23 @@ export async function getProductInventory(productId) {
     return inventory;
 }
 
+// =============================== DATA RIGHTS FUNCTIONS =============================== //
+
+export async function submitDataRightsRequest({ requestType, name, email, cpf, description, uid }) {
+    const ref = collection(db, "dataRightsRequests");
+    await addDoc(ref, {
+        requestType,
+        name: String(name || "").trim(),
+        email: String(email || "").trim().toLowerCase(),
+        cpf: String(cpf || "").replace(/\D/g, ""),
+        description: String(description || "").trim(),
+        uid: uid || null,
+        status: "pending",
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+    });
+}
+
 // =============================== CUSTOMER FUNCTIONS =============================== //
 
 export function getCustomersCollection() {

@@ -27,6 +27,7 @@ import CheckoutSuccess from "./pages/CheckoutSuccess";
 import OrderDetails, { orderDetailsLoader } from "./pages/OrderDetails";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfUse from "./pages/TermsOfUse";
+import DataRights from "./pages/DataRights";
 import Preview from "./pages/Preview";
 
 import {
@@ -79,6 +80,7 @@ const router = createBrowserRouter(
             <Route path="about" element={<About />} />
             <Route path="politica-de-privacidade" element={<PrivacyPolicy />} />
             <Route path="termos-de-uso" element={<TermsOfUse />} />
+            <Route path="privacidade/direitos" element={<DataRights />} />
 
             {/* ProductsLayout is the layout of the products page */}
             {/* In this routes below we render all the cards of the products */}

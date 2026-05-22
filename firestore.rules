@@ -49,5 +49,26 @@ service cloud.firestore {
       allow update: if isAdmin();
       allow delete: if isAdmin();
     }
+
+    match /dataRightsRequests/{requestId} {
+      allow create: if
+        request.resource.data.keys().hasAll(['name', 'email', 'requestType', 'createdAt']) &&
+        request.resource.data.name is string && request.resource.data.name.size() > 0 &&
+        request.resource.data.email is string && request.resource.data.email.size() > 0 &&
+        request.resource.data.requestType is string && request.resource.data.requestType.size() > 0;
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /emailQueue/{docId} {
+      allow read, write: if false;
+    }
+
+    match /idempotency/{docId} {
+      allow read, write: if false;
+    }
+
+    match /meta/{docId} {
+      allow read, write: if false;
+    }
   }
 }

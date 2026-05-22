@@ -53,6 +53,11 @@ export default function AccountDashboard() {
                     <h3>Endereços</h3>
                     <p>Gerencie seus endereços de entrega</p>
                 </Link>
+
+                <Link to="/privacidade/direitos" className={styles.menuCard}>
+                    <h3>Privacidade & Dados</h3>
+                    <p>Acesse, corrija ou exclua seus dados pessoais (LGPD)</p>
+                </Link>
             </div>
         </div>
     );
