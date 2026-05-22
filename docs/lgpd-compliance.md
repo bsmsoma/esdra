@@ -36,8 +36,8 @@
 | ID | Item | Arquivo/Local | Métrica de conclusão | Status |
 |----|------|--------------|----------------------|--------|
 | A1 | Remover e-mail hardcoded do código-fonte | `functions/index.js:553` | Zero ocorrências de e-mail literal no repo (`grep -r "@gmail"`) | ✅ Concluído (22/05/2026) |
-| A2 | TTL e purge automático da coleção `emailQueue` após envio confirmado | `functions/index.js` | Job/trigger apaga docs com `status=sent` após 30 dias | ⬜ Pendente |
-| A3 | Política de retenção para `orders.payment.rawPayload` | `functions/index.js` | Campo removido ou nulificado após 90 dias por job agendado | ⬜ Pendente |
+| A2 | TTL e purge automático da coleção `emailQueue` após envio confirmado | `functions/index.js` | Job/trigger apaga docs com `status=sent` após 30 dias | ✅ Concluído (22/05/2026) |
+| A3 | Política de retenção para `orders.payment.rawPayload` | `functions/index.js` | Campo removido ou nulificado após 90 dias por job agendado | ✅ Concluído (22/05/2026) |
 | A4 | MFA obrigatório para contas admin | Firebase Console + Docs | Accounts com `admin: true` bloqueadas sem segundo fator | ⬜ Pendente |
 | A5 | Sanitizar CPF, e-mail e telefone nos logs do servidor | `functions/index.js` | `grep customerDocument\|customerPhone` nos Cloud Logs retorna zero em texto claro | ✅ Concluído (22/05/2026) |
 
@@ -74,6 +74,8 @@
 | 22/05/2026 | 54/100 | C2, M4 | Política de Privacidade reescrita (art. 9º completo); ViaCEP declarado como operador |
 | 22/05/2026 | 62/100 | C3 | Canal LGPD: formulário `/privacidade/direitos`, trigger admin via Resend, Firestore rules, links em footer/account/política |
 | 22/05/2026 | 70/100 | A1, A5, M5 | E-mail hardcoded removido; e-mail mascarado nos logs; deny-all explícito em emailQueue/idempotency/meta |
+| 22/05/2026 | 71/100 | A3 | Job diário `purgeOrderRawPayload` limpa `payment.rawPayload` em pedidos com mais de 90 dias |
+| 22/05/2026 | 72/100 | A2 | Job diário `purgeEmailQueue` deleta documentos com mais de 30 dias |
 
 ---
 

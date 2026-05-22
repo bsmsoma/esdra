@@ -1469,3 +1469,121 @@ export const cleanupExpiredCarts = onSchedule(
     });
   }
 );
+
+// Exclui documentos da emailQueue com mais de 30 dias (LGPD — finalidade encerrada após envio)
+export const purgeEmailQueue = onSchedule(
+  {
+    schedule: "every 24 hours",
+    timeZone: "America/Sao_Paulo",
+    region: "southamerica-east1",
+    memory: "256MiB",
+    timeoutSeconds: 300,
+  },
+  async () => {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 30);
+
+    let snapshot;
+    try {
+      snapshot = await db.collection("emailQueue")
+        .where("createdAt", "<", cutoff)
+        .limit(200)
+        .get();
+    } catch (err) {
+      logger.error("purgeEmailQueue: erro ao buscar documentos", {err: err.message});
+      return;
+    }
+
+    if (snapshot.empty) {
+      logger.info("purgeEmailQueue: nenhum documento a excluir");
+      return;
+    }
+
+    let deleted = 0;
+    let errors = 0;
+
+    for (const doc of snapshot.docs) {
+      try {
+        await doc.ref.delete();
+        deleted++;
+      } catch (err) {
+        errors++;
+        logger.error("purgeEmailQueue: erro ao excluir documento", {
+          docId: doc.id,
+          err: err.message,
+        });
+      }
+    }
+
+    logger.info("purgeEmailQueue: concluído", {
+      total: snapshot.size,
+      deleted,
+      errors,
+    });
+  }
+);
+
+// Remove rawPayload dos pedidos com mais de 90 dias (LGPD — retenção mínima necessária)
+export const purgeOrderRawPayload = onSchedule(
+  {
+    schedule: "every 24 hours",
+    timeZone: "America/Sao_Paulo",
+    region: "southamerica-east1",
+    memory: "256MiB",
+    timeoutSeconds: 300,
+  },
+  async () => {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 90);
+
+    let snapshot;
+    try {
+      snapshot = await db.collection("orders")
+        .where("createdAt", "<", cutoff)
+        .limit(200)
+        .get();
+    } catch (err) {
+      logger.error("purgeOrderRawPayload: erro ao buscar pedidos", {err: err.message});
+      return;
+    }
+
+    if (snapshot.empty) {
+      logger.info("purgeOrderRawPayload: nenhum pedido a limpar");
+      return;
+    }
+
+    let purged = 0;
+    let skipped = 0;
+    let errors = 0;
+
+    for (const orderDoc of snapshot.docs) {
+      const rawPayload = orderDoc.data().payment?.rawPayload;
+
+      if (!rawPayload || Object.keys(rawPayload).length === 0) {
+        skipped++;
+        continue;
+      }
+
+      try {
+        await orderDoc.ref.update({
+          "payment.rawPayload": {},
+          updatedAt: FieldValue.serverTimestamp(),
+        });
+        purged++;
+      } catch (err) {
+        errors++;
+        logger.error("purgeOrderRawPayload: erro ao limpar pedido", {
+          orderId: orderDoc.id,
+          err: err.message,
+        });
+      }
+    }
+
+    logger.info("purgeOrderRawPayload: concluído", {
+      total: snapshot.size,
+      purged,
+      skipped,
+      errors,
+    });
+  }
+);
