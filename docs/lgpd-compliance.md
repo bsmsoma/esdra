@@ -1,7 +1,7 @@
 # LGPD Compliance — Esdra Aromas
 
 **Última revisão:** 22/05/2026  
-**Score atual:** 70/100  
+**Score atual:** 72/100  
 **Meta:** ≥ 70/100 (operação com risco residual baixo)
 
 ---
@@ -11,11 +11,11 @@
 | Dimensão | Atual | Meta | Status |
 |----------|------:|-----:|--------|
 | Coleta e base legal | 16/20 | 16/20 | 🟢 |
-| Segurança técnica | 17/20 | 17/20 | 🟢 |
+| Segurança técnica | 18/20 | 17/20 | 🟢 |
 | Transparência e direitos do titular | 16/20 | 16/20 | 🟢 |
 | Governança e documentação | 12/20 | 12/20 | 🟢 |
-| Gestão de incidentes e rastreabilidade | 9/20 | 9/20 | 🟢 |
-| **TOTAL** | **70/100** | **70/100** | **🟢** |
+| Gestão de incidentes e rastreabilidade | 10/20 | 9/20 | 🟢 |
+| **TOTAL** | **72/100** | **70/100** | **🟢** |
 
 ---
 
@@ -88,10 +88,9 @@ Ao concluir um item:
 
 **Estimativa de ganho por grupo:**
 
-| Grupo | Pontos ganhos ao concluir todos |
-|-------|--------------------------------:|
-| Críticos (C1–C3) | +14 pts |
-| Altos (A1–A5) | +7 pts |
-| Médios (M1–M5) | +8 pts |
-| Baixos (B1–B3) | +3 pts |
-| **Total possível** | **+32 pts → 70/100** |
+| Grupo | Pontos ganhos ao concluir todos os pendentes |
+|-------|---------------------------------------------:|
+| Altos (A4) | +2 pts |
+| Médios (M1, M2, M3) | +6 pts |
+| Baixos (B1, B2, B3) | +3 pts |
+| **Potencial restante** | **+11 pts → 83/100** |
