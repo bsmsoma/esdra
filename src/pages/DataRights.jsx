@@ -83,7 +83,7 @@ export default function DataRights() {
                     </p>
                     <p>
                         Caso não receba resposta nesse prazo, entre em contato diretamente em{" "}
-                        <a href="mailto:privacidade@esdrasaromas.com.br">privacidade@esdrasaromas.com.br</a>.
+                        <a href="mailto:privacidade@esdraaromas.com.br">privacidade@esdraaromas.com.br</a>.
                     </p>
                     <Link to="/" className={styles.backLink}>Voltar para a loja</Link>
                 </div>
@@ -102,7 +102,7 @@ export default function DataRights() {
                 </p>
                 <p>
                     Também pode enviar sua solicitação diretamente para{" "}
-                    <a href="mailto:privacidade@esdrasaromas.com.br">privacidade@esdrasaromas.com.br</a>.{" "}
+                    <a href="mailto:privacidade@esdraaromas.com.br">privacidade@esdraaromas.com.br</a>.{" "}
                     <Link to="/politica-de-privacidade">Leia nossa Política de Privacidade.</Link>
                 </p>
             </div>

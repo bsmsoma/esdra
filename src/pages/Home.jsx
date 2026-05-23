@@ -1,5 +1,6 @@
 import React, { useEffect, Suspense } from "react";
 import styles from "./Home.module.scss";
+import SEOHead, { SITE_URL } from "../components/SEOHead";
 import editorialImg from "../assets/image/editorial-ingredients.jpeg";
 import { Link, useNavigate, useLoaderData, useLocation, Await } from "react-router";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -268,6 +269,16 @@ function Home() {
     );
 
     return (
+        <>
+        <SEOHead
+            canonical={SITE_URL}
+            schema={{
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                "name": "Esdra Aromas",
+                "url": SITE_URL,
+            }}
+        />
         <div id="home" className={styles.homeContainer}>
             <section className={styles.heroSection}>
                 <Suspense fallback={
@@ -441,6 +452,7 @@ function Home() {
                 </div>
             </section>
         </div>
+        </>
     );
 }
 

@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+Disallow: /dashboard/
+Disallow: /account/
+Disallow: /checkout/
+Disallow: /cart
+Disallow: /preview
+
+Sitemap: https://esdraaromas.com.br/sitemap.xml

@@ -1,6 +1,7 @@
 import React from "react";
 import { useLocation } from "react-router";
 import styles from "./About.module.scss";
+import SEOHead, { SITE_URL } from "../components/SEOHead";
 import saboneteImg from "../assets/image/sabonete-pedra-clara_compressed_1778737230954_compressed_1778737251957.jpg";
 
 export default function About() {
@@ -26,6 +27,12 @@ export default function About() {
     }, [location.hash]);
 
     return (
+        <>
+        <SEOHead
+            title="Nossa História"
+            description="Conheça a Esdra Aromas: perfumes e cosméticos artesanais feitos à mão com ingredientes naturais. Uma marca brasileira com alma."
+            canonical={`${SITE_URL}/about`}
+        />
         <section
             id='aboutus'
             className={`${styles.aboutus} ${isVisible ? styles.visible : ""}`}
@@ -57,5 +64,6 @@ export default function About() {
                 </div>
             </div>
         </section>
+        </>
     );
 }

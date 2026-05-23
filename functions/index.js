@@ -24,6 +24,152 @@ initializeApp();
 const db = getFirestore();
 const storage = getStorage();
 
+// ─── Social Render ────────────────────────────────────────────────────────────
+
+const SITE_URL = globalThis.process?.env?.SITE_URL || "https://esdraaromas.com.br";
+
+const SOCIAL_CRAWLERS = [
+  "facebookexternalhit",
+  "facebookcatalog",
+  "whatsapp",
+  "twitterbot",
+  "linkedinbot",
+  "slackbot",
+  "telegrambot",
+  "discordbot",
+  "applebot",
+  "pinterestbot",
+  "googlebot",
+  "bingbot",
+];
+
+function isSocialCrawler(userAgent = "") {
+  const ua = userAgent.toLowerCase();
+  return SOCIAL_CRAWLERS.some((bot) => ua.includes(bot));
+}
+
+function escapeHtml(str = "") {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+let _cachedIndexHtml = null;
+let _indexHtmlFetchedAt = 0;
+
+async function getIndexHtml() {
+  const now = Date.now();
+  if (_cachedIndexHtml && now - _indexHtmlFetchedAt < 5 * 60 * 1000) {
+    return _cachedIndexHtml;
+  }
+  const response = await fetch(`${SITE_URL}/index.html`);
+  _cachedIndexHtml = await response.text();
+  _indexHtmlFetchedAt = now;
+  return _cachedIndexHtml;
+}
+
+export const socialRender = onRequest(
+  {region: "southamerica-east1", timeoutSeconds: 10, memory: "256MiB"},
+  async (req, res) => {
+    const userAgent = req.headers["user-agent"] || "";
+
+    if (!isSocialCrawler(userAgent)) {
+      try {
+        const html = await getIndexHtml();
+        res.set("Cache-Control", "public, max-age=300");
+        res.send(html);
+      } catch (err) {
+        logger.warn("socialRender: falha ao buscar index.html, redirecionando", {err: err.message});
+        res.redirect(302, SITE_URL);
+      }
+      return;
+    }
+
+    // É um crawler social — busca o produto e serve OG HTML
+    const pathParts = req.path.split("/").filter(Boolean);
+    const productId = pathParts[1]; // /products/:id
+
+    try {
+      let product = null;
+      if (productId) {
+        const snap = await db.collection("products").doc(productId).get();
+        if (snap.exists) {
+          product = {id: snap.id, ...snap.data()};
+        }
+      }
+
+      const name = product?.name || "Esdra Aromas";
+      const title = product ? `${name} | Esdra Aromas` : "Esdra Aromas";
+      const description = product?.description
+        ? product.description.slice(0, 155)
+        : `Compre ${name} na Esdra Aromas. Entrega para todo o Brasil.`;
+      const coverIdx = product?.coverIndex || 0;
+      const image = product?.images?.[coverIdx] || "";
+      const price = product?.sellValue ?? product?.rentValue ?? null;
+      const url = `${SITE_URL}/products/${productId}`;
+
+      const schema = {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        name,
+        description,
+        image: product?.images || [],
+        url,
+        brand: {"@type": "Brand", name: "Esdra Aromas"},
+        ...(price != null ? {
+          offers: {
+            "@type": "Offer",
+            priceCurrency: "BRL",
+            price: String(price),
+            availability: "https://schema.org/InStock",
+            url,
+          },
+        } : {}),
+      };
+
+      const html = `<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${escapeHtml(title)}</title>
+  <meta name="description" content="${escapeHtml(description)}" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="${escapeHtml(url)}" />
+
+  <meta property="og:type" content="product" />
+  <meta property="og:site_name" content="Esdra Aromas" />
+  <meta property="og:title" content="${escapeHtml(title)}" />
+  <meta property="og:description" content="${escapeHtml(description)}" />
+  <meta property="og:url" content="${escapeHtml(url)}" />
+  ${image ? `<meta property="og:image" content="${escapeHtml(image)}" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="${escapeHtml(name)}" />` : ""}
+  ${price != null ? `<meta property="product:price:amount" content="${escapeHtml(String(price))}" />
+  <meta property="product:price:currency" content="BRL" />` : ""}
+
+  <script type="application/ld+json">${JSON.stringify(schema)}</script>
+  <script>window.location.replace("${escapeHtml(url)}");</script>
+</head>
+<body>
+  <p>Redirecionando para <a href="${escapeHtml(url)}">${escapeHtml(title)}</a>...</p>
+</body>
+</html>`;
+
+      res.set("Cache-Control", "public, max-age=3600");
+      res.set("Content-Type", "text/html; charset=utf-8");
+      res.send(html);
+    } catch (err) {
+      logger.error("socialRender: erro", {err: err.message, productId});
+      res.redirect(302, SITE_URL);
+    }
+  },
+);
+
 const FUNCTION_CONFIG = {
   region: "southamerica-east1",
   timeoutSeconds: 60,

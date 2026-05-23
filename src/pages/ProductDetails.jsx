@@ -1,5 +1,7 @@
 import styles from "./ProductDetails.module.scss";
 import React, { useState } from "react";
+import SEOHead, { SITE_URL } from "../components/SEOHead";
+import { getProductCoverImageUrl } from "../utils/productMedia";
 import { useLoaderData, Link, useNavigate, useParams } from "react-router";
 import { auth, getDoc, getProductDocRef, getAvailableQuantity } from "../firebase";
 import { generateCacheKey, getCachedData, setCachedData } from "../utils/cache";
@@ -542,8 +544,37 @@ export default function ProductDetails() {
         };
     }, [isModalOpen]);
 
+    const coverImageUrl = getProductCoverImageUrl(currentProduct);
+    const productUrl = `${SITE_URL}/products/${currentProduct.id}`;
+    const productSchema = {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        name: currentProduct.name,
+        description: currentProduct.description || currentProduct.name,
+        image: currentProduct.images || [],
+        url: productUrl,
+        brand: { "@type": "Brand", name: "Esdra Aromas" },
+        offers: {
+            "@type": "Offer",
+            priceCurrency: "BRL",
+            price: String(productPrice ?? 0),
+            availability: "https://schema.org/InStock",
+            url: productUrl,
+        },
+    };
+
     return (
         <>
+            <SEOHead
+                title={currentProduct.name}
+                description={currentProduct.description
+                    ? currentProduct.description.slice(0, 155)
+                    : `Compre ${currentProduct.name} na Esdra Aromas. Entrega para todo o Brasil.`}
+                image={coverImageUrl}
+                canonical={productUrl}
+                type="product"
+                schema={productSchema}
+            />
             <Link onClick={handleGoBack} className={styles.backButton}>
                 <svg
                     className={styles.backButtonIcon}

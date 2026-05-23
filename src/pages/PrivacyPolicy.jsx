@@ -10,10 +10,10 @@ export default function PrivacyPolicy() {
             {/* ── CONTROLADOR ── */}
             <h2>1. Quem somos (Controlador de dados)</h2>
             <div className={styles.contactBlock}>
-                <p><strong>Razão social:</strong> Esdra Aromas — [COMPLETAR CNPJ]</p>
+                <p><strong>Razão social:</strong> Esdra Gomes da Silva — CNPJ 66.664.303/0001-17</p>
                 <p><strong>Endereço:</strong> [COMPLETAR ENDEREÇO COMERCIAL]</p>
-                <p><strong>E-mail de contato:</strong> <a href="mailto:privacidade@esdrasaromas.com.br">privacidade@esdrasaromas.com.br</a></p>
-                <p><strong>Encarregado (DPO):</strong> [COMPLETAR NOME] — <a href="mailto:privacidade@esdrasaromas.com.br">privacidade@esdrasaromas.com.br</a></p>
+                <p><strong>E-mail de contato:</strong> <a href="mailto:privacidade@esdraaromas.com.br">privacidade@esdraaromas.com.br</a></p>
+                <p><strong>Encarregado (DPO):</strong> [COMPLETAR NOME] — <a href="mailto:privacidade@esdraaromas.com.br">privacidade@esdraaromas.com.br</a></p>
             </div>
             <p>
                 A Esdra Aromas é responsável pelo tratamento dos dados pessoais coletados nesta
@@ -210,7 +210,7 @@ export default function PrivacyPolicy() {
                 Para exercer qualquer um desses direitos, use nosso{" "}
                 <Link to="/privacidade/direitos"><strong>formulário de solicitação de dados</strong></Link>{" "}
                 ou entre em contato pelo e-mail{" "}
-                <a href="mailto:privacidade@esdrasaromas.com.br">privacidade@esdrasaromas.com.br</a>.
+                <a href="mailto:privacidade@esdraaromas.com.br">privacidade@esdraaromas.com.br</a>.
                 Responderemos em até <strong>15 dias úteis</strong>, conforme art. 18, §3º da LGPD.
                 Também é possível gerenciar seus dados diretamente em{" "}
                 <Link to="/account/profile">Minha Conta → Perfil</Link> e{" "}
@@ -272,7 +272,7 @@ export default function PrivacyPolicy() {
             <h2>10. Contato e Encarregado (DPO)</h2>
             <div className={styles.contactBlock}>
                 <p><strong>Encarregado pelo tratamento de dados (DPO):</strong> [COMPLETAR NOME]</p>
-                <p><strong>E-mail:</strong> <a href="mailto:privacidade@esdrasaromas.com.br">privacidade@esdrasaromas.com.br</a></p>
+                <p><strong>E-mail:</strong> <a href="mailto:privacidade@esdraaromas.com.br">privacidade@esdraaromas.com.br</a></p>
                 <p><strong>Prazo de resposta:</strong> até 15 dias úteis</p>
                 <p>
                     Você também pode registrar reclamações perante a{" "}

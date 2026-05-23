@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, createContext, useContext, useMemo } from "react";
+import SEOHead, { SITE_URL } from "../components/SEOHead";
 import styles from "./ProductsLayout.module.scss";
 import { Outlet, useLoaderData, useLocation, useSearchParams } from "react-router";
 import SidebarContent from "../components/SidebarContent";
@@ -900,6 +901,11 @@ export default function ProductsLayout() {
     
     return (
         <ProductsContext.Provider value={contextValue}>
+            <SEOHead
+                title="Produtos"
+                description="Explore perfumes artesanais, sabonetes naturais e cosméticos únicos da Esdra Aromas. Filtros por cor, tamanho e preço."
+                canonical={`${SITE_URL}/products`}
+            />
             <div className={styles.productsLayout}>
                 <aside className={styles.sidebar}>
                     <SidebarContent isMobile={false} />

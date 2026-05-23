@@ -1,7 +1,7 @@
 # LGPD Compliance — Esdra Aromas
 
 **Última revisão:** 22/05/2026  
-**Score atual:** 72/100  
+**Score atual:** 74/100  
 **Meta:** ≥ 70/100 (operação com risco residual baixo)
 
 ---
@@ -10,12 +10,12 @@
 
 | Dimensão | Atual | Meta | Status |
 |----------|------:|-----:|--------|
-| Coleta e base legal | 16/20 | 16/20 | 🟢 |
+| Coleta e base legal | 17/20 | 16/20 | 🟢 |
 | Segurança técnica | 18/20 | 17/20 | 🟢 |
-| Transparência e direitos do titular | 16/20 | 16/20 | 🟢 |
+| Transparência e direitos do titular | 17/20 | 16/20 | 🟢 |
 | Governança e documentação | 12/20 | 12/20 | 🟢 |
 | Gestão de incidentes e rastreabilidade | 10/20 | 9/20 | 🟢 |
-| **TOTAL** | **72/100** | **70/100** | **🟢** |
+| **TOTAL** | **74/100** | **70/100** | **🟢** |
 
 ---
 
@@ -26,7 +26,7 @@
 | ID | Item | Arquivo/Local | Métrica de conclusão | Status |
 |----|------|--------------|----------------------|--------|
 | C1 | Banner de consentimento de cookies bloqueia GTM/GA até aceite explícito | `src/main.jsx` | GA/GTM só dispara após `localStorage["esdra_analytics_consent"] === "true"` | ✅ Concluído (22/05/2026) |
-| C2 | Política de Privacidade completa com todos os campos do art. 9º LGPD | `src/pages/PrivacyPolicy.jsx` | Contém: controlador, DPO/contato, lista de dados, retenção, operadores, canal de direitos, cookies | ✅ Concluído (22/05/2026) — ⚠️ preencher CNPJ, endereço e nome do DPO |
+| C2 | Política de Privacidade completa com todos os campos do art. 9º LGPD | `src/pages/PrivacyPolicy.jsx` | Contém: controlador, DPO/contato, lista de dados, retenção, operadores, canal de direitos, cookies | ✅ Concluído (22/05/2026) — ⚠️ preencher endereço e nome do DPO |
 | C3 | Canal de exercício de direitos do titular (art. 18) acessível na conta | Novo componente/e-mail | Link ou formulário funcional acessível em `/account` e na Política | ✅ Concluído (22/05/2026) |
 
 ---
@@ -52,6 +52,9 @@
 | M3 | ROPA — Registro de Operações de Tratamento | `docs/ropa.md` | Documento com: finalidade, base legal, dados, operadores, retenção, de cada tratamento | ⬜ Pendente |
 | M4 | `ViaCEP` documentado como suboperador na Política | `PrivacyPolicy.jsx` | Mencionado na seção "Compartilhamento" com finalidade | ✅ Concluído (22/05/2026) |
 | M5 | Regra explícita deny-all para `emailQueue` e `idempotency` no Firestore Rules | `firestore.rules` | Regras explícitas presentes no arquivo | ✅ Concluído (22/05/2026) |
+| M6 | CNPJ e razão social preenchidos na Política de Privacidade | `src/pages/PrivacyPolicy.jsx` | Campo controlador exibe CNPJ 66.664.303/0001-17 | ✅ Concluído (22/05/2026) |
+| M7 | E-mail de contato LGPD corrigido em todos os arquivos | `PrivacyPolicy.jsx`, `DataRights.jsx`, `Footer.jsx` | `esdrasaromas` → `esdraaromas` corrigido; e-mails agora chegam ao destino correto | ✅ Concluído (22/05/2026) |
+| M8 | Purge automático de `dataRightsRequests` após 5 anos | `functions/index.js` | Job agendado apaga solicitações com mais de 5 anos | ⬜ Pendente |
 
 ---
 
@@ -62,6 +65,7 @@
 | B1 | `console.error` em produção guardados por `isDev` ou substituídos por logger | `src/firebase.js`, `CartContext.jsx`, `AuthContext.jsx` | Zero `console.` diretos fora do `logger.js` em arquivos de produção | ⬜ Pendente |
 | B2 | CPF pseudonimizado/mascarado em ambientes de dev/staging | Fixtures de teste | Nenhum CPF real em `tests/`, `scripts/` ou seeds | ⬜ Pendente |
 | B3 | DPO/Encarregado designado e divulgado na Política | Fora do código | Nome ou canal do Encarregado publicado na Política de Privacidade | ⬜ Pendente |
+| B4 | Rate limiting nas Cloud Functions públicas (`socialRender`, `dataRightsRequests`) | `functions/index.js` | Máximo de requisições por IP por hora configurado | ⬜ Pendente |
 
 ---
 
@@ -76,6 +80,7 @@
 | 22/05/2026 | 70/100 | A1, A5, M5 | E-mail hardcoded removido; e-mail mascarado nos logs; deny-all explícito em emailQueue/idempotency/meta |
 | 22/05/2026 | 71/100 | A3 | Job diário `purgeOrderRawPayload` limpa `payment.rawPayload` em pedidos com mais de 90 dias |
 | 22/05/2026 | 72/100 | A2 | Job diário `purgeEmailQueue` deleta documentos com mais de 30 dias |
+| 22/05/2026 | 74/100 | M6, M7 | CNPJ preenchido; e-mail de contato LGPD corrigido (`esdrasaromas` → `esdraaromas`) em 3 arquivos; novos itens M8/B4 identificados |
 
 ---
 
@@ -91,6 +96,6 @@ Ao concluir um item:
 | Grupo | Pontos ganhos ao concluir todos os pendentes |
 |-------|---------------------------------------------:|
 | Altos (A4) | +2 pts |
-| Médios (M1, M2, M3) | +6 pts |
-| Baixos (B1, B2, B3) | +3 pts |
-| **Potencial restante** | **+11 pts → 83/100** |
+| Médios (M1, M2, M3, M8) | +7 pts |
+| Baixos (B1, B2, B3, B4) | +4 pts |
+| **Potencial restante** | **+13 pts → 87/100** |
