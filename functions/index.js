@@ -775,6 +775,14 @@ async function updateOrderFromPayment({orderId, providerPaymentId, paymentStatus
   }
 
   const orderData = orderSnap.data() || {};
+
+  const alreadyProcessed = Boolean(providerPaymentId) &&
+    orderData.payment?.providerPaymentId === providerPaymentId &&
+    orderData.paymentStatus === paymentStatus;
+  if (alreadyProcessed) {
+    return;
+  }
+
   const nextStatus = mapPaymentStatusToOrderStatus(paymentStatus, orderData.status);
 
   await orderRef.set({
