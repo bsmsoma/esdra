@@ -21,7 +21,8 @@ import {
     setPersistence,
     browserLocalPersistence,
     browserSessionPersistence,
-    sendPasswordResetEmail,
+    sendEmailVerification,
+    requestPasswordReset,
 } from "../firebase";
 
 const REMEMBER_ME_KEY = "esdra_remember_me_expiry";
@@ -137,7 +138,12 @@ export async function registerAction({ request }) {
             },
         });
 
-        return redirect(redirectTo);
+        sendEmailVerification(user).catch(() => {});
+
+        try { sessionStorage.setItem("showRegistrationToast", "1"); } catch (_) {}
+
+        const destination = redirectTo === "/account" ? "/account/profile" : redirectTo;
+        return redirect(destination);
     } catch (error) {
         return {
             message: getAuthErrorMessage(error.code) || error.message,
@@ -219,13 +225,10 @@ export default function Login() {
         setIsLoading(true);
 
         try {
-            await sendPasswordResetEmail(auth, forgotEmail, {
-                url: window.location.origin + "/login",
-                handleCodeInApp: false,
-            });
+            await requestPasswordReset({ email: forgotEmail });
             setForgotStatus({ type: "success", message: "Link enviado! Verifique sua caixa de entrada (e a pasta de spam)." });
         } catch (error) {
-            setForgotStatus({ type: "error", message: getAuthErrorMessage(error.code) });
+            setForgotStatus({ type: "error", message: getAuthErrorMessage(error.code) || "Erro ao enviar o link. Tente novamente." });
         } finally {
             setIsLoading(false);
         }

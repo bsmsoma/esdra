@@ -79,11 +79,12 @@ function baseLayout(bodyContent) {
  *   orderNumber: string,
  *   total: number,
  *   paymentMethod: string,
+ *   resetLink: string,
  *   appUrl: string
  * }} opts
  * @returns {{ subject: string, html: string } | null}
  */
-export function buildEmail({type, customerName, orderNumber, total, paymentMethod, appUrl}) {
+export function buildEmail({type, customerName, orderNumber, total, paymentMethod, resetLink, appUrl}) {
   const firstName = String(customerName || "").split(" ")[0] || "Cliente";
   const formattedTotal = formatCurrency(total);
   const formattedMethod = formatPaymentMethod(paymentMethod);
@@ -222,6 +223,71 @@ export function buildEmail({type, customerName, orderNumber, total, paymentMetho
           <tr>
             <td style="border-radius:4px;background-color:#7f6348;">
               <a href="${dashboardUrl}" target="_blank" style="display:inline-block;padding:14px 28px;font-size:13px;font-weight:600;color:#ffffff;text-decoration:none;letter-spacing:0.5px;font-family:Arial,Helvetica,sans-serif;">Ver pedido no painel &rarr;</a>
+            </td>
+          </tr>
+        </table>
+      `),
+    };
+  }
+
+  if (type === "password_reset") {
+    const safeLink = String(resetLink || "#");
+    return {
+      subject: "Redefinição de senha — ESDRA Aromas",
+      html: baseLayout(`
+        <p style="margin:0 0 6px;font-size:11px;color:#74685d;text-transform:uppercase;letter-spacing:2px;font-family:Arial,Helvetica,sans-serif;">Segurança da conta</p>
+        <h1 style="margin:0 0 20px;font-size:22px;color:#2a221d;font-weight:normal;font-family:Georgia,'Times New Roman',serif;">Redefinir sua senha.</h1>
+
+        <p style="margin:0 0 28px;font-size:14px;line-height:1.8;color:#4b3f35;font-family:Arial,Helvetica,sans-serif;">
+          Recebemos uma solicitação para redefinir a senha da sua conta ESDRA Aromas. Se foi você, clique no botão abaixo — o link é válido por <strong style="color:#2a221d;">1 hora</strong>.
+        </p>
+
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
+          <tr>
+            <td style="border-radius:4px;background-color:#7f6348;">
+              <a href="${safeLink}" target="_blank" style="display:inline-block;padding:14px 28px;font-size:13px;font-weight:600;color:#ffffff;text-decoration:none;letter-spacing:0.5px;font-family:Arial,Helvetica,sans-serif;">Redefinir minha senha &rarr;</a>
+            </td>
+          </tr>
+        </table>
+
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#faf7f4;border-radius:4px;border-left:3px solid #d4c4b0;">
+          <tr>
+            <td style="padding:14px 18px;">
+              <p style="margin:0;font-size:12px;color:#74685d;line-height:1.6;font-family:Arial,Helvetica,sans-serif;">Se você não solicitou esta redefinição, ignore este e-mail — sua conta permanece segura e nenhuma alteração foi feita.</p>
+            </td>
+          </tr>
+        </table>
+      `),
+    };
+  }
+
+  if (type === "welcome") {
+    const accountUrl = `${String(appUrl || "").replace(/\/$/, "")}/account`;
+    return {
+      subject: `Bem-vinda à ESDRA Aromas, ${firstName}!`,
+      html: baseLayout(`
+        <p style="margin:0 0 6px;font-size:11px;color:#74685d;text-transform:uppercase;letter-spacing:2px;font-family:Arial,Helvetica,sans-serif;">Olá, ${firstName}</p>
+        <h1 style="margin:0 0 28px;font-size:22px;color:#2a221d;font-weight:normal;font-family:Georgia,'Times New Roman',serif;">Sua conta foi criada.</h1>
+
+        <p style="margin:0 0 24px;font-size:14px;line-height:1.8;color:#4b3f35;font-family:Arial,Helvetica,sans-serif;">
+          Obrigada por se cadastrar na ESDRA Aromas. Sua conta está ativa e você já pode explorar nossa coleção de aromas artesanais.
+        </p>
+
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f8f2ea;border-radius:4px;margin-bottom:28px;">
+          <tr>
+            <td style="padding:18px 24px;">
+              <p style="margin:0 0 4px;font-size:11px;color:#74685d;text-transform:uppercase;letter-spacing:1.5px;font-family:Arial,Helvetica,sans-serif;">O que fazer agora?</p>
+              <p style="margin:0;font-size:13px;color:#4b3f35;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">
+                Acesse sua conta para ver seus pedidos, gerenciar endereços e atualizar seu perfil.
+              </p>
+            </td>
+          </tr>
+        </table>
+
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+          <tr>
+            <td style="border-radius:4px;background-color:#7f6348;">
+              <a href="${accountUrl}" target="_blank" style="display:inline-block;padding:14px 28px;font-size:13px;font-weight:600;color:#ffffff;text-decoration:none;letter-spacing:0.5px;font-family:Arial,Helvetica,sans-serif;">Acessar minha conta &rarr;</a>
             </td>
           </tr>
         </table>

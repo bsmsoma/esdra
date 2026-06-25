@@ -30,6 +30,9 @@ import {
     GoogleAuthProvider,
     OAuthProvider,
     sendPasswordResetEmail,
+    sendEmailVerification,
+    verifyPasswordResetCode,
+    confirmPasswordReset,
     connectAuthEmulator,
     setPersistence,
     browserLocalPersistence,
@@ -94,6 +97,9 @@ export {
     browserSessionPersistence,
     OAuthProvider,
     sendPasswordResetEmail,
+    sendEmailVerification,
+    verifyPasswordResetCode,
+    confirmPasswordReset,
 };
 
 // Documents
@@ -691,6 +697,12 @@ export async function updateOrderStatusByAdmin({
 export async function cancelOrderByCustomer({ orderId }) {
     const callable = httpsCallable(functions, "cancelOrderByCustomer");
     const response = await callable({ orderId });
+    return response.data;
+}
+
+export async function requestPasswordReset({ email }) {
+    const callable = httpsCallable(functions, "requestPasswordReset");
+    const response = await callable({ email });
     return response.data;
 }
 

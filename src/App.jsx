@@ -29,6 +29,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfUse from "./pages/TermsOfUse";
 import DataRights from "./pages/DataRights";
 import Preview from "./pages/Preview";
+import ResetPassword from "./pages/ResetPassword";
 
 import {
     Route,
@@ -101,6 +102,9 @@ const router = createBrowserRouter(
                 action={registerAction}
                 loader={registerLoader}
             />
+
+            {/* Password reset — handles Firebase action code from reset email */}
+            <Route path="reset-password" element={<ResetPassword />} />
 
             {/* Customer account area */}
             <Route path="account" element={<AccountLayout />} loader={accountLayoutLoader}>

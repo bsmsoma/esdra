@@ -6,6 +6,7 @@ import {logger} from "firebase-functions/v2";
 import {initializeApp} from "firebase-admin/app";
 import {getFirestore, FieldValue} from "firebase-admin/firestore";
 import {getStorage} from "firebase-admin/storage";
+import {getAuth} from "firebase-admin/auth";
 import {MercadoPagoConfig, Preference, Payment} from "mercadopago";
 import {Resend} from "resend";
 import {
@@ -1369,6 +1370,39 @@ export const deleteMedia = onCall(FUNCTION_CONFIG, async (request) => {
   return {deletedCount};
 });
 
+export const requestPasswordReset = onCall(FUNCTION_CONFIG, async (request) => {
+  const email = String(request.data?.email || "").trim().toLowerCase();
+  if (!email) throw new HttpsError("invalid-argument", "E-mail obrigatório.");
+
+  const appUrl = String(globalThis.process?.env?.APP_URL || "https://esdraaromas.com.br").trim().replace(/\/$/, "");
+
+  try {
+    const link = await getAuth().generatePasswordResetLink(email, {
+      url: `${appUrl}/reset-password`,
+      handleCodeInApp: true,
+    });
+
+    await db.collection("emailQueue").add({
+      type: "password_reset",
+      to: email,
+      customerName: "",
+      payload: {resetLink: link},
+      provider: "pending",
+      status: "queued",
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+
+    return {success: true};
+  } catch (err) {
+    if (err.code === "auth/user-not-found") {
+      return {success: true};
+    }
+    logError("requestPasswordReset_error", {message: err.message});
+    throw new HttpsError("internal", "Erro ao processar solicitação. Tente novamente.");
+  }
+});
+
 export const processEmailQueue = onDocumentCreated(
   {
     document: "emailQueue/{docId}",
@@ -1400,7 +1434,8 @@ export const processEmailQueue = onDocumentCreated(
 
     const {type, to, customerName, orderNumber, payload} = data;
 
-    if (!to || !type || !orderNumber) {
+    const requiresOrderNumber = type !== "welcome" && type !== "password_reset";
+    if (!to || !type || (requiresOrderNumber && !orderNumber)) {
       await docRef.update({
         status: "failed",
         errorMessage: "Dados insuficientes: to, type ou orderNumber ausente.",
@@ -1424,6 +1459,7 @@ export const processEmailQueue = onDocumentCreated(
         orderNumber: String(orderNumber || ""),
         total: payload?.total,
         paymentMethod: payload?.paymentMethod,
+        resetLink: payload?.resetLink,
         appUrl,
       });
 
@@ -1544,6 +1580,45 @@ export const onDataRightsRequest = onDocumentCreated(
       logInfo("onDataRightsRequest_notified", {requestId: event.params.requestId, type: data.requestType});
     } catch (err) {
       logError("onDataRightsRequest_email_failed", {requestId: event.params.requestId, message: err.message});
+    }
+  },
+);
+
+// Envia e-mail de boas-vindas quando um novo cliente é criado
+export const onCustomerCreated = onDocumentCreated(
+  {
+    document: "customers/{uid}",
+    region: "southamerica-east1",
+    timeoutSeconds: 30,
+    memory: "256MiB",
+  },
+  async (event) => {
+    const snap = event.data;
+    if (!snap) return;
+
+    const customer = snap.data();
+    const to = String(customer?.email || "").trim().toLowerCase();
+    if (!to) return;
+
+    const firstName = String(customer?.firstName || "").trim();
+    const lastName = String(customer?.lastName || "").trim();
+    const customerName = [firstName, lastName].filter(Boolean).join(" ") || "Cliente";
+
+    const appUrl = String(globalThis.process?.env?.APP_URL || "https://esdraaromas.com.br").trim().replace(/\/$/, "");
+
+    try {
+      await db.collection("emailQueue").add({
+        type: "welcome",
+        to,
+        customerName,
+        provider: "pending",
+        status: "queued",
+        payload: {appUrl},
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+    } catch (err) {
+      logError("onCustomerCreated_queue_error", {uid: event.params.uid, message: err.message});
     }
   },
 );
