@@ -105,6 +105,7 @@
 - [ ] 🔍 **Credenciais MP produção** — `functions/.env` local não contém a chave `MP_SANDBOX` nem `PAYMENT_WEBHOOK_SECRET`/`ADMIN_EMAIL` (só tem `PAYMENT_PROVIDER`, `MERCADOPAGO_ACCESS_TOKEN`, `PAYMENT_WEBHOOK_URL`, `APP_URL`, `DEFAULT_STORE_ID`, `RESEND_API_KEY`, `EMAIL_FROM`) — possivelmente as demais estão só no Secret Manager/produção. O prefixo do `MERCADOPAGO_ACCESS_TOKEN` local não é conclusivo por si só (contas de teste do MP também emitem credenciais no formato `APP_USR-`). **Precisa confirmar manualmente no painel do Mercado Pago** a qual aplicação/conta essa credencial pertence antes do go-live — não decidir só pelo formato do token.
 - [ ] **Monitoramento** — não encontrado: nenhuma Alerting Policy (Firebase/Cloud Monitoring) para erros de function ou falhas de webhook. Logging estruturado existe (`logInfo`/`logError`), mas sem alertas configurados.
 - [ ] Smoke test com valor mínimo real antes de abrir para clientes
+  - ⚠️ Confirmado: não existe pipeline de CI (`.github/workflows` ausente) — testes E2E/Playwright não rodam automaticamente em push/PR, só localmente. Deploy de frontend e functions é manual/via integração direta da Netlify. Considerar workflow de CI antes do go-live para rodar a suite `tests/e2e` automaticamente.
 - [ ] Plano de rollback documentado (reverter deploy Netlify, desativar checkout via env var)
 - [ ] Congelamento de merges não-críticos na véspera do go-live
 
@@ -133,5 +134,7 @@
 - 2026-06-19 — Criação do documento, levantamento inicial via agente Explore (estado real do código).
 - 2026-06-19 — 1ª auditoria: (1) corrigido early-skip de idempotência em `updateOrderFromPayment` (`functions/index.js`); (2) confirmado que frete fixo já está implementado (`Checkout.jsx`) — item movido para concluído; (3) confirmado que `functions/.env` local não tem `MP_SANDBOX`/`PAYMENT_WEBHOOK_SECRET`/`ADMIN_EMAIL` — marcado para verificação manual no painel MP antes do go-live, sem supor produção vs. teste pelo formato do token.
 - 2026-06-19 — 2ª auditoria: sem código novo desde a última checagem (nenhum commit após `7ac7cb8`). Verificado link Netlify (`siteId` presente) e remote GitHub, mas API do GitHub não confirma commit status do deploy — marcado como pendência externa (checar dashboard Netlify diretamente). Sem novos gaps de código corrigíveis nesta passada; itens restantes (testes de webhook, monitoramento/alertas, ROPA/MFA admin) continuam exigindo trabalho maior, fora do escopo de correção pontual.
+- 2026-06-19 — Commit `a03f9a6` (early-skip de idempotência + este roadmap) feito e enviado para `origin/main`.
+- 2026-06-19 — 3ª auditoria: nenhum commit novo desde `a03f9a6`. Confirmado que não existe `.github/workflows` no repo — sem pipeline de CI rodando a suite `tests/e2e` automaticamente; deploy é manual/integração direta Netlify. Adicionado ao item "Smoke test" do checklist de go-live. Sem outros gaps pequenos corrigíveis encontrados.
 
 *Documento vivo — atualizado pelo `/loop` a cada checagem.*
